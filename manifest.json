@@ -1,11 +1,17 @@
 {
-  "artifact": "phase0_qcm_extractor",
-  "version": "1.0.0",
+  "artifact": "phase1_qcm_extractor",
+  "version": "1.1.0",
+  "phase": 1,
   "generated_files": [
     {
+      "path": "CHANGELOG.md",
+      "sha256": "515a3706161fce55026f82df2c04afd6657a95417f60cada91009944b57f39a0",
+      "bytes": 698
+    },
+    {
       "path": "README.md",
-      "sha256": "c06e05f71ae52fac48639700fdc77ef622fb89bf49662c6aa88023cb5eed4525",
-      "bytes": 4782
+      "sha256": "ee51cc93928fb7eec5ce989ba86fd3ad3c394181005a028fd235cc1a993fbf65",
+      "bytes": 3145
     },
     {
       "path": "examples/export.example.json",
@@ -26,6 +32,131 @@
       "path": "examples/mapping.example.json",
       "sha256": "33d036180d7e8975802e0b546ad77e65df64c5c1b57b98de2d760fa21bac80c1",
       "bytes": 975
+    },
+    {
+      "path": "frontend/.gitignore",
+      "sha256": "3aef4c1678d94ef60efd5c3d8f5287bd27ffbba5279ef54d806497cd42e65eb9",
+      "bytes": 38
+    },
+    {
+      "path": "frontend/README.md",
+      "sha256": "fba92e473e62904e3df898dbe283a8a306091374ff910732e16adbf5914a94fb",
+      "bytes": 3226
+    },
+    {
+      "path": "frontend/index.html",
+      "sha256": "90b33dc77939dbc3c5a261c5261ac233bcf024a30488c3b5c15b48a2b403117e",
+      "bytes": 521
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "c9b9e6e805de31688c6b3ce9d54759d1f6d542a7c66506c5a80454cdb727a46e",
+      "bytes": 541
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "sha256": "865177e34d18021260cdc4ead2649f4b0b82ee4d040f5bce188a60fc81e011ec",
+      "bytes": 3968
+    },
+    {
+      "path": "frontend/src/components/ErrorPanel.tsx",
+      "sha256": "22823c2bc9040a154067f9dc923a85838fa6a8229ff2280ae77c32e37499f654",
+      "bytes": 897
+    },
+    {
+      "path": "frontend/src/components/FileDropZone.tsx",
+      "sha256": "216d5ed9cf3e40d97f3ea097ff35903b842afe7ea9aa1644691df907ae197c4e",
+      "bytes": 3280
+    },
+    {
+      "path": "frontend/src/components/Icons.tsx",
+      "sha256": "d689efc8d2f4138f687d6dd5e6c60498215a28983fa3fe0366e2aa18aee9dcd2",
+      "bytes": 3444
+    },
+    {
+      "path": "frontend/src/components/LoadingPanel.tsx",
+      "sha256": "c2ec264f1688c9949f6ebfdcd55f468bbe644865af6cc90227273b4bb485d779",
+      "bytes": 361
+    },
+    {
+      "path": "frontend/src/components/PdfPageCanvas.tsx",
+      "sha256": "af9ed87a1cbe797a75541fb92d3ccdc4fcca596ce5acfc122daba984d4f1a1dd",
+      "bytes": 2834
+    },
+    {
+      "path": "frontend/src/components/PdfThumbnail.tsx",
+      "sha256": "0091ca293b749e1c43daffbac9ff5629da828af7c986fbe66f2011e2d22b0882",
+      "bytes": 1882
+    },
+    {
+      "path": "frontend/src/components/PdfToolbar.tsx",
+      "sha256": "1c663faed2fa4d0fa24c99cee9979715269e582431ab890f9a9e9fdc6f61f8d3",
+      "bytes": 3421
+    },
+    {
+      "path": "frontend/src/components/PdfViewer.tsx",
+      "sha256": "3e505657ca30017ae359f1a77a46ed58d5dd0b6031441bc4cfce89638e43cc60",
+      "bytes": 3638
+    },
+    {
+      "path": "frontend/src/domain/projectState.ts",
+      "sha256": "b715bc9f7aa2ca048f51a2a9839f6144e3a9dffb4bbafd84df9c9f87b7ccc85e",
+      "bytes": 2475
+    },
+    {
+      "path": "frontend/src/hooks/useKeyboardNavigation.ts",
+      "sha256": "a12b4feb9075fe7f45390bda110ba094626eeb75999df13f7b803099b9996b44",
+      "bytes": 1881
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "sha256": "06bb3fa9f3d43921e729435721460e6da3661e3b79b745a7dc9dd7e5cdcbde63",
+      "bytes": 330
+    },
+    {
+      "path": "frontend/src/pdf/formatFileSize.ts",
+      "sha256": "5d67497b695b20a39750b4453c770a647a6d8dfebeeec42137c80c75857ac188",
+      "bytes": 399
+    },
+    {
+      "path": "frontend/src/pdf/loadPdf.ts",
+      "sha256": "abb54972cebb251540bd5aa39a083aec0489551a0d05af53dd7f162983fb5f3b",
+      "bytes": 3005
+    },
+    {
+      "path": "frontend/src/pdf/pdfWorker.ts",
+      "sha256": "db708a67fadfb93d97932026045b1d7ff02cff4d65aeaec06baddeae59875508",
+      "bytes": 159
+    },
+    {
+      "path": "frontend/src/styles/app.css",
+      "sha256": "48d09fbfe88f3f0cbb515f7ddc139c21bffe8da74e7f5290f5e6da4bc830ff52",
+      "bytes": 11438
+    },
+    {
+      "path": "frontend/src/vite-env.d.ts",
+      "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "bytes": 38
+    },
+    {
+      "path": "frontend/tsconfig.app.json",
+      "sha256": "25d196b27a85f885fcc9be839762cb320ebf2df699b94f3d21da14fa3c84c2eb",
+      "bytes": 716
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808",
+      "bytes": 119
+    },
+    {
+      "path": "frontend/tsconfig.node.json",
+      "sha256": "2fba2f25e1859f193b54edef5d2d2cd08cae2a37fab64c08699f6f8672bea2cc",
+      "bytes": 413
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "sha256": "d2e9943c4b10c3e283fbbf1e704a9c3cf2fb884ed0153d510b7ee760b0075bcd",
+      "bytes": 224
     },
     {
       "path": "golden/golden-dataset.json",
@@ -53,9 +184,19 @@
       "bytes": 4670
     },
     {
+      "path": "tests/build_manifest.py",
+      "sha256": "42678e67e7fa2ee75f0ebc3590a49db208125b6720825cca6c61b72e9e8ee351",
+      "bytes": 1304
+    },
+    {
       "path": "tests/validate.py",
       "sha256": "71fe74c29843c97f2b34cfc7dab235b3e14b33cfb85ec7185507997af158b13a",
       "bytes": 3007
+    },
+    {
+      "path": "tests/validate_phase1.py",
+      "sha256": "e2646f8960f92f7aef8dced3faffe42abe7933cb5512ca21452c6835262175fe",
+      "bytes": 4554
     }
   ]
 }
