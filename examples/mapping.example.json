@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "document": {
+    "title": "Cours de Physique 2",
+    "language": "fr",
+    "document_type": "slides",
+    "page_count": 60,
+    "warnings": []
+  },
+  "question_segments": [
+    {
+      "temporary_id": "segment-phys-002",
+      "question_number": null,
+      "question_pages": [
+        2
+      ],
+      "answer_pages": [],
+      "feedback_pages": [],
+      "contains_essential_image": true,
+      "question_type_hint": "single_choice",
+      "page_regions": [
+        {
+          "page": 2,
+          "role": "question",
+          "bbox": {
+            "x": 0.03,
+            "y": 0.17,
+            "width": 0.93,
+            "height": 0.72
+          }
+        },
+        {
+          "page": 2,
+          "role": "essential_image",
+          "bbox": {
+            "x": 0.55,
+            "y": 0.3,
+            "width": 0.32,
+            "height": 0.48
+          }
+        }
+      ],
+      "confidence": 0.98,
+      "warnings": []
+    }
+  ]
+}

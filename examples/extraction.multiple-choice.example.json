@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "batch_id": "batch-synthetic-multiple-choice",
+  "source_document": {
+    "title": "Exemple synthétique",
+    "language": "fr"
+  },
+  "questions": [
+    {
+      "id": "q-synthetic-multiple",
+      "segment_id": "segment-synthetic-multiple",
+      "type": "multiple_choice",
+      "title": {
+        "content": "",
+        "origin": "not_available"
+      },
+      "content_format": "markdown-latex",
+      "statement": "Parmi les nombres suivants, lesquels sont premiers ?",
+      "choices": [
+        {
+          "id": "choice-a",
+          "content": "\\(2\\)"
+        },
+        {
+          "id": "choice-b",
+          "content": "\\(3\\)"
+        },
+        {
+          "id": "choice-c",
+          "content": "\\(4\\)"
+        },
+        {
+          "id": "choice-d",
+          "content": "\\(6\\)"
+        }
+      ],
+      "correct_choice_ids": [
+        "choice-a",
+        "choice-b"
+      ],
+      "correct_answer_origin": "explicit_in_document",
+      "feedback": {
+        "content": "Deux et trois ont exactement deux diviseurs positifs.",
+        "origin": "explicit_in_document"
+      },
+      "images": [],
+      "source_pages": [
+        1
+      ],
+      "confidence": 1.0,
+      "warnings": [],
+      "status": "draft"
+    }
+  ]
+}

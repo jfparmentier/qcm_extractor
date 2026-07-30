@@ -1,0 +1,2113 @@
+{
+  "dataset_version": "1.0.0",
+  "scope": "Sous-ensemble de 20 questions représentatives destiné aux tests de non-régression. Il ne constitue pas une cartographie exhaustive des deux PDF.",
+  "documents": [
+    {
+      "id": "physics-slides",
+      "filename": "QuestionsPhysique2Elec.pdf",
+      "language": "fr",
+      "document_type": "slides",
+      "page_count": 60
+    },
+    {
+      "id": "calculus-question-bank",
+      "filename": "GQbysubject_pdfversion.pdf",
+      "language": "en",
+      "document_type": "dense_question_bank",
+      "page_count": 53
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "phys-002",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 2",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-002",
+        "question_number": null,
+        "question_pages": [
+          2
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 2,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.17,
+              "width": 0.93,
+              "height": 0.72
+            }
+          },
+          {
+            "page": 2,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.55,
+              "y": 0.3,
+              "width": 0.32,
+              "height": 0.48
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-002",
+        "segment_id": "segment-phys-002",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Quand l’ampoule éclaire :\n\n![Schéma du circuit](asset:phys-002-circuit)",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Elle prend du courant"
+          },
+          {
+            "id": "choice-b",
+            "content": "Elle donne du courant"
+          },
+          {
+            "id": "choice-c",
+            "content": "Aucune des réponses précédentes"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-002-circuit",
+            "role": "essential",
+            "source_page": 2,
+            "bbox": {
+              "x": 0.55,
+              "y": 0.3,
+              "width": 0.32,
+              "height": 0.48
+            },
+            "alt_text": "Circuit fermé comportant une pile et une ampoule",
+            "insertion_token": "asset:phys-002-circuit"
+          }
+        ],
+        "source_pages": [
+          2
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Cas simple : une question par diapositive et un schéma indispensable."
+    },
+    {
+      "case_id": "phys-003",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 3",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-003",
+        "question_number": null,
+        "question_pages": [
+          3
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 3,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.1,
+              "width": 0.94,
+              "height": 0.8
+            }
+          },
+          {
+            "page": 3,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.38,
+              "y": 0.22,
+              "width": 0.48,
+              "height": 0.39
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-003",
+        "segment_id": "segment-phys-003",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Deux ampoules identiques sont alimentées par une pile suivant le schéma ci-dessous.\n\n![Circuit avec interrupteur](asset:phys-003-circuit)\n\nSi je ferme l’interrupteur, l’ampoule A :",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Éclairera plus"
+          },
+          {
+            "id": "choice-b",
+            "content": "Éclairera moins"
+          },
+          {
+            "id": "choice-c",
+            "content": "Éclairera autant"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-003-circuit",
+            "role": "essential",
+            "source_page": 3,
+            "bbox": {
+              "x": 0.38,
+              "y": 0.22,
+              "width": 0.48,
+              "height": 0.39
+            },
+            "alt_text": "Deux ampoules A et B alimentées par une pile, avec un interrupteur en dérivation de B",
+            "insertion_token": "asset:phys-003-circuit"
+          }
+        ],
+        "source_pages": [
+          3
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Association d’un énoncé en deux parties avec un circuit central."
+    },
+    {
+      "case_id": "phys-005",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 5",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-005",
+        "question_number": null,
+        "question_pages": [
+          5
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 5,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.12,
+              "width": 0.93,
+              "height": 0.78
+            }
+          },
+          {
+            "page": 5,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.58,
+              "y": 0.31,
+              "width": 0.28,
+              "height": 0.48
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-005",
+        "segment_id": "segment-phys-005",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Initialement l’interrupteur est ouvert et les ampoules éteintes. Je ferme l’interrupteur. Quelle ampoule s’allume la première ?\n\n![Circuit de deux ampoules en série](asset:phys-005-circuit)",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "L’ampoule A"
+          },
+          {
+            "id": "choice-b",
+            "content": "L’ampoule B"
+          },
+          {
+            "id": "choice-c",
+            "content": "Les deux s’allument en même temps"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-005-circuit",
+            "role": "essential",
+            "source_page": 5,
+            "bbox": {
+              "x": 0.58,
+              "y": 0.31,
+              "width": 0.28,
+              "height": 0.48
+            },
+            "alt_text": "Pile, interrupteur et deux ampoules A et B montées en série",
+            "insertion_token": "asset:phys-005-circuit"
+          }
+        ],
+        "source_pages": [
+          5
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Question conceptuelle avec schéma vertical et choix sur plusieurs lignes."
+    },
+    {
+      "case_id": "phys-010",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 10",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-010",
+        "question_number": null,
+        "question_pages": [
+          10
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 10,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.14,
+              "width": 0.93,
+              "height": 0.75
+            }
+          },
+          {
+            "page": 10,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.53,
+              "y": 0.24,
+              "width": 0.36,
+              "height": 0.5
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-010",
+        "segment_id": "segment-phys-010",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "À quoi est égale la tension \\(U\\) ?\n\n![Sens des tensions dans le circuit](asset:phys-010-circuit)",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(U = U_1 = U_2\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\(U = U_1 = -U_2\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "\\(U = U_2 = -U_1\\)"
+          },
+          {
+            "id": "choice-d",
+            "content": "\\(U = -U_1 = -U_2\\)"
+          },
+          {
+            "id": "choice-e",
+            "content": "Aucune des réponses précédentes"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-010-circuit",
+            "role": "essential",
+            "source_page": 10,
+            "bbox": {
+              "x": 0.53,
+              "y": 0.24,
+              "width": 0.36,
+              "height": 0.5
+            },
+            "alt_text": "Circuit parallèle entre les nœuds A et B avec les orientations de U, U1 et U2",
+            "insertion_token": "asset:phys-010-circuit"
+          }
+        ],
+        "source_pages": [
+          10
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Préservation de variables indicées et de signes dans les propositions."
+    },
+    {
+      "case_id": "phys-014",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 14",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-014",
+        "question_number": null,
+        "question_pages": [
+          14
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 14,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.14,
+              "width": 0.93,
+              "height": 0.76
+            }
+          },
+          {
+            "page": 14,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.56,
+              "y": 0.43,
+              "width": 0.35,
+              "height": 0.32
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-014",
+        "segment_id": "segment-phys-014",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Une résistance de \\(1\\,\\Omega\\) est mise en parallèle avec une résistance de \\(10\\,000\\,\\Omega\\). Que vaut la résistance équivalente ?\n\n![Deux résistances en parallèle](asset:phys-014-circuit)",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Un peu moins que \\(1\\,\\Omega\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "Un peu plus que \\(1\\,\\Omega\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "Environ \\(5\\,000\\,\\Omega\\)"
+          },
+          {
+            "id": "choice-d",
+            "content": "Un peu moins que \\(10\\,000\\,\\Omega\\)"
+          },
+          {
+            "id": "choice-e",
+            "content": "Un peu plus que \\(10\\,000\\,\\Omega\\)"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-014-circuit",
+            "role": "essential",
+            "source_page": 14,
+            "bbox": {
+              "x": 0.56,
+              "y": 0.43,
+              "width": 0.35,
+              "height": 0.32
+            },
+            "alt_text": "Résistances de 1 ohm et 10 000 ohms montées en parallèle",
+            "insertion_token": "asset:phys-014-circuit"
+          }
+        ],
+        "source_pages": [
+          14
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Unités, séparateurs de milliers et symbole ohm."
+    },
+    {
+      "case_id": "phys-016",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 16",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-016",
+        "question_number": null,
+        "question_pages": [
+          16
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 16,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.14,
+              "width": 0.94,
+              "height": 0.77
+            }
+          },
+          {
+            "page": 16,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.12,
+              "y": 0.24,
+              "width": 0.78,
+              "height": 0.37
+            }
+          },
+          {
+            "page": 16,
+            "role": "choices",
+            "bbox": {
+              "x": 0.28,
+              "y": 0.65,
+              "width": 0.55,
+              "height": 0.24
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-016",
+        "segment_id": "segment-phys-016",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Que vaut l’intensité du courant traversant la résistance \\(R_2\\) ?\n\n![Circuit parallèle](asset:phys-016-circuit)",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(1.5\\,\\mathrm{A}\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\(3\\,\\mathrm{A}\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "\\(6\\,\\mathrm{A}\\)"
+          },
+          {
+            "id": "choice-d",
+            "content": "\\(12\\,\\mathrm{A}\\)"
+          },
+          {
+            "id": "choice-e",
+            "content": "\\(24\\,\\mathrm{A}\\)"
+          },
+          {
+            "id": "choice-f",
+            "content": "\\(48\\,\\mathrm{A}\\)"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-016-circuit",
+            "role": "essential",
+            "source_page": 16,
+            "bbox": {
+              "x": 0.12,
+              "y": 0.24,
+              "width": 0.78,
+              "height": 0.37
+            },
+            "alt_text": "Source de 12 volts et deux résistances de 2 ohms montées en parallèle",
+            "insertion_token": "asset:phys-016-circuit"
+          }
+        ],
+        "source_pages": [
+          16
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Options disposées en deux colonnes et schéma large."
+    },
+    {
+      "case_id": "phys-017",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 17",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-017",
+        "question_number": null,
+        "question_pages": [
+          17
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 17,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.18,
+              "width": 0.93,
+              "height": 0.68
+            }
+          },
+          {
+            "page": 17,
+            "role": "decorative_image",
+            "bbox": {
+              "x": 0.58,
+              "y": 0.43,
+              "width": 0.33,
+              "height": 0.31
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-017",
+        "segment_id": "segment-phys-017",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Ma consommation d’énergie électrique pour l’année s’exprime en :",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Kilowatt-heure : \\(\\mathrm{kW}\\cdot\\mathrm{h}\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "Kilowatt par heure : \\(\\mathrm{kW}/\\mathrm{h}\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "L’un ou l’autre, au choix"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [],
+        "source_pages": [
+          17
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La photographie de centrale est décorative et ne doit pas être intégrée à l’énoncé.",
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Distinction entre illustration décorative et illustration nécessaire."
+    },
+    {
+      "case_id": "phys-020",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 20",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-020",
+        "question_number": null,
+        "question_pages": [
+          20
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 20,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.1,
+              "width": 0.93,
+              "height": 0.83
+            }
+          },
+          {
+            "page": 20,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.34,
+              "y": 0.3,
+              "width": 0.35,
+              "height": 0.33
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-020",
+        "segment_id": "segment-phys-020",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Un grille-pain, que l’on considérera comme une résistance pure, est branché aux bornes \\((AB)\\) d’un générateur idéal de tension \\(E\\), avec \\(E\\) constante, en parallèle avec une résistance variable \\(R\\), comme indiqué ci-dessous.\n\n![Générateur, grille-pain et résistance variable](asset:phys-020-circuit)\n\nOn augmente la valeur de la résistance \\(R\\). Comment évolue la différence de potentiel aux bornes \\(AB\\) du grille-pain ?",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Elle diminue"
+          },
+          {
+            "id": "choice-b",
+            "content": "Elle reste constante"
+          },
+          {
+            "id": "choice-c",
+            "content": "Elle augmente"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-020-circuit",
+            "role": "essential",
+            "source_page": 20,
+            "bbox": {
+              "x": 0.34,
+              "y": 0.3,
+              "width": 0.35,
+              "height": 0.33
+            },
+            "alt_text": "Générateur idéal, grille-pain et résistance variable branchés entre A et B",
+            "insertion_token": "asset:phys-020-circuit"
+          }
+        ],
+        "source_pages": [
+          20
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Long énoncé entourant une figure centrale."
+    },
+    {
+      "case_id": "phys-024",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 24",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-024",
+        "question_number": null,
+        "question_pages": [
+          24
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 24,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.1,
+              "width": 0.93,
+              "height": 0.84
+            }
+          },
+          {
+            "page": 24,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.31,
+              "y": 0.22,
+              "width": 0.39,
+              "height": 0.44
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-phys-024",
+        "segment_id": "segment-phys-024",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Un dipôle a pour caractéristique la courbe représentée dans la figure ci-dessous, en convention récepteur.\n\n![Caractéristique tension-courant](asset:phys-024-graph)\n\nQuelle phrase est correcte ?",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(P>0\\) dans le premier et le deuxième quadrant, courbes bleue et rouge"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\(P>0\\) dans le premier et le troisième quadrant, courbes bleue et verte"
+          },
+          {
+            "id": "choice-c",
+            "content": "\\(P>0\\) dans le premier quadrant, courbe bleue"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [
+          {
+            "id": "asset-phys-024-graph",
+            "role": "essential",
+            "source_page": 24,
+            "bbox": {
+              "x": 0.31,
+              "y": 0.22,
+              "width": 0.39,
+              "height": 0.44
+            },
+            "alt_text": "Axes U et I avec des segments colorés dans les quadrants 1, 2 et 3",
+            "insertion_token": "asset:phys-024-graph"
+          }
+        ],
+        "source_pages": [
+          24
+        ],
+        "confidence": 0.98,
+        "warnings": [
+          "La couleur des courbes porte une information sémantique.",
+          "La réponse correcte n’est pas explicitement indiquée dans le document."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Graphique coloré dont la couleur est citée dans les choix."
+    },
+    {
+      "case_id": "phys-043",
+      "document_id": "physics-slides",
+      "source_label": "Diapositive 43",
+      "mapping_fragment": {
+        "temporary_id": "segment-phys-043",
+        "question_number": null,
+        "question_pages": [
+          43
+        ],
+        "answer_pages": [],
+        "feedback_pages": [],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 43,
+            "role": "question",
+            "bbox": {
+              "x": 0.03,
+              "y": 0.1,
+              "width": 0.94,
+              "height": 0.84
+            }
+          }
+        ],
+        "confidence": 0.94,
+        "warnings": [
+          "Formules matricielles complexes à transcrire en LaTeX."
+        ]
+      },
+      "expected_question": {
+        "id": "q-phys-043",
+        "segment_id": "segment-phys-043",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "On utilise les lois de Kirchhoff pour calculer le courant \\(i_3(t)\\). On cherche d’abord son amplitude complexe \\(I_3\\). Les équations aux mailles donnent :\n\n\\[\n\\begin{cases}\n(Z_1+Z_2)I_1-Z_2I_3=E_1,\\\\\n-Z_2I_1+(Z_2+Z_3)I_3=-E_2.\n\\end{cases}\n\\]\n\nOn résout \\(I_3\\) avec la méthode de Cramer. Que vaut \\(I_3\\) ?",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\[I_3=\\frac{\\begin{vmatrix}Z_1+Z_2&E_1\\\\-Z_2&-E_2\\end{vmatrix}}{\\begin{vmatrix}Z_1+Z_2&-Z_2\\\\-Z_2&Z_2+Z_3\\end{vmatrix}}\\]"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\[I_3=\\frac{\\begin{vmatrix}E_1&-Z_2\\\\-E_2&Z_2+Z_3\\end{vmatrix}}{\\begin{vmatrix}Z_1+Z_2&-Z_2\\\\-Z_2&Z_2+Z_3\\end{vmatrix}}\\]"
+          },
+          {
+            "id": "choice-c",
+            "content": "Aucune des réponses précédentes"
+          }
+        ],
+        "correct_choice_ids": [],
+        "correct_answer_origin": "not_available",
+        "feedback": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "images": [],
+        "source_pages": [
+          43
+        ],
+        "confidence": 0.94,
+        "warnings": [
+          "La réponse correcte n’est pas explicitement indiquée dans le document.",
+          "Vérifier visuellement la transcription des déterminants."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Cas sans image à extraire, mais avec un système et des déterminants complexes."
+    },
+    {
+      "case_id": "math-limits-001",
+      "document_id": "calculus-question-bank",
+      "source_label": "Limits, question 1, page 1",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-limits-001",
+        "question_number": "1",
+        "question_pages": [
+          1
+        ],
+        "answer_pages": [
+          1
+        ],
+        "feedback_pages": [
+          1
+        ],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 1,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.07,
+              "width": 0.84,
+              "height": 0.17
+            }
+          },
+          {
+            "page": 1,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.22,
+              "width": 0.84,
+              "height": 0.08
+            }
+          },
+          {
+            "page": 1,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.22,
+              "width": 0.84,
+              "height": 0.08
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-limits-001",
+        "segment_id": "segment-math-limits-001",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Let \\(f\\) be defined by \\(f(x)=\\sin x+\\cos x\\) and let \\(g\\) be defined by \\(g(u)=\\sin u+\\cos u\\), for all real numbers \\(x\\) and \\(u\\). Then:",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(f\\) and \\(g\\) are exactly the same functions"
+          },
+          {
+            "id": "choice-b",
+            "content": "If \\(x\\) and \\(u\\) are different numbers, \\(f\\) and \\(g\\) are different functions"
+          },
+          {
+            "id": "choice-c",
+            "content": "Not enough information is given to determine if \\(f\\) and \\(g\\) are the same"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-a"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "Both \\(f\\) and \\(g\\) are given by the same rule and are defined on the same domain; therefore they are the same function.",
+          "origin": "explicit_in_document"
+        },
+        "images": [],
+        "source_pages": [
+          1
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "QCM textuel avec réponse et feedback explicites sur la même page."
+    },
+    {
+      "case_id": "math-limits-002",
+      "document_id": "calculus-question-bank",
+      "source_label": "Limits, question 2, page 1",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-limits-002",
+        "question_number": "2",
+        "question_pages": [
+          1
+        ],
+        "answer_pages": [
+          1
+        ],
+        "feedback_pages": [
+          1
+        ],
+        "contains_essential_image": false,
+        "question_type_hint": "true_false",
+        "page_regions": [
+          {
+            "page": 1,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.28,
+              "width": 0.84,
+              "height": 0.1
+            }
+          },
+          {
+            "page": 1,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.37,
+              "width": 0.84,
+              "height": 0.08
+            }
+          },
+          {
+            "page": 1,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.37,
+              "width": 0.84,
+              "height": 0.08
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-limits-002",
+        "segment_id": "segment-math-limits-002",
+        "type": "true_false",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "True or False. If \\(f(x)=\\frac{x^2-4}{x-2}\\) and \\(g(x)=x+2\\), then the functions \\(f\\) and \\(g\\) are equal.",
+        "choices": [
+          {
+            "id": "choice-true",
+            "content": "True"
+          },
+          {
+            "id": "choice-false",
+            "content": "False"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-false"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "Even if the two expressions simplify to the same rule where both are defined, their domains differ: \\(f\\) is not defined at \\(x=2\\).",
+          "origin": "explicit_in_document"
+        },
+        "images": [],
+        "source_pages": [
+          1
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Normalisation d’une question vrai/faux avec une fraction."
+    },
+    {
+      "case_id": "math-limits-004",
+      "document_id": "calculus-question-bank",
+      "source_label": "Limits, question 4, pages 1–2",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-limits-004",
+        "question_number": "4",
+        "question_pages": [
+          1,
+          2
+        ],
+        "answer_pages": [
+          2
+        ],
+        "feedback_pages": [
+          2
+        ],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 1,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.85,
+              "width": 0.84,
+              "height": 0.12
+            }
+          },
+          {
+            "page": 2,
+            "role": "choices",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.03,
+              "width": 0.84,
+              "height": 0.14
+            }
+          },
+          {
+            "page": 2,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.17,
+              "width": 0.84,
+              "height": 0.05
+            }
+          },
+          {
+            "page": 2,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.21,
+              "width": 0.84,
+              "height": 0.18
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-limits-004",
+        "segment_id": "segment-math-limits-004",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Given two infinite decimals \\(a=.3939393939\\ldots\\) and \\(b=.67766777666\\ldots\\), their sum \\(a+b\\):",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Is not defined because the sum of a rational and irrational number is not defined"
+          },
+          {
+            "id": "choice-b",
+            "content": "Is not a number because not all infinite decimals are real numbers"
+          },
+          {
+            "id": "choice-c",
+            "content": "Can be defined precisely by using successively better approximations"
+          },
+          {
+            "id": "choice-d",
+            "content": "Is not a real number because the pattern may not be predictable indefinitely"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-c"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "Every infinite decimal represents a real number, apart from the familiar non-uniqueness involving repeating 9s and repeating 0s. The sum can therefore be defined precisely by successively better approximations.",
+          "origin": "explicit_in_document"
+        },
+        "images": [],
+        "source_pages": [
+          1,
+          2
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Question coupée par un saut de page : énoncé page 1, choix et feedback page 2."
+    },
+    {
+      "case_id": "math-limits-009",
+      "document_id": "calculus-question-bank",
+      "source_label": "Limits, question 9, page 3",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-limits-009",
+        "question_number": "9",
+        "question_pages": [
+          3
+        ],
+        "answer_pages": [
+          3
+        ],
+        "feedback_pages": [
+          3
+        ],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 3,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.31,
+              "width": 0.84,
+              "height": 0.4
+            }
+          },
+          {
+            "page": 3,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.7,
+              "width": 0.84,
+              "height": 0.06
+            }
+          },
+          {
+            "page": 3,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.7,
+              "width": 0.84,
+              "height": 0.06
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-limits-009",
+        "segment_id": "segment-math-limits-009",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Consider the function\n\n\\[\nf(x)=\\begin{cases}\nx^2,&x\\text{ is rational and }x\\ne0,\\\\\n-x^2,&x\\text{ is irrational},\\\\\n\\text{undefined},&x=0.\n\\end{cases}\n\\]\n\nThen:",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "There is no \\(a\\) for which \\(\\lim_{x\\to a}f(x)\\) exists"
+          },
+          {
+            "id": "choice-b",
+            "content": "There may be some \\(a\\) for which the limit exists, but it is impossible to say without more information"
+          },
+          {
+            "id": "choice-c",
+            "content": "\\(\\lim_{x\\to a}f(x)\\) exists only when \\(a=0\\)"
+          },
+          {
+            "id": "choice-d",
+            "content": "\\(\\lim_{x\\to a}f(x)\\) exists for infinitely many \\(a\\)"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-c"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "The answer given in the document is (c); students are encouraged to draw and discuss the graph.",
+          "origin": "explicit_in_document"
+        },
+        "images": [],
+        "source_pages": [
+          3
+        ],
+        "confidence": 0.96,
+        "warnings": [
+          "La fonction par morceaux doit être vérifiée visuellement après transcription."
+        ],
+        "status": "draft"
+      },
+      "rationale": "Fonction par morceaux dense, mélangeant texte et mathématiques."
+    },
+    {
+      "case_id": "math-limits-015",
+      "document_id": "calculus-question-bank",
+      "source_label": "Limits, question 15, page 5",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-limits-015",
+        "question_number": "15",
+        "question_pages": [
+          5
+        ],
+        "answer_pages": [
+          5
+        ],
+        "feedback_pages": [
+          5
+        ],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 5,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.14,
+              "width": 0.84,
+              "height": 0.49
+            }
+          },
+          {
+            "page": 5,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.43,
+              "y": 0.16,
+              "width": 0.37,
+              "height": 0.24
+            }
+          },
+          {
+            "page": 5,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.62,
+              "width": 0.84,
+              "height": 0.08
+            }
+          },
+          {
+            "page": 5,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.69,
+              "width": 0.84,
+              "height": 0.22
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-limits-015",
+        "segment_id": "segment-math-limits-015",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Suppose two linear functions \\(f\\) and \\(g\\) are shown below.\n\n![Graph of two linear functions](asset:math-limits-015-graph)\n\nThen \\(\\displaystyle \\lim_{x\\to a}\\frac{f(x)}{g(x)}\\) is:",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(2\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "Does not exist"
+          },
+          {
+            "id": "choice-c",
+            "content": "Not enough information"
+          },
+          {
+            "id": "choice-d",
+            "content": "\\(3\\)"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-a"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "By similar triangles, \\(f(x)/6=(x-a)/(0-a)=g(x)/3\\), so \\(f(x)/g(x)=6/3=2\\). Equivalently, the limit is the ratio of the slopes of \\(f\\) and \\(g\\).",
+          "origin": "explicit_in_document"
+        },
+        "images": [
+          {
+            "id": "asset-math-limits-015-graph",
+            "role": "essential",
+            "source_page": 5,
+            "bbox": {
+              "x": 0.43,
+              "y": 0.16,
+              "width": 0.37,
+              "height": 0.24
+            },
+            "alt_text": "Two lines f and g through the point with horizontal coordinate a, with vertical intercept labels 6 and 3",
+            "insertion_token": "asset:math-limits-015-graph"
+          }
+        ],
+        "source_pages": [
+          5
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Figure géométrique indispensable et feedback comprenant deux méthodes."
+    },
+    {
+      "case_id": "math-tangents-001",
+      "document_id": "calculus-question-bank",
+      "source_label": "Tangents, velocities, and other rates of change, question 1, page 10",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-tangents-001",
+        "question_number": "1",
+        "question_pages": [
+          10
+        ],
+        "answer_pages": [
+          10
+        ],
+        "feedback_pages": [
+          10
+        ],
+        "contains_essential_image": false,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 10,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.08,
+              "width": 0.84,
+              "height": 0.3
+            }
+          },
+          {
+            "page": 10,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.37,
+              "width": 0.84,
+              "height": 0.06
+            }
+          },
+          {
+            "page": 10,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.42,
+              "width": 0.84,
+              "height": 0.25
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-tangents-001",
+        "segment_id": "segment-math-tangents-001",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "At \\((0,0)\\), the graph of \\(f(x)=|x|\\):",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "Has a tangent line at \\(y=0\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "Has infinitely many tangent lines"
+          },
+          {
+            "id": "choice-c",
+            "content": "Has no tangent line"
+          },
+          {
+            "id": "choice-d",
+            "content": "Has two tangent lines, \\(y=-x\\) and \\(y=x\\)"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-c"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "The limit \\(\\lim_{x\\to0}\\frac{f(x)-0}{x-0}\\) is \\(-1\\) from the left and \\(1\\) from the right, so no tangent line exists at \\((0,0)\\).",
+          "origin": "explicit_in_document"
+        },
+        "images": [],
+        "source_pages": [
+          10
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "QCM purement mathématique, sans illustration à extraire."
+    },
+    {
+      "case_id": "math-rules-004",
+      "document_id": "calculus-question-bank",
+      "source_label": "Derivatives using differentiation rules, question 4, pages 15–16",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-rules-004",
+        "question_number": "4",
+        "question_pages": [
+          15,
+          16
+        ],
+        "answer_pages": [
+          16
+        ],
+        "feedback_pages": [
+          16
+        ],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 15,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.59,
+              "width": 0.84,
+              "height": 0.38
+            }
+          },
+          {
+            "page": 15,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.34,
+              "y": 0.67,
+              "width": 0.34,
+              "height": 0.16
+            }
+          },
+          {
+            "page": 16,
+            "role": "choices",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.03,
+              "width": 0.84,
+              "height": 0.08
+            }
+          },
+          {
+            "page": 16,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.11,
+              "width": 0.84,
+              "height": 0.05
+            }
+          },
+          {
+            "page": 16,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.15,
+              "width": 0.84,
+              "height": 0.15
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-rules-004",
+        "segment_id": "segment-math-rules-004",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Suppose you cut a slice from a circular pizza of radius \\(r\\), as shown.\n\n![Circular pizza slice](asset:math-rules-004-pizza)\n\nAs the angle \\(\\theta\\) changes, the area is \\(A(\\theta)=\\frac12r^2\\theta\\). Then \\(A'(\\theta)\\) is:",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(r\\theta\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\(\\frac12r^2\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "Not possible to determine from the given information"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-b"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "The independent variable is \\(\\theta\\), while \\(r\\) is constant. Therefore \\(A'(\\theta)=\\frac12r^2\\).",
+          "origin": "explicit_in_document"
+        },
+        "images": [
+          {
+            "id": "asset-math-rules-004-pizza",
+            "role": "essential",
+            "source_page": 15,
+            "bbox": {
+              "x": 0.34,
+              "y": 0.67,
+              "width": 0.34,
+              "height": 0.16
+            },
+            "alt_text": "Circular pizza with a sector of angle theta",
+            "insertion_token": "asset:math-rules-004-pizza"
+          }
+        ],
+        "source_pages": [
+          15,
+          16
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Question et figure sur une page, dernière proposition et feedback sur la suivante."
+    },
+    {
+      "case_id": "math-rules-008",
+      "document_id": "calculus-question-bank",
+      "source_label": "Derivatives using differentiation rules, question 8, pages 16–17",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-rules-008",
+        "question_number": "8",
+        "question_pages": [
+          16,
+          17
+        ],
+        "answer_pages": [
+          17
+        ],
+        "feedback_pages": [
+          17
+        ],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 16,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.77,
+              "width": 0.84,
+              "height": 0.2
+            }
+          },
+          {
+            "page": 17,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.24,
+              "y": 0.03,
+              "width": 0.5,
+              "height": 0.2
+            }
+          },
+          {
+            "page": 17,
+            "role": "choices",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.24,
+              "width": 0.84,
+              "height": 0.28
+            }
+          },
+          {
+            "page": 17,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.52,
+              "width": 0.84,
+              "height": 0.06
+            }
+          },
+          {
+            "page": 17,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.58,
+              "width": 0.84,
+              "height": 0.14
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-rules-008",
+        "segment_id": "segment-math-rules-008",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "Over a time interval \\(\\Delta t\\), the length \\(L\\) and width \\(W\\) of a rectangle grow to \\(L+\\Delta L\\) and \\(W+\\Delta W\\).\n\n![Growing rectangle](asset:math-rules-008-rectangle)\n\nThe average rate of change in area over \\(\\Delta t\\) is:",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "\\(\\frac{LW}{\\Delta t}+\\frac{(\\Delta L)(\\Delta W)}{\\Delta t}\\)"
+          },
+          {
+            "id": "choice-b",
+            "content": "\\(\\frac{LW}{\\Delta t}+L\\frac{\\Delta W}{\\Delta t}+W\\frac{\\Delta L}{\\Delta t}+\\frac{(\\Delta L)(\\Delta W)}{\\Delta t}\\)"
+          },
+          {
+            "id": "choice-c",
+            "content": "\\(L\\frac{\\Delta W}{\\Delta t}+W\\frac{\\Delta L}{\\Delta t}\\)"
+          },
+          {
+            "id": "choice-d",
+            "content": "\\(L\\frac{\\Delta W}{\\Delta t}+W\\frac{\\Delta L}{\\Delta t}+\\frac{(\\Delta W)(\\Delta L)}{\\Delta t}\\)"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-d"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "Since \\(\\Delta A=L\\Delta W+W\\Delta L+(\\Delta L)(\\Delta W)\\), division by \\(\\Delta t\\) gives the expression in choice (d).",
+          "origin": "explicit_in_document"
+        },
+        "images": [
+          {
+            "id": "asset-math-rules-008-rectangle",
+            "role": "essential",
+            "source_page": 17,
+            "bbox": {
+              "x": 0.24,
+              "y": 0.03,
+              "width": 0.5,
+              "height": 0.2
+            },
+            "alt_text": "Rectangle of dimensions L and W extended by delta L and delta W",
+            "insertion_token": "asset:math-rules-008-rectangle"
+          }
+        ],
+        "source_pages": [
+          16,
+          17
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Énoncé et figure séparés par un saut de page, avec quatre expressions longues."
+    },
+    {
+      "case_id": "math-related-rates-002",
+      "document_id": "calculus-question-bank",
+      "source_label": "Related Rates, question 2, page 27",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-related-rates-002",
+        "question_number": "2",
+        "question_pages": [
+          27
+        ],
+        "answer_pages": [
+          27
+        ],
+        "feedback_pages": [
+          27
+        ],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 27,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.43,
+              "width": 0.84,
+              "height": 0.45
+            }
+          },
+          {
+            "page": 27,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.17,
+              "y": 0.55,
+              "width": 0.67,
+              "height": 0.2
+            }
+          },
+          {
+            "page": 27,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.86,
+              "width": 0.84,
+              "height": 0.05
+            }
+          },
+          {
+            "page": 27,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.9,
+              "width": 0.84,
+              "height": 0.08
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-related-rates-002",
+        "segment_id": "segment-math-related-rates-002",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "A boat is drawn close to a dock by pulling in a rope, as shown.\n\n![Boat, rope and dock](asset:math-related-rates-002-boat)\n\nHow is the rate at which the rope is pulled in related to the rate at which the boat approaches the dock?",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "One is a constant multiple of the other"
+          },
+          {
+            "id": "choice-b",
+            "content": "They are equal"
+          },
+          {
+            "id": "choice-c",
+            "content": "It depends on how close the boat is to the dock"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-c"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "Let \\(z(t)\\) be the rope length and \\(x(t)\\) the horizontal distance to the dock. From the Pythagorean theorem, differentiation gives \\(z\\,dz/dt=x\\,dx/dt\\), so the relationship depends on position.",
+          "origin": "explicit_in_document"
+        },
+        "images": [
+          {
+            "id": "asset-math-related-rates-002-boat",
+            "role": "essential",
+            "source_page": 27,
+            "bbox": {
+              "x": 0.17,
+              "y": 0.55,
+              "width": 0.67,
+              "height": 0.2
+            },
+            "alt_text": "Boat connected by a rope to an elevated dock",
+            "insertion_token": "asset:math-related-rates-002-boat"
+          }
+        ],
+        "source_pages": [
+          27
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Schéma physique intégré à un document mathématique."
+    },
+    {
+      "case_id": "math-mvt-007",
+      "document_id": "calculus-question-bank",
+      "source_label": "Mean Value Theorem, question 7, pages 36–37",
+      "mapping_fragment": {
+        "temporary_id": "segment-math-mvt-007",
+        "question_number": "7",
+        "question_pages": [
+          36,
+          37
+        ],
+        "answer_pages": [
+          37
+        ],
+        "feedback_pages": [
+          37
+        ],
+        "contains_essential_image": true,
+        "question_type_hint": "single_choice",
+        "page_regions": [
+          {
+            "page": 36,
+            "role": "question",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.72,
+              "width": 0.84,
+              "height": 0.25
+            }
+          },
+          {
+            "page": 36,
+            "role": "essential_image",
+            "bbox": {
+              "x": 0.31,
+              "y": 0.82,
+              "width": 0.38,
+              "height": 0.14
+            }
+          },
+          {
+            "page": 37,
+            "role": "choices",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.03,
+              "width": 0.84,
+              "height": 0.18
+            }
+          },
+          {
+            "page": 37,
+            "role": "answer",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.21,
+              "width": 0.84,
+              "height": 0.05
+            }
+          },
+          {
+            "page": 37,
+            "role": "feedback",
+            "bbox": {
+              "x": 0.08,
+              "y": 0.25,
+              "width": 0.84,
+              "height": 0.18
+            }
+          }
+        ],
+        "confidence": 0.98,
+        "warnings": []
+      },
+      "expected_question": {
+        "id": "q-math-mvt-007",
+        "segment_id": "segment-math-mvt-007",
+        "type": "single_choice",
+        "title": {
+          "content": "",
+          "origin": "not_available"
+        },
+        "content_format": "markdown-latex",
+        "statement": "The region between two concentric circles of radii \\(r_1\\) and \\(r_2\\), with \\(r_2>r_1\\), is an annulus of area \\(\\pi(r_2^2-r_1^2)\\).\n\n![Annulus](asset:math-mvt-007-annulus)\n\nWhich statement is correct?",
+        "choices": [
+          {
+            "id": "choice-a",
+            "content": "The area can be approximated by rectangles, but no single rectangle necessarily has exactly the same area"
+          },
+          {
+            "id": "choice-b",
+            "content": "The area cannot be approximated by rectangles because the circles are concentric"
+          },
+          {
+            "id": "choice-c",
+            "content": "There is a radius \\(r\\) between \\(r_1\\) and \\(r_2\\) such that a rectangle of base \\(r_2-r_1\\) and height \\(2\\pi r\\) has exactly the area of the annulus"
+          }
+        ],
+        "correct_choice_ids": [
+          "choice-c"
+        ],
+        "correct_answer_origin": "explicit_in_document",
+        "feedback": {
+          "content": "By the mean value theorem, \\((A_2-A_1)/(r_2-r_1)=2\\pi r\\) for some \\(r\\in(r_1,r_2)\\). Hence \\(A_2-A_1=2\\pi r(r_2-r_1)\\), exactly the area of the stated rectangle.",
+          "origin": "explicit_in_document"
+        },
+        "images": [
+          {
+            "id": "asset-math-mvt-007-annulus",
+            "role": "essential",
+            "source_page": 36,
+            "bbox": {
+              "x": 0.31,
+              "y": 0.82,
+              "width": 0.38,
+              "height": 0.14
+            },
+            "alt_text": "Annulus between concentric circles of radii r1 and r2",
+            "insertion_token": "asset:math-mvt-007-annulus"
+          }
+        ],
+        "source_pages": [
+          36,
+          37
+        ],
+        "confidence": 0.98,
+        "warnings": [],
+        "status": "draft"
+      },
+      "rationale": "Question avec figure en bas de page et propositions sur la page suivante."
+    }
+  ]
+}

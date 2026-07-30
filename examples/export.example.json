@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "content_format": "markdown-latex",
+  "document": {
+    "title": "Cours de Physique 2",
+    "language": "fr",
+    "source_filename": "QuestionsPhysique2Elec.pdf",
+    "source_sha256": null
+  },
+  "questions": [
+    {
+      "id": "q-phys-002",
+      "type": "single_choice",
+      "title": "Fonctionnement d’une ampoule",
+      "title_origin": "provided_by_user",
+      "statement": "Quand l’ampoule éclaire :\n\n![Schéma du circuit](assets/q-phys-002-circuit.png)",
+      "choices": [
+        {
+          "id": "choice-a",
+          "content": "Elle prend du courant"
+        },
+        {
+          "id": "choice-b",
+          "content": "Elle donne du courant"
+        },
+        {
+          "id": "choice-c",
+          "content": "Aucune des réponses précédentes"
+        }
+      ],
+      "correct_choice_ids": [
+        "choice-a"
+      ],
+      "correct_answer_origin": "provided_by_user",
+      "feedback": "Une ampoule reçoit de l’énergie électrique du circuit.",
+      "feedback_origin": "provided_by_user",
+      "assets": [
+        {
+          "id": "asset-phys-002-circuit",
+          "role": "essential",
+          "path": "assets/q-phys-002-circuit.png",
+          "mime_type": "image/png",
+          "alt_text": "Circuit fermé comportant une pile et une ampoule",
+          "source": {
+            "page": 2,
+            "bbox": {
+              "x": 0.55,
+              "y": 0.3,
+              "width": 0.32,
+              "height": 0.48
+            }
+          }
+        }
+      ],
+      "source_pages": [
+        2
+      ],
+      "validation_status": "validated"
+    }
+  ]
+}

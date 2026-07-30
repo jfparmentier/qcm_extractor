@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "batch_id": "batch-example-001",
+  "source_document": {
+    "title": "Cours de Physique 2",
+    "language": "fr"
+  },
+  "questions": [
+    {
+      "id": "q-phys-002",
+      "segment_id": "segment-phys-002",
+      "type": "single_choice",
+      "title": {
+        "content": "",
+        "origin": "not_available"
+      },
+      "content_format": "markdown-latex",
+      "statement": "Quand l’ampoule éclaire :\n\n![Schéma du circuit](asset:phys-002-circuit)",
+      "choices": [
+        {
+          "id": "choice-a",
+          "content": "Elle prend du courant"
+        },
+        {
+          "id": "choice-b",
+          "content": "Elle donne du courant"
+        },
+        {
+          "id": "choice-c",
+          "content": "Aucune des réponses précédentes"
+        }
+      ],
+      "correct_choice_ids": [],
+      "correct_answer_origin": "not_available",
+      "feedback": {
+        "content": "",
+        "origin": "not_available"
+      },
+      "images": [
+        {
+          "id": "asset-phys-002-circuit",
+          "role": "essential",
+          "source_page": 2,
+          "bbox": {
+            "x": 0.55,
+            "y": 0.3,
+            "width": 0.32,
+            "height": 0.48
+          },
+          "alt_text": "Circuit fermé comportant une pile et une ampoule",
+          "insertion_token": "asset:phys-002-circuit"
+        }
+      ],
+      "source_pages": [
+        2
+      ],
+      "confidence": 0.98,
+      "warnings": [
+        "La réponse correcte n’est pas explicitement indiquée dans le document."
+      ],
+      "status": "draft"
+    }
+  ]
+}
