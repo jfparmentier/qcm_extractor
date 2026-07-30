@@ -1,17 +1,17 @@
 {
   "artifact": "phase1_qcm_extractor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "phase": 1,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "515a3706161fce55026f82df2c04afd6657a95417f60cada91009944b57f39a0",
-      "bytes": 698
+      "sha256": "564fd416949bc9f5727f3c95d14c9c03362cb00dcd11a7bfb840c26781894a2e",
+      "bytes": 899
     },
     {
       "path": "README.md",
-      "sha256": "ee51cc93928fb7eec5ce989ba86fd3ad3c394181005a028fd235cc1a993fbf65",
-      "bytes": 3145
+      "sha256": "cfcf5369ce8534b8ad55e398e1d84796a1e58953b0636bcac2da922e59b1a351",
+      "bytes": 3694
     },
     {
       "path": "examples/export.example.json",
@@ -40,8 +40,103 @@
     },
     {
       "path": "frontend/README.md",
-      "sha256": "fba92e473e62904e3df898dbe283a8a306091374ff910732e16adbf5914a94fb",
-      "bytes": 3226
+      "sha256": "b50a6316517d947cc7d017d74fe62201e76b53fb926fba2709df88a583bed6a4",
+      "bytes": 3826
+    },
+    {
+      "path": "frontend/dist/DEPLOYMENT.md",
+      "sha256": "a1ae188b78c0663549e4e0f492d72a41fed4aed5e9f402a06e104dc0376b4072",
+      "bytes": 503
+    },
+    {
+      "path": "frontend/dist/assets/App.js",
+      "sha256": "e2b7857dfa6c1e86056d4fe9970db1ab16a486102296903e225ba08a6f6054e5",
+      "bytes": 4119
+    },
+    {
+      "path": "frontend/dist/assets/app.css",
+      "sha256": "48d09fbfe88f3f0cbb515f7ddc139c21bffe8da74e7f5290f5e6da4bc830ff52",
+      "bytes": 11438
+    },
+    {
+      "path": "frontend/dist/assets/components/ErrorPanel.js",
+      "sha256": "50169b412a1c232ffa079e4b3ed8eae88ba9cea8db60abb6306983c0a993eb79",
+      "bytes": 798
+    },
+    {
+      "path": "frontend/dist/assets/components/FileDropZone.js",
+      "sha256": "810ffa3bb958d7b30249bf68e6a5871e2cf605a3154b50d53d4acecf611639d2",
+      "bytes": 3267
+    },
+    {
+      "path": "frontend/dist/assets/components/Icons.js",
+      "sha256": "57fc52ba7e67b70f26f8112dbc672d60706f8e284cf4d1e4ec1411cfe443ea87",
+      "bytes": 3187
+    },
+    {
+      "path": "frontend/dist/assets/components/LoadingPanel.js",
+      "sha256": "e68dcbdc010ab3eba4ad71533fffb7d5be3895c1aec1eea384f23d007ae290a6",
+      "bytes": 463
+    },
+    {
+      "path": "frontend/dist/assets/components/PdfPageCanvas.js",
+      "sha256": "2749abed8b93723b8210961d907b1dc2173c78d57fee6c81f68ab8a47be1076d",
+      "bytes": 2813
+    },
+    {
+      "path": "frontend/dist/assets/components/PdfThumbnail.js",
+      "sha256": "3a5b22179813360bcab39620ab84ba8ce4242f48e4b58244d37d797e9500d505",
+      "bytes": 1593
+    },
+    {
+      "path": "frontend/dist/assets/components/PdfToolbar.js",
+      "sha256": "3014dbd46d44f25eb9082510c6e34572946532ac721f55654cb0696b76b55f45",
+      "bytes": 2925
+    },
+    {
+      "path": "frontend/dist/assets/components/PdfViewer.js",
+      "sha256": "bcd761edc88d46f08227ced940f030f655334f1188fadc31e25e16343066cd63",
+      "bytes": 2945
+    },
+    {
+      "path": "frontend/dist/assets/domain/projectState.js",
+      "sha256": "b17db2e86b3108b02d5b0e256b7bc954da647a57ca58331fa1e64139c4d47446",
+      "bytes": 1421
+    },
+    {
+      "path": "frontend/dist/assets/hooks/useKeyboardNavigation.js",
+      "sha256": "357613e7a7f5c135a6cf9697a632be1cbc5e3bfb45901a8f854fddf8ce1df0f7",
+      "bytes": 1866
+    },
+    {
+      "path": "frontend/dist/assets/main.js",
+      "sha256": "e175c16db2fd088021321c30c8fec07f46e087d9f99973392e54f694f96724a2",
+      "bytes": 382
+    },
+    {
+      "path": "frontend/dist/assets/pdf/formatFileSize.js",
+      "sha256": "b76f67b1ab1c746d98152682f23e9da78123f9fd04d8c999d68df1791fdb6553",
+      "bytes": 410
+    },
+    {
+      "path": "frontend/dist/assets/pdf/loadPdf.js",
+      "sha256": "21e94f88a05e26a4845fd9ae3e3a638af7fc0684ade70153ad6473dec22fe424",
+      "bytes": 2875
+    },
+    {
+      "path": "frontend/dist/assets/pdf/pdfWorker.js",
+      "sha256": "6b520ceeaf0bafedf67e70e9f033455813f044a8c6f09b0a8da46dbdfa85fac0",
+      "bytes": 159
+    },
+    {
+      "path": "frontend/dist/build-info.json",
+      "sha256": "0f71ff2e577fcbe6e977298feedef5d7eab6fff82965cd349d0ac0b3776b6314",
+      "bytes": 317
+    },
+    {
+      "path": "frontend/dist/index.html",
+      "sha256": "ee1cac0a3164a2b88b028267cbd17f4b659a99ccd7d12038924ca74dac80c607",
+      "bytes": 898
     },
     {
       "path": "frontend/index.html",
@@ -50,8 +145,13 @@
     },
     {
       "path": "frontend/package.json",
-      "sha256": "c9b9e6e805de31688c6b3ce9d54759d1f6d542a7c66506c5a80454cdb727a46e",
-      "bytes": 541
+      "sha256": "8d81e9a03f81cc5a11d7ec4773fa82be01861dc2f83d7f0c17b87265daeb8d70",
+      "bytes": 603
+    },
+    {
+      "path": "frontend/scripts/build-portable-dist.mjs",
+      "sha256": "e90c82697e0984d111afdf801c8ff4fb824a028ecdae6535548dde05d5d3ec2c",
+      "bytes": 6008
     },
     {
       "path": "frontend/src/App.tsx",
@@ -185,8 +285,8 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "42678e67e7fa2ee75f0ebc3590a49db208125b6720825cca6c61b72e9e8ee351",
-      "bytes": 1304
+      "sha256": "89041e1be3f705dbb482b931840675084a344e275437f3a366956b6cbc9d4c64",
+      "bytes": 1296
     },
     {
       "path": "tests/validate.py",
@@ -195,8 +295,8 @@
     },
     {
       "path": "tests/validate_phase1.py",
-      "sha256": "e2646f8960f92f7aef8dced3faffe42abe7933cb5512ca21452c6835262175fe",
-      "bytes": 4554
+      "sha256": "592d2aac4b013ab54149c73e77a766543b5d50b35fe707adb840051299c93074",
+      "bytes": 5530
     }
   ]
 }

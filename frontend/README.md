@@ -34,14 +34,25 @@ npm run dev
 L’application est alors disponible à l’adresse indiquée par Vite, normalement
 `http://127.0.0.1:5173`.
 
-## Vérifications
+## Vérifications et constructions
 
 ```bash
 npm run typecheck
 npm run build
 ```
 
-La construction produit le répertoire `frontend/dist/`.
+La construction Vite standard produit le répertoire `frontend/dist/` et incorpore les
+dépendances installées par npm.
+
+L’archive fournit également un dossier `dist/` déjà déployable. Il peut être régénéré avec :
+
+```bash
+npm run build:portable
+```
+
+Cette variante utilise des modules ES natifs et charge React ainsi que PDF.js depuis des CDN
+versionnés. Le contenu du PDF reste néanmoins local au navigateur et n’est jamais transmis à
+ces CDN.
 
 ## Raccourcis clavier
 
@@ -78,8 +89,10 @@ Un rechargement ou la fermeture de l’onglet supprime donc le projet courant.
 
 ### Worker PDF.js
 
-Le worker est importé par Vite en tant que ressource avec le suffixe `?url`. Il est ainsi
-inclus dans le paquet de production sans dépendre d’un CDN externe.
+Dans la construction Vite standard, le worker est importé comme ressource avec le suffixe
+`?url` et incorporé au paquet. Dans le dossier `dist/` préconstruit fourni dans l’archive,
+PDF.js et son worker sont chargés depuis jsDelivr afin de rendre le déploiement immédiatement
+possible sans installation préalable des dépendances.
 
 ### Miniatures
 

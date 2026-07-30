@@ -1,8 +1,12 @@
 # Journal des modifications
 
-## 1.1.0 — Phase 1
+## 1.1.1 — Phase 1 avec distribution déployable
 
 ### Ajouté
+
+- dossier `frontend/dist/` directement déployable ;
+- script reproductible `npm run build:portable` ;
+- documentation des dépendances CDN de la construction portable ;
 
 - application frontend React et TypeScript sous `frontend/` ;
 - chargement local et validation élémentaire des PDF ;

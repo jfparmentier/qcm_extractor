@@ -11,7 +11,7 @@ stockage de fichiers.
 
 ```text
 phase1_qcm_extractor/
-├── frontend/                     application React/TypeScript
+├── frontend/                     application React/TypeScript et dossier dist
 ├── schemas/                      contrats JSON du pipeline à deux passes
 ├── examples/                     exemples conformes aux contrats
 ├── golden/                       corpus manuel de 20 cas
@@ -32,10 +32,16 @@ Le répertoire `frontend/` fournit :
 - une navigation par boutons, numéro de page, miniatures et clavier ;
 - un zoom compris entre 50 % et 250 % ;
 - une machine d’état explicite et des écrans d’erreur ;
-- une interface adaptative sans dépendance à un service externe.
+- une interface adaptative ;
+- un dossier `frontend/dist/` directement déployable sur un serveur HTTP(S).
 
 Le fichier PDF demeure dans la mémoire du navigateur. L’application n’emploie ni
 `localStorage`, ni IndexedDB, ni base de données, ni téléversement pendant cette phase.
+
+Le dossier `frontend/dist/` fourni est une construction portable reposant sur des modules ES.
+Il charge React depuis `esm.sh` et PDF.js depuis `cdn.jsdelivr.net`, mais ne transmet jamais le
+PDF sélectionné. Pour un paquet totalement autonome, exécutez `npm install` puis
+`npm run build` sur une machine disposant d’un accès au registre npm.
 
 ## Démarrage du frontend
 
@@ -52,7 +58,9 @@ npm run typecheck
 npm run build
 ```
 
-Des informations plus détaillées sont disponibles dans `frontend/README.md`.
+Déploiement immédiat : copiez le contenu de `frontend/dist/` dans le répertoire public de
+votre serveur web. Des informations plus détaillées sont disponibles dans
+`frontend/README.md` et `frontend/dist/DEPLOYMENT.md`.
 
 ## Validation de l’archive
 

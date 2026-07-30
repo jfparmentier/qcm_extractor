@@ -28,6 +28,13 @@ REQUIRED_FILES = {
     "frontend/src/components/PdfToolbar.tsx",
     "frontend/src/styles/app.css",
     "frontend/README.md",
+    "frontend/scripts/build-portable-dist.mjs",
+    "frontend/dist/index.html",
+    "frontend/dist/assets/main.js",
+    "frontend/dist/assets/app.css",
+    "frontend/dist/assets/pdf/pdfWorker.js",
+    "frontend/dist/DEPLOYMENT.md",
+    "frontend/dist/build-info.json",
 }
 
 FORBIDDEN_SOURCE_PATTERNS = {
@@ -62,6 +69,7 @@ assert package["private"] is True
 assert package["type"] == "module"
 assert package["scripts"]["dev"] == "vite"
 assert "tsc -b" in package["scripts"]["build"]
+assert package["scripts"]["build:portable"] == "node scripts/build-portable-dist.mjs"
 assert set(package["dependencies"]) == {"pdfjs-dist", "react", "react-dom"}
 assert {"typescript", "vite", "@types/react", "@types/react-dom"}.issubset(
     package["devDependencies"]
@@ -98,7 +106,7 @@ assert "useKeyboardNavigation" in source_text, "Navigation clavier absente."
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase1_qcm_extractor"
-assert manifest["version"] == "1.1.0"
+assert manifest["version"] == "1.1.1"
 assert manifest["phase"] == 1
 
 manifest_paths = set()
@@ -115,6 +123,19 @@ for required in REQUIRED_FILES:
     assert required in manifest_paths, f"Fichier requis absent du manifeste : {required}"
 
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être inclus dans l’archive."
-assert not (FRONTEND / "dist").exists(), "Le répertoire dist ne doit pas être inclus dans l’archive source."
+dist_index = (FRONTEND / "dist/index.html").read_text(encoding="utf-8")
+assert 'type="importmap"' in dist_index, "Import map absent de la distribution portable."
+assert 'https://esm.sh/react@19.2.8' in dist_index
+assert 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200' in dist_index
+assert './assets/main.js' in dist_index
+
+dist_worker = (FRONTEND / "dist/assets/pdf/pdfWorker.js").read_text(encoding="utf-8")
+assert 'pdf.worker.min.mjs' in dist_worker
+
+for script in (FRONTEND / "dist/assets").rglob("*.js"):
+    text = script.read_text(encoding="utf-8")
+    assert re.search(r'(?:from\s+|import\s+)["\']\.{1,2}/[^"\']+(?<!\.js)["\']', text) is None, (
+        f"Import relatif sans extension dans {script.relative_to(ROOT)}"
+    )
 
 print("OK phase 1 : structure, sécurité locale et manifeste")

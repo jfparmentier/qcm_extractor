@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
-IGNORED_PARTS = {"node_modules", "dist", "__pycache__", ".git"}
+IGNORED_PARTS = {"node_modules", "__pycache__", ".git"}
 IGNORED_NAMES = {"manifest.json"}
 
 
@@ -32,7 +32,7 @@ def sha256(path: Path) -> str:
 files = sorted(path for path in ROOT.rglob("*") if included(path))
 manifest = {
     "artifact": "phase1_qcm_extractor",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "phase": 1,
     "generated_files": [
         {
