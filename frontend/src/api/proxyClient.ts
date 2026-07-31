@@ -1,18 +1,20 @@
+export interface ProxyResponseMeta {
+  readonly provider_response_id: string | null;
+  readonly provider_request_id: string | null;
+  readonly model: string | null;
+  readonly usage: {
+    readonly input_tokens: number | null;
+    readonly output_tokens: number | null;
+    readonly total_tokens: number | null;
+  };
+}
+
 export interface ProxySuccess<TData> {
   readonly ok: true;
   readonly request_id: string;
   readonly operation: "analyze-map" | "extract-questions";
   readonly data: TData;
-  readonly meta: {
-    readonly provider_response_id: string | null;
-    readonly provider_request_id: string | null;
-    readonly model: string | null;
-    readonly usage: {
-      readonly input_tokens: number | null;
-      readonly output_tokens: number | null;
-      readonly total_tokens: number | null;
-    };
-  };
+  readonly meta: ProxyResponseMeta;
 }
 
 export interface ProxyFailure {
@@ -45,7 +47,7 @@ export interface ExtractionContext {
   readonly segment_page_map?: Readonly<Record<string, readonly number[]>>;
 }
 
-const configuredApiBaseUrl = import.meta.env.VITE_QCM_API_BASE_URL?.trim();
+const configuredApiBaseUrl = import.meta.env?.VITE_QCM_API_BASE_URL?.trim();
 const API_BASE_URL = (
   configuredApiBaseUrl && configuredApiBaseUrl.length > 0
     ? configuredApiBaseUrl
@@ -107,16 +109,31 @@ async function sendPdf<TData>(
     headers.set("X-QCM-Context", encodeBase64Url(context));
   }
 
-  const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-    method: "POST",
-    headers,
-    body: pdfBytes.slice(0),
-    cache: "no-store",
-    credentials: "omit",
-    redirect: "error",
-    referrerPolicy: "no-referrer",
-    signal
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+      method: "POST",
+      headers,
+      body: pdfBytes.slice(0),
+      cache: "no-store",
+      credentials: "omit",
+      redirect: "error",
+      referrerPolicy: "no-referrer",
+      signal
+    });
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+
+    throw new ProxyApiError(
+      "PROXY_UNREACHABLE",
+      "Le proxy PHP est inaccessible. Vérifiez que le site est servi par Apache/PHP et que l’URL de l’API est correcte.",
+      true,
+      0,
+      null
+    );
+  }
 
   return readResponse<TData>(response);
 }

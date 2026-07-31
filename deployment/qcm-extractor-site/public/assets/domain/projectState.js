@@ -1,9 +1,18 @@
+export const INITIAL_MAPPING_STATE = {
+    status: "idle",
+    data: null,
+    meta: null,
+    error: null,
+    startedAt: null,
+    selectedSegmentId: null
+};
 export const INITIAL_PROJECT_STATE = {
     status: "empty",
     pdf: null,
     currentPage: 1,
     zoom: 1,
-    error: null
+    error: null,
+    mapping: INITIAL_MAPPING_STATE
 };
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 2.5;
@@ -24,7 +33,8 @@ export function projectReducer(state, action) {
                 pdf: action.pdf,
                 currentPage: 1,
                 zoom: 1,
-                error: null
+                error: null,
+                mapping: INITIAL_MAPPING_STATE
             };
         case "LOAD_FAILED":
             return {
@@ -46,6 +56,64 @@ export function projectReducer(state, action) {
                 ...state,
                 zoom: clamp(action.zoom, MIN_ZOOM, MAX_ZOOM)
             };
+        case "MAPPING_STARTED":
+            return {
+                ...state,
+                mapping: {
+                    status: "running",
+                    data: null,
+                    meta: null,
+                    error: null,
+                    startedAt: action.startedAt,
+                    selectedSegmentId: null
+                }
+            };
+        case "MAPPING_SUCCEEDED": {
+            const firstSegment = action.documentMap.question_segments[0] ?? null;
+            return {
+                ...state,
+                currentPage: firstSegment?.question_pages[0] ?? state.currentPage,
+                mapping: {
+                    status: "completed",
+                    data: action.documentMap,
+                    meta: action.meta,
+                    error: null,
+                    startedAt: null,
+                    selectedSegmentId: firstSegment?.temporary_id ?? null
+                }
+            };
+        }
+        case "MAPPING_FAILED":
+            return {
+                ...state,
+                mapping: {
+                    status: "failed",
+                    data: null,
+                    meta: null,
+                    error: action.error,
+                    startedAt: null,
+                    selectedSegmentId: null
+                }
+            };
+        case "MAPPING_CANCELLED":
+            return {
+                ...state,
+                mapping: INITIAL_MAPPING_STATE
+            };
+        case "SELECT_SEGMENT": {
+            const segment = state.mapping.data?.question_segments.find((candidate) => candidate.temporary_id === action.segmentId);
+            if (segment === undefined) {
+                return state;
+            }
+            return {
+                ...state,
+                currentPage: segment.question_pages[0] ?? state.currentPage,
+                mapping: {
+                    ...state.mapping,
+                    selectedSegmentId: action.segmentId
+                }
+            };
+        }
         case "RESET":
             return INITIAL_PROJECT_STATE;
     }

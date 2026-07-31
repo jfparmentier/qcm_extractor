@@ -1,81 +1,71 @@
-# Extracteur de QCM — Phases 0 à 2
+# Extracteur de QCM — Phases 0 à 3
 
-Cette archive contient les contrats JSON de la phase 0, le socle React/TypeScript de la
-phase 1 et le proxy PHP sécurisé de la phase 2.
+Cette archive contient les contrats JSON de la phase 0, le visualiseur React/TypeScript de
+la phase 1, le proxy PHP sécurisé de la phase 2 et la première passe de cartographie de la
+phase 3.
 
-Un dossier prêt à téléverser est inclus sous `deployment/qcm-extractor-site`. Les sources React restent séparées et aucun `node_modules` n’est fourni.
+Le dossier directement exploitable sur OVH Hosting Perso ou MAMP se trouve sous
+`deployment/qcm-extractor-site`. Les sources React et PHP sont également fournies. Aucun
+compte, aucune base de données et aucun stockage persistant des PDF ne sont utilisés.
 
 ## Contenu
 
 ```text
-phase2_qcm_extractor/
-├── backend/
-│   ├── public/                  seuls fichiers PHP à exposer au serveur web
-│   ├── src/                     validation, sécurité et client OpenAI
-│   ├── prompts/                 instructions contrôlées par le serveur
-│   ├── schemas/                 schémas stricts destinés au fournisseur
-│   ├── config/                  exemples PHP, Apache, Nginx et environnement
-│   └── tests/                   tests PHP sans appel réseau
-├── frontend/                    source React/TypeScript
-├── deployment/qcm-extractor-site/ dossier prêt pour OVH et MAMP
-├── schemas/                     contrats JSON complets du projet
-├── examples/                    exemples conformes
-├── golden/                      corpus manuel de 20 cas
-├── tests/                       validations globales
+phase3_qcm_extractor/
+├── backend/                         proxy PHP, prompts, schémas et tests
+├── frontend/                        sources React/TypeScript
+├── deployment/qcm-extractor-site/ dossier prêt à téléverser sur OVH ou copier dans MAMP
+├── schemas/                         contrats JSON complets
+├── examples/                        exemples conformes
+├── golden/                          corpus manuel de référence
+├── tests/                           validations globales
 ├── CHANGELOG.md
 └── manifest.json
 ```
 
-## Phase 2 réalisée
+## Phase 3 réalisée
 
-Le proxy fournit deux endpoints spécialisés :
+Après le chargement local du PDF, l’utilisateur peut lancer explicitement la cartographie.
+Le frontend :
 
-```text
-POST /api/analyze-map.php
-POST /api/extract-questions.php
-```
+- transmet le PDF brut à `api/analyze-map.php` ;
+- affiche un état d’analyse avec durée écoulée et annulation ;
+- valide la réponse avec AJV contre le schéma JSON 2020-12 ;
+- applique des contrôles déterministes sur les pages, identifiants et coordonnées ;
+- normalise les boîtes dépassant légèrement la page et signale les anomalies ;
+- détecte les segments fortement superposés ;
+- présente la liste des questions détectées, leurs pages, type indicatif et confiance ;
+- superpose les régions question, choix, réponse, feedback et illustration sur le PDF ;
+- permet de naviguer vers un segment depuis la liste ou depuis la page ;
+- affiche les métadonnées du modèle et l’usage de jetons ;
+- gère les erreurs du proxy, les réponses non conformes, l’annulation et la relance.
 
-Les requêtes utilisent un corps `application/pdf` brut. PHP lit `php://input` et ne crée
-aucun fichier temporaire applicatif. Le fournisseur reçoit le PDF directement dans l’appel
-Responses ; le proxy n’utilise pas l’endpoint persistant `/v1/files`.
+La cartographie reste uniquement en mémoire. La phase 4 créera localement les sous-PDF à
+partir de cette cartographie.
 
-Les protections mises en œuvre comprennent :
-
-- clé API exclusivement dans l’environnement PHP ;
-- modèles, prompts, schémas et limites choisis côté serveur ;
-- sortie structurée par JSON Schema strict ;
-- `store: false` ;
-- contrôle de la signature PDF, du type et de la taille ;
-- politique d’origine et CORS exacts ;
-- limitation de débit par APCu ou petits compteurs fichiers, sans stockage de documents ;
-- vérification TLS, délais et plafond de réponse ;
-- erreurs normalisées sans exposition de la réponse brute du fournisseur ;
-- journaux minimaux ne contenant ni PDF, ni prompt, ni clé, ni résultat LLM.
-
-Le frontend contient désormais `src/api/proxyClient.ts`, prêt pour l’intégration de la
-cartographie pendant la phase 3. Il n’est pas encore appelé par l’interface de phase 1.
-
-## Démarrage du frontend
+## Démarrage des sources
 
 ```bash
 cd frontend
 npm install
+npm run typecheck
 npm run dev
 ```
 
-## Démarrage local du proxy
+Pour utiliser un proxy PHP lancé séparément :
 
 ```bash
-cd backend
-export OPENAI_API_KEY='sk-proj-...'
-export QCM_ALLOWED_ORIGINS='http://localhost:5173'
-export QCM_RATE_LIMIT_BACKEND='disabled'
-php -S 127.0.0.1:8081 -t public
+VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
 ```
 
-La désactivation de la limitation de débit est réservée au développement local. Le backend `file` fonctionne sans extension supplémentaire sur MAMP et les hébergements mutualisés ; APCu reste disponible lorsqu’il est installé.
+## Déploiement direct
 
-La configuration complète et le protocole HTTP sont décrits dans `backend/README.md`. Le déploiement simplifié est décrit dans `DEPLOIEMENT_OVH_MAMP.md`.
+1. Ouvrir `deployment/qcm-extractor-site/private/config/runtime.php`.
+2. Renseigner `OPENAI_API_KEY`.
+3. Copier le dossier complet sur le serveur.
+4. Pointer la racine web vers `qcm-extractor-site/public`, ou ouvrir ce dossier sous MAMP.
+
+Les instructions détaillées figurent dans `DEPLOIEMENT_OVH_MAMP.md`.
 
 ## Vérifications
 
@@ -85,13 +75,8 @@ python tests/validate_phase1.py
 find backend -name '*.php' -print0 | xargs -0 -n1 php -l
 php backend/tests/run.php
 python tests/validate_phase2.py
+python tests/validate_phase3.py
 python tests/validate_deployment.py
 ```
 
-Aucun de ces tests n’envoie de document à OpenAI.
-
-## Limites actuelles
-
-La phase 2 fournit l’infrastructure sécurisée, mais l’interface ne lance pas encore la
-cartographie. L’affichage de la progression, la validation AJV des réponses de première
-passe et la superposition des segments seront réalisés pendant la phase 3.
+Aucun test fourni n’envoie de document au fournisseur LLM.

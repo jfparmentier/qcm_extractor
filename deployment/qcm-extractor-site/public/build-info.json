@@ -1,17 +1,18 @@
 {
   "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T08:08:12.148Z",
-  "application_version": "0.1.3",
+  "generated_at": "2026-07-31T09:57:47.763814Z",
+  "application_version": "0.3.0",
   "dependencies": {
     "react": "19.2.8",
     "react_dom": "19.2.8",
-    "pdfjs_dist": "6.1.200"
+    "pdfjs_dist": "6.1.200",
+    "ajv": "8.17.1"
   },
   "external_runtime_origins": [
     "https://esm.sh",
     "https://cdn.jsdelivr.net"
   ],
-  "artifact": "phase2-qcm-extractor-deployment",
-  "version": "2.1.0",
-  "notes": "Frontend portable de visualisation locale; proxy PHP phase 2 inclus sous public/api."
+  "artifact": "phase3-qcm-extractor-deployment",
+  "version": "3.0.0",
+  "notes": "Frontend portable avec cartographie LLM, validation AJV et superposition des segments; proxy PHP sous public/api."
 }

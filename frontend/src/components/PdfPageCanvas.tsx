@@ -1,12 +1,43 @@
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
+import type { NormalizedBoundingBox, PageRegionRole } from "../domain/documentMap";
+
+export interface PdfOverlayRegion {
+  readonly id: string;
+  readonly segmentId: string;
+  readonly label: string;
+  readonly role: PageRegionRole;
+  readonly bbox: NormalizedBoundingBox;
+  readonly selected: boolean;
+}
 
 interface PdfPageCanvasProps {
   readonly document: PDFDocumentProxy;
   readonly pageNumber: number;
   readonly scale: number;
   readonly className?: string;
+  readonly overlays?: readonly PdfOverlayRegion[];
+  readonly onOverlaySelect?: (segmentId: string) => void;
   readonly onRenderError?: (message: string) => void;
+}
+
+function regionRoleLabel(role: PageRegionRole): string {
+  switch (role) {
+    case "question":
+      return "Énoncé";
+    case "choices":
+      return "Propositions";
+    case "answer":
+      return "Réponse";
+    case "feedback":
+      return "Feedback";
+    case "essential_image":
+      return "Illustration essentielle";
+    case "decorative_image":
+      return "Illustration décorative";
+    case "context":
+      return "Contexte";
+  }
 }
 
 export function PdfPageCanvas({
@@ -14,6 +45,8 @@ export function PdfPageCanvas({
   pageNumber,
   scale,
   className,
+  overlays = [],
+  onOverlaySelect,
   onRenderError
 }: PdfPageCanvasProps): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -88,6 +121,28 @@ export function PdfPageCanvas({
         aria-label={`Page ${pageNumber} du document PDF`}
         className="pdf-canvas"
       />
+      {!isRendering && overlays.length > 0 && (
+        <div className="pdf-region-layer" aria-label="Régions détectées sur cette page">
+          {overlays.map((overlay) => (
+            <button
+              key={overlay.id}
+              aria-label={`${overlay.label} — ${regionRoleLabel(overlay.role)}`}
+              className={`pdf-region pdf-region--${overlay.role}${overlay.selected ? " pdf-region--selected" : ""}`}
+              onClick={() => onOverlaySelect?.(overlay.segmentId)}
+              style={{
+                left: `${overlay.bbox.x * 100}%`,
+                top: `${overlay.bbox.y * 100}%`,
+                width: `${overlay.bbox.width * 100}%`,
+                height: `${overlay.bbox.height * 100}%`
+              }}
+              title={`${overlay.label} · ${regionRoleLabel(overlay.role)}`}
+              type="button"
+            >
+              <span>{regionRoleLabel(overlay.role)}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

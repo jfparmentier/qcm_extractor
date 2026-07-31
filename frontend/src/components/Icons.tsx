@@ -103,3 +103,38 @@ export function ShieldIcon(props: IconProps): React.ReactElement {
     </BaseIcon>
   );
 }
+
+export function SparklesIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+      <path d="m18.5 13 .7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7zM5.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.5" />
+    </BaseIcon>
+  );
+}
+
+export function StopIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.8" />
+    </BaseIcon>
+  );
+}
+
+export function ImageIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="9" cy="9.5" r="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="m5.5 17 4.3-4.3 2.8 2.7 2.4-2.3 3.5 3.9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+    </BaseIcon>
+  );
+}
+
+export function CheckIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+    </BaseIcon>
+  );
+}

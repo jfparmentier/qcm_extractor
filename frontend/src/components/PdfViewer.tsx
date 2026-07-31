@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import type { LoadedPdf } from "../domain/projectState";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { LoadedPdf, MappingState } from "../domain/projectState";
+import { getSegmentDisplayName } from "../domain/documentMap";
 import { formatFileSize } from "../pdf/formatFileSize";
-import { CloseIcon, FileIcon } from "./Icons";
-import { PdfPageCanvas } from "./PdfPageCanvas";
+import { CloseIcon, FileIcon, SparklesIcon } from "./Icons";
+import { MappingPanel } from "./MappingPanel";
+import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
 import { PdfThumbnail } from "./PdfThumbnail";
 import { PdfToolbar } from "./PdfToolbar";
 
@@ -10,6 +12,10 @@ interface PdfViewerProps {
   readonly pdf: LoadedPdf;
   readonly currentPage: number;
   readonly zoom: number;
+  readonly mapping: MappingState;
+  readonly onAnalyze: () => void;
+  readonly onCancelMapping: () => void;
+  readonly onSelectSegment: (segmentId: string) => void;
   readonly onPageChange: (page: number) => void;
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
@@ -21,6 +27,10 @@ export function PdfViewer({
   pdf,
   currentPage,
   zoom,
+  mapping,
+  onAnalyze,
+  onCancelMapping,
+  onSelectSegment,
   onPageChange,
   onZoomIn,
   onZoomOut,
@@ -30,13 +40,40 @@ export function PdfViewer({
   const [renderError, setRenderError] = useState<string | null>(null);
   const pageNumbers = Array.from({ length: pdf.pageCount }, (_, index) => index + 1);
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
+  const showMappingPanel = mapping.status !== "idle";
+
+  const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
+    if (mapping.data === null) {
+      return [];
+    }
+
+    const regions: PdfOverlayRegion[] = [];
+    mapping.data.question_segments.forEach((segment, segmentIndex) => {
+      segment.page_regions.forEach((region, regionIndex) => {
+        if (region.page !== currentPage || region.role === "decorative_image") {
+          return;
+        }
+
+        regions.push({
+          id: `${segment.temporary_id}-${regionIndex}`,
+          segmentId: segment.temporary_id,
+          label: getSegmentDisplayName(segment, segmentIndex),
+          role: region.role,
+          bbox: region.bbox,
+          selected: segment.temporary_id === mapping.selectedSegmentId
+        });
+      });
+    });
+
+    return regions;
+  }, [currentPage, mapping.data, mapping.selectedSegmentId]);
 
   useEffect(() => {
     setRenderError(null);
   }, [currentPage, zoom]);
 
   return (
-    <section className="viewer-shell" aria-label="Visualiseur PDF">
+    <section className={`viewer-shell${showMappingPanel ? " viewer-shell--with-mapping" : ""}`} aria-label="Visualiseur PDF">
       <header className="document-header">
         <div className="document-header__identity">
           <span className="document-header__icon"><FileIcon /></span>
@@ -50,7 +87,16 @@ export function PdfViewer({
         </div>
 
         <div className="document-header__actions">
-          <span className="local-badge">Local</span>
+          <span className="local-badge">PDF en mémoire</span>
+          <button
+            className="button button--primary analysis-header-button"
+            disabled={mapping.status === "running"}
+            onClick={onAnalyze}
+            type="button"
+          >
+            <SparklesIcon />
+            {mapping.status === "completed" ? "Recartographier" : "Cartographier"}
+          </button>
           <button
             aria-label="Fermer le document"
             className="icon-button icon-button--quiet"
@@ -73,7 +119,7 @@ export function PdfViewer({
         zoom={zoom}
       />
 
-      <div className="viewer-layout">
+      <div className={`viewer-layout${showMappingPanel ? " viewer-layout--with-mapping" : ""}`}>
         <aside className="thumbnail-sidebar" aria-label="Miniatures des pages">
           <div className="thumbnail-sidebar__heading">
             <span>Pages</span>
@@ -101,12 +147,23 @@ export function PdfViewer({
           <div className="page-stage">
             <PdfPageCanvas
               document={pdf.document}
+              onOverlaySelect={onSelectSegment}
               onRenderError={handleRenderError}
+              overlays={overlays}
               pageNumber={currentPage}
               scale={zoom}
             />
           </div>
         </main>
+
+        {showMappingPanel && (
+          <MappingPanel
+            mapping={mapping}
+            onAnalyze={onAnalyze}
+            onCancel={onCancelMapping}
+            onSelectSegment={onSelectSegment}
+          />
+        )}
       </div>
     </section>
   );

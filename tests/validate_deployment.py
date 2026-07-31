@@ -31,7 +31,7 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
-assert "Phase 2" in index
+assert "Phase 3" in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 for endpoint in ("analyze-map.php", "extract-questions.php"):

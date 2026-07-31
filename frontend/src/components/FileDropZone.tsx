@@ -24,11 +24,11 @@ export function FileDropZone({
   return (
     <section className="welcome-panel" aria-labelledby="welcome-title">
       <div className="welcome-copy">
-        <span className="eyebrow">Phase 1 · Socle frontend</span>
+        <span className="eyebrow">Phase 3 · Cartographie globale</span>
         <h1 id="welcome-title">Préparer un PDF pour l’extraction de QCM</h1>
         <p>
-          Le document est chargé et affiché exclusivement dans votre navigateur. Aucun
-          transfert réseau n’est effectué pendant cette phase.
+          Le document est d’abord chargé localement. Il n’est transmis au proxy PHP et au LLM
+          qu’après un clic explicite sur « Cartographier ».
         </p>
       </div>
 
@@ -87,8 +87,8 @@ export function FileDropZone({
       <div className="privacy-note">
         <ShieldIcon />
         <div>
-          <strong>Traitement local</strong>
-          <span>Le PDF reste en mémoire et disparaît lorsque l’onglet est fermé.</span>
+          <strong>Contrôle explicite du transfert</strong>
+          <span>Le PDF reste en mémoire jusqu’au lancement de l’analyse et n’est pas stocké par l’application.</span>
         </div>
       </div>
     </section>

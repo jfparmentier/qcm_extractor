@@ -6,8 +6,8 @@ Le dossier prêt à copier se trouve dans :
 deployment/qcm-extractor-site/
 ```
 
-Il contient le frontend préconstruit, les endpoints PHP, le code privé, les prompts et les
-schémas. Aucun `npm install` n’est nécessaire pour ce dossier.
+Il contient le frontend de phase 3, les endpoints PHP, le code privé, les prompts et les
+schémas. Aucun `npm install` n’est nécessaire sur le serveur.
 
 ## Préparation unique
 
@@ -27,7 +27,8 @@ Téléverser le dossier complet puis définir la racine du domaine ou sous-domai
 qcm-extractor-site/public
 ```
 
-Le dossier `private` est hors de cette racine et possède aussi un `.htaccess` de blocage.
+Activer HTTPS. Le dossier `private` reste hors de la racine publique et possède en plus un
+`.htaccess` bloquant tout accès HTTP.
 
 ## MAMP
 
@@ -37,10 +38,15 @@ Copier le dossier dans `htdocs`, démarrer Apache puis ouvrir :
 http://localhost:8888/qcm-extractor-site/public/
 ```
 
-Le port peut différer selon la configuration de MAMP. Cette méthode ne nécessite aucun
-VirtualHost. Un VirtualHost peut néanmoins pointer directement vers le dossier `public`.
+Le port peut différer. Un VirtualHost peut aussi pointer directement vers `public`.
 
-## État fonctionnel
+## Fonctionnement de la phase 3
 
-La phase 2 fournit un visualiseur PDF et un proxy LLM sécurisé. Le bouton d’analyse et
-l’exploitation de la cartographie seront ajoutés pendant la phase 3.
+1. Le PDF est chargé localement dans le navigateur.
+2. Le clic sur **Cartographier** l’envoie au proxy PHP sans stockage applicatif.
+3. Le proxy appelle le LLM avec le prompt et le schéma serveur.
+4. Le navigateur valide la réponse avec AJV et applique des contrôles métier.
+5. Les segments apparaissent dans un panneau et leurs régions sont superposées au PDF.
+
+Une cartographie échouée peut être relancée ; l’appel en cours peut être annulé. La phase 4
+utilisera ces segments pour créer localement les sous-PDF.

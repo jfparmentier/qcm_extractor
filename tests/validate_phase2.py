@@ -129,13 +129,13 @@ send_pdf_block = client.split("async function sendPdf", 1)[1].split("export func
 assert "model:" not in send_pdf_block and "\"model\"" not in send_pdf_block, "Le client ne doit pas choisir le modèle."
 
 package = read_json(FRONTEND / "package.json")
-assert package["version"] == "0.2.0"
+assert package["version"] == "0.3.0"
 assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
-assert manifest["artifact"] == "phase2_qcm_extractor"
-assert manifest["version"] == "2.1.0"
-assert manifest["phase"] == 2
+assert manifest["artifact"] == "phase3_qcm_extractor"
+assert manifest["version"] == "3.0.0"
+assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:
     relative = entry["path"]
@@ -149,4 +149,4 @@ for entry in manifest["generated_files"]:
 for required in REQUIRED_FILES:
     assert required in manifest_paths, f"Fichier requis absent du manifeste : {required}"
 
-print("OK phase 2.1 : proxy contraint, déploiement OVH/MAMP et manifeste")
+print("OK infrastructure phase 2 conservée dans la livraison phase 3")

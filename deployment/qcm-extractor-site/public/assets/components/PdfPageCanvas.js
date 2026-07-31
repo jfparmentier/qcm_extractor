@@ -1,6 +1,24 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
-export function PdfPageCanvas({ document, pageNumber, scale, className, onRenderError }) {
+function regionRoleLabel(role) {
+    switch (role) {
+        case "question":
+            return "Énoncé";
+        case "choices":
+            return "Propositions";
+        case "answer":
+            return "Réponse";
+        case "feedback":
+            return "Feedback";
+        case "essential_image":
+            return "Illustration essentielle";
+        case "decorative_image":
+            return "Illustration décorative";
+        case "context":
+            return "Contexte";
+    }
+}
+export function PdfPageCanvas({ document, pageNumber, scale, className, overlays = [], onOverlaySelect, onRenderError }) {
     const canvasRef = useRef(null);
     const renderTaskRef = useRef(null);
     const [isRendering, setIsRendering] = useState(true);
@@ -56,5 +74,10 @@ export function PdfPageCanvas({ document, pageNumber, scale, className, onRender
             renderTaskRef.current = null;
         };
     }, [document, onRenderError, pageNumber, scale]);
-    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" })] }));
+    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" }), !isRendering && overlays.length > 0 && (_jsx("div", { className: "pdf-region-layer", "aria-label": "R\u00E9gions d\u00E9tect\u00E9es sur cette page", children: overlays.map((overlay) => (_jsx("button", { "aria-label": `${overlay.label} — ${regionRoleLabel(overlay.role)}`, className: `pdf-region pdf-region--${overlay.role}${overlay.selected ? " pdf-region--selected" : ""}`, onClick: () => onOverlaySelect?.(overlay.segmentId), style: {
+                        left: `${overlay.bbox.x * 100}%`,
+                        top: `${overlay.bbox.y * 100}%`,
+                        width: `${overlay.bbox.width * 100}%`,
+                        height: `${overlay.bbox.height * 100}%`
+                    }, title: `${overlay.label} · ${regionRoleLabel(overlay.role)}`, type: "button", children: _jsx("span", { children: regionRoleLabel(overlay.role) }) }, overlay.id))) }))] }));
 }

@@ -32,3 +32,15 @@ export function WarningIcon(props) {
 export function ShieldIcon(props) {
     return (_jsxs(BaseIcon, { ...props, children: [_jsx("path", { d: "M12 3.5 19 6v5.2c0 4.1-2.7 7.6-7 9.3-4.3-1.7-7-5.2-7-9.3V6z", stroke: "currentColor", strokeLinejoin: "round", strokeWidth: "1.8" }), _jsx("path", { d: "m8.8 12 2 2 4.4-4.5", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" })] }));
 }
+export function SparklesIcon(props) {
+    return (_jsxs(BaseIcon, { ...props, children: [_jsx("path", { d: "m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2z", stroke: "currentColor", strokeLinejoin: "round", strokeWidth: "1.7" }), _jsx("path", { d: "m18.5 13 .7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7zM5.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z", stroke: "currentColor", strokeLinejoin: "round", strokeWidth: "1.5" })] }));
+}
+export function StopIcon(props) {
+    return (_jsx(BaseIcon, { ...props, children: _jsx("rect", { x: "6", y: "6", width: "12", height: "12", rx: "2", stroke: "currentColor", strokeWidth: "1.8" }) }));
+}
+export function ImageIcon(props) {
+    return (_jsxs(BaseIcon, { ...props, children: [_jsx("rect", { x: "3.5", y: "4.5", width: "17", height: "15", rx: "2", stroke: "currentColor", strokeWidth: "1.8" }), _jsx("circle", { cx: "9", cy: "9.5", r: "1.5", stroke: "currentColor", strokeWidth: "1.6" }), _jsx("path", { d: "m5.5 17 4.3-4.3 2.8 2.7 2.4-2.3 3.5 3.9", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.7" })] }));
+}
+export function CheckIcon(props) {
+    return (_jsx(BaseIcon, { ...props, children: _jsx("path", { d: "m5 12.5 4.2 4.2L19 7", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2" }) }));
+}

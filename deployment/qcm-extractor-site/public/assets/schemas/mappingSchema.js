@@ -1,0 +1,211 @@
+const mappingSchema = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.invalid/qcm/schemas/mapping.schema.json",
+    "title": "Cartographie de questions dans un PDF",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema_version",
+        "document",
+        "question_segments"
+    ],
+    "properties": {
+        "schema_version": {
+            "const": "1.0.0"
+        },
+        "document": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "title",
+                "language",
+                "document_type",
+                "page_count",
+                "warnings"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 16
+                },
+                "document_type": {
+                    "enum": [
+                        "slides",
+                        "dense_question_bank",
+                        "scanned_document",
+                        "mixed",
+                        "unknown"
+                    ]
+                },
+                "page_count": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                }
+            }
+        },
+        "question_segments": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/question_segment"
+            }
+        }
+    },
+    "$defs": {
+        "bbox": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "x",
+                "y",
+                "width",
+                "height"
+            ],
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                },
+                "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1
+                }
+            },
+            "description": "Boîte englobante normalisée dans le repère de la page, origine en haut à gauche. Les contraintes x+width<=1 et y+height<=1 sont contrôlées applicativement."
+        },
+        "page_region": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "page",
+                "role",
+                "bbox"
+            ],
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "role": {
+                    "enum": [
+                        "question",
+                        "choices",
+                        "answer",
+                        "feedback",
+                        "essential_image",
+                        "decorative_image",
+                        "context"
+                    ]
+                },
+                "bbox": {
+                    "$ref": "#/$defs/bbox"
+                }
+            }
+        },
+        "question_segment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "temporary_id",
+                "question_number",
+                "question_pages",
+                "answer_pages",
+                "feedback_pages",
+                "contains_essential_image",
+                "question_type_hint",
+                "page_regions",
+                "confidence",
+                "warnings"
+            ],
+            "properties": {
+                "temporary_id": {
+                    "type": "string",
+                    "pattern": "^segment-[A-Za-z0-9._-]+$"
+                },
+                "question_number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "question_pages": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "answer_pages": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "feedback_pages": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "contains_essential_image": {
+                    "type": "boolean"
+                },
+                "question_type_hint": {
+                    "enum": [
+                        "single_choice",
+                        "multiple_choice",
+                        "true_false",
+                        "unknown"
+                    ]
+                },
+                "page_regions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/page_region"
+                    }
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                }
+            }
+        }
+    }
+};
+export default mappingSchema;

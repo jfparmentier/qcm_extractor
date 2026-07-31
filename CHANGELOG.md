@@ -1,5 +1,20 @@
 # Journal des modifications
 
+## 3.0.0 — Phase 3 : première passe de cartographie
+
+- connexion du bouton de cartographie à l’endpoint PHP `analyze-map.php` ;
+- ajout des états en cours, terminé, erreur et annulation ;
+- validation de la réponse par AJV avec le schéma JSON 2020-12 ;
+- ajout de contrôles déterministes sur les pages, identifiants et boîtes englobantes ;
+- normalisation contrôlée des coordonnées et détection des segments fortement superposés ;
+- ajout d’un panneau listant les questions, pages, types, avertissements et scores de confiance ;
+- ajout des superpositions interactives sur les pages PDF ;
+- ajout de la navigation entre la liste des segments et le document ;
+- affichage du modèle et de la consommation de jetons ;
+- ajout de l’annulation avec `AbortController` et de la relance après erreur ;
+- mise à jour du dossier de déploiement OVH/MAMP sans créer `frontend/dist` ;
+- ajout des tests et de la documentation de phase 3.
+
 ## 2.1.0 — Préparation OVH et MAMP
 
 - ajout du dossier autonome `deployment/qcm-extractor-site` ;

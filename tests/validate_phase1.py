@@ -36,7 +36,7 @@ assert package["private"] is True
 assert package["type"] == "module"
 assert package["scripts"]["dev"] == "vite"
 assert "tsc -b" in package["scripts"]["build"]
-assert set(package["dependencies"]) == {"pdfjs-dist", "react", "react-dom"}
+assert set(package["dependencies"]) == {"ajv", "pdfjs-dist", "react", "react-dom"}
 
 state_source = (FRONTEND / "src/domain/projectState.ts").read_text(encoding="utf-8")
 for status in ("empty", "loading", "pdf_loaded", "error"):
