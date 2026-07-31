@@ -13,9 +13,9 @@ return [
     'QCM_ALLOWED_ORIGINS' => 'http://localhost:5173,http://127.0.0.1:5173',
     'QCM_ALLOW_ORIGINLESS_REQUESTS' => 'false',
 
-    'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5-mini',
+    'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5',
     'QCM_OPENAI_EXTRACTION_MODEL' => 'gpt-5',
-    'QCM_MAPPING_REASONING_EFFORT' => 'low',
+    'QCM_MAPPING_REASONING_EFFORT' => 'medium',
     'QCM_EXTRACTION_REASONING_EFFORT' => 'medium',
     'QCM_TEXT_VERBOSITY' => 'low',
 
