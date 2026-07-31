@@ -24,6 +24,12 @@ QCM_REQUEST_TIMEOUT_SECONDS=120
 QCM_PHP_MAX_EXECUTION_SECONDS=150
 QCM_MAX_UPSTREAM_RESPONSE_BYTES=16777216
 
+# Cartographie asynchrone : l’appel initial et chaque interrogation restent courts.
+QCM_BACKGROUND_START_TIMEOUT_SECONDS=25
+QCM_BACKGROUND_POLL_TIMEOUT_SECONDS=20
+QCM_BACKGROUND_POLL_INTERVAL_MS=2000
+QCM_BACKGROUND_JOB_TTL_SECONDS=900
+
 # Origines supplémentaires autorisées, séparées par des virgules.
 # L’origine exacte du serveur est toujours acceptée automatiquement.
 QCM_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173

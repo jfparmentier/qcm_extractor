@@ -14,6 +14,18 @@ function formatElapsed(startedAt, now) {
 function formatTokens(value) {
     return value === null ? "—" : new Intl.NumberFormat("fr-FR").format(value);
 }
+function getRunningStatusLabel(mapping) {
+    switch (mapping.progress?.providerStatus) {
+        case "uploading":
+            return "Transmission sécurisée du PDF";
+        case "queued":
+            return "Analyse placée en file d’attente";
+        case "in_progress":
+            return "Analyse du document par le LLM";
+        default:
+            return "Initialisation de l’analyse";
+    }
+}
 export function MappingPanel({ mapping, onAnalyze, onCancel, onSelectSegment }) {
     const [now, setNow] = useState(Date.now());
     useEffect(() => {
@@ -26,7 +38,7 @@ export function MappingPanel({ mapping, onAnalyze, onCancel, onSelectSegment }) 
     }, [mapping.status]);
     const selectedIndex = useMemo(() => mapping.data?.question_segments.findIndex((segment) => segment.temporary_id === mapping.selectedSegmentId) ?? -1, [mapping.data, mapping.selectedSegmentId]);
     if (mapping.status === "running") {
-        return (_jsxs("aside", { className: "mapping-panel mapping-panel--status", "aria-live": "polite", "aria-busy": "true", children: [_jsx("div", { className: "mapping-status-icon mapping-status-icon--running", children: _jsx("span", { className: "loading-spinner loading-spinner--small", "aria-hidden": "true" }) }), _jsx("span", { className: "eyebrow", children: "Premi\u00E8re passe" }), _jsx("h2", { children: "Cartographie du document" }), _jsx("p", { children: "Le PDF est transmis au proxy PHP, puis analys\u00E9 par le LLM pour localiser les questions, corrections et illustrations." }), _jsx("div", { className: "mapping-progress", "aria-hidden": "true", children: _jsx("span", {}) }), _jsxs("dl", { className: "mapping-facts", children: [_jsxs("div", { children: [_jsx("dt", { children: "\u00C9tat" }), _jsx("dd", { children: "Analyse en cours" })] }), _jsxs("div", { children: [_jsx("dt", { children: "Temps \u00E9coul\u00E9" }), _jsx("dd", { children: formatElapsed(mapping.startedAt, now) })] })] }), _jsxs("button", { className: "button button--secondary", onClick: onCancel, type: "button", children: [_jsx(StopIcon, {}), " Annuler"] })] }));
+        return (_jsxs("aside", { className: "mapping-panel mapping-panel--status", "aria-live": "polite", "aria-busy": "true", children: [_jsx("div", { className: "mapping-status-icon mapping-status-icon--running", children: _jsx("span", { className: "loading-spinner loading-spinner--small", "aria-hidden": "true" }) }), _jsx("span", { className: "eyebrow", children: "Premi\u00E8re passe" }), _jsx("h2", { children: "Cartographie du document" }), _jsx("p", { children: "Le proxy démarre une tâche asynchrone, puis le navigateur interroge régulièrement son état. Cette méthode évite les coupures des hébergements PHP pendant les analyses longues." }), _jsx("div", { className: "mapping-progress", "aria-hidden": "true", children: _jsx("span", {}) }), _jsxs("dl", { className: "mapping-facts", children: [_jsxs("div", { children: [_jsx("dt", { children: "\u00C9tat" }), _jsx("dd", { children: getRunningStatusLabel(mapping) })] }), _jsxs("div", { children: [_jsx("dt", { children: "Temps \u00E9coul\u00E9" }), _jsx("dd", { children: formatElapsed(mapping.startedAt, now) })] }), _jsxs("div", { children: [_jsx("dt", { children: "Contr\u00F4les d\u2019\u00E9tat" }), _jsx("dd", { children: mapping.progress?.pollCount ?? 0 })] })] }), _jsxs("button", { className: "button button--secondary", onClick: onCancel, type: "button", children: [_jsx(StopIcon, {}), " Annuler"] })] }));
     }
     if (mapping.status === "failed" && mapping.error !== null) {
         return (_jsxs("aside", { className: "mapping-panel mapping-panel--status", role: "alert", children: [_jsx("div", { className: "mapping-status-icon mapping-status-icon--error", children: _jsx(WarningIcon, {}) }), _jsx("span", { className: "eyebrow", children: "Cartographie interrompue" }), _jsx("h2", { children: mapping.error.message }), _jsx("p", { children: mapping.error.retryable

@@ -1,43 +1,20 @@
-# Frontend — Sources des phases 1 à 3
+# Frontend — Phase 3.1
 
-L’application React/TypeScript charge un PDF avec PDF.js, puis déclenche sur demande une
-première analyse LLM destinée à cartographier les QCM.
+L’application React/TypeScript charge et affiche localement un PDF, puis lance une cartographie LLM asynchrone.
 
-## Fonctionnalités actives
+## Fonctionnement
 
-- sélection ou glisser-déposer d’un PDF ;
-- contrôle de la signature `%PDF-` et limite locale de 50 Mo ;
-- affichage PDF.js avec miniatures, navigation, zoom et raccourcis clavier ;
-- conservation du PDF et de la cartographie uniquement en mémoire ;
-- appel explicite de `analyze-map.php` avec annulation par `AbortController` ;
-- validation AJV du schéma de cartographie ;
-- contrôles métier sur les pages, identifiants, coordonnées et chevauchements ;
-- panneau de progression, erreurs normalisées et relance ;
-- liste interactive des segments et superposition de leurs régions sur le PDF.
+- envoi explicite du PDF à `analyze-map.php` ;
+- réception d’un jeton de suivi signé ;
+- interrogation périodique de `mapping-status.php` ;
+- annulation via `mapping-cancel.php` ;
+- affichage des états d’envoi, de file d’attente et d’analyse ;
+- validation AJV du résultat ;
+- navigation et superposition des régions détectées.
 
-## Client du proxy
+Le jeton est transmis par l’en-tête `X-QCM-Job`, jamais dans l’URL. Le PDF et le résultat restent en mémoire dans l’onglet.
 
-Le module `src/api/proxyClient.ts` fournit :
-
-```ts
-analyzeDocumentMap(pdfBytes, filename, signal)
-extractQuestions(pdfBytes, filename, context, signal)
-```
-
-Le PDF est envoyé comme corps HTTP brut `application/pdf`. Le navigateur ne peut choisir ni
-le modèle, ni le prompt, ni le schéma de sortie. Par défaut, l’API est résolue vers le dossier
-`api` adjacent à l’application, ce qui fonctionne à la racine ou dans un sous-dossier.
-
-Pour un proxy séparé :
-
-```bash
-VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
-```
-
-## Prérequis et exécution
-
-- Node.js 22.13 ou version ultérieure compatible ;
-- npm.
+## Exécution
 
 ```bash
 npm install
@@ -45,12 +22,8 @@ npm run typecheck
 npm run dev
 ```
 
-La construction standard est produite avec `npm run build`. Le dossier de déploiement fourni
-sous `deployment/qcm-extractor-site/public` utilise des modules ES portables et ne nécessite
-pas `npm install` sur le serveur.
+Pour un proxy séparé :
 
-## Confidentialité
-
-Le PDF reste local jusqu’au clic sur « Cartographier ». Il est alors transmis au proxy PHP et
-au fournisseur LLM, mais n’est pas stocké par l’application. Aucun `localStorage`, IndexedDB,
-cookie applicatif ou compte utilisateur n’est utilisé.
+```bash
+VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
+```

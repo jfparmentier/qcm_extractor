@@ -1,17 +1,17 @@
-# Extracteur de QCM — Phases 0 à 3
+# Extracteur de QCM — Phase 3.1
 
-Cette archive contient les contrats JSON de la phase 0, le visualiseur React/TypeScript de la phase 1, le proxy PHP sécurisé de la phase 2 et la première passe de cartographie de la phase 3.
+Cette archive regroupe les phases 0 à 3 et le correctif d’architecture **3.1.0** destiné aux documents longs. La cartographie complète du PDF est désormais lancée en tâche asynchrone auprès du fournisseur, puis suivie par de courtes requêtes d’état. Cette organisation évite qu’une connexion PHP demeure ouverte pendant plusieurs minutes.
 
-Le dossier directement exploitable sur OVH Hosting Perso ou MAMP se trouve sous `deployment/qcm-extractor-site`. Les sources React et PHP sont également fournies. Aucun compte, aucune base de données et aucun stockage persistant des PDF ne sont utilisés.
+Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne sont utilisés. Le mode asynchrone implique toutefois une conservation temporaire de l’état de réponse par le fournisseur afin de permettre les interrogations de statut. Le dossier directement exploitable sous OVH Hosting Perso ou MAMP est `deployment/qcm-extractor-site`.
 
-## Contenu
+## Arborescence
 
 ```text
-phase3_qcm_extractor_3.0.3/
+phase3_qcm_extractor_3.1.0/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
-├── deployment/qcm-extractor-site/ dossier prêt à téléverser sur OVH ou copier dans MAMP
-├── schemas/                         contrats JSON complets
+├── deployment/qcm-extractor-site/ dossier prêt pour OVH ou MAMP
+├── schemas/                         contrats JSON
 ├── examples/                        exemples conformes
 ├── golden/                          corpus manuel de référence
 ├── tests/                           validations globales
@@ -19,43 +19,15 @@ phase3_qcm_extractor_3.0.3/
 └── manifest.json
 ```
 
-## Correctif 3.0.3
-
-Cette version traite spécifiquement les erreurs HTTP 500 non JSON observées sous MAMP :
-
-- contrôle de la limite PHP réellement appliquée ;
-- configuration locale par `.user.ini` et directives conditionnelles Apache ;
-- endpoint `api/diagnostic.php` sans donnée sensible ;
-- journal technique privé `private/runtime/logs/qcm-proxy.log` ;
-- conversion des échecs d’initialisation en réponses JSON ;
-- affichage du type MIME et d’un extrait de la réponse illisible dans l’interface ;
-- erreurs cURL différenciées ;
-- cartographie accélérée avec `gpt-5-mini`, effort `low` et verbosité `low`.
-
-## Démarrage des sources
-
-```bash
-cd frontend
-npm install
-npm run typecheck
-npm run dev
-```
-
-Pour utiliser un proxy PHP lancé séparément :
-
-```bash
-VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
-```
-
 ## Déploiement direct
 
-1. Ouvrir `deployment/qcm-extractor-site/private/config/runtime.php`.
-2. Renseigner `OPENAI_API_KEY`.
-3. Copier le dossier complet sur le serveur.
-4. Pointer la racine web vers `qcm-extractor-site/public`, ou ouvrir ce dossier sous MAMP.
-5. Ouvrir `public/api/diagnostic.php` et contrôler l’environnement PHP.
+1. Renseigner la clé dans `deployment/qcm-extractor-site/private/config/runtime.php`.
+2. Copier le dossier complet sur le serveur.
+3. Définir la racine web sur `qcm-extractor-site/public`.
+4. Redémarrer Apache sous MAMP après remplacement des fichiers.
+5. Contrôler `public/api/diagnostic.php`.
 
-Les instructions détaillées figurent dans `DEPLOIEMENT_OVH_MAMP.md`.
+La cartographie utilise trois opérations internes : démarrage, interrogation périodique et annulation. Le jeton de suivi est signé côté serveur, transmis par l’en-tête `X-QCM-Job` et n’est jamais placé dans l’URL.
 
 ## Vérifications
 
@@ -69,4 +41,4 @@ python tests/validate_phase3.py
 python tests/validate_deployment.py
 ```
 
-Aucun test fourni n’envoie de document au fournisseur LLM.
+Les tests ne réalisent aucun appel réel au fournisseur LLM.

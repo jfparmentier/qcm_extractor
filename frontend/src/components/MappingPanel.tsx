@@ -29,6 +29,19 @@ function formatTokens(value: number | null): string {
   return value === null ? "—" : new Intl.NumberFormat("fr-FR").format(value);
 }
 
+function getRunningStatusLabel(mapping: MappingState): string {
+  switch (mapping.progress?.providerStatus) {
+    case "uploading":
+      return "Transmission sécurisée du PDF";
+    case "queued":
+      return "Analyse placée en file d’attente";
+    case "in_progress":
+      return "Analyse du document par le LLM";
+    default:
+      return "Initialisation de l’analyse";
+  }
+}
+
 export function MappingPanel({
   mapping,
   onAnalyze,
@@ -64,15 +77,16 @@ export function MappingPanel({
         <span className="eyebrow">Première passe</span>
         <h2>Cartographie du document</h2>
         <p>
-          Le PDF est transmis au proxy PHP, puis analysé par le LLM pour localiser les
-          questions, corrections et illustrations.
+          Le proxy démarre une tâche asynchrone, puis le navigateur interroge régulièrement
+          son état. Cette méthode évite les coupures des hébergements PHP pendant les analyses longues.
         </p>
         <div className="mapping-progress" aria-hidden="true">
           <span />
         </div>
         <dl className="mapping-facts">
-          <div><dt>État</dt><dd>Analyse en cours</dd></div>
+          <div><dt>État</dt><dd>{getRunningStatusLabel(mapping)}</dd></div>
           <div><dt>Temps écoulé</dt><dd>{formatElapsed(mapping.startedAt, now)}</dd></div>
+          <div><dt>Contrôles d’état</dt><dd>{mapping.progress?.pollCount ?? 0}</dd></div>
         </dl>
         <button className="button button--secondary" onClick={onCancel} type="button">
           <StopIcon /> Annuler

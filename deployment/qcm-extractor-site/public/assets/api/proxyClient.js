@@ -1,9 +1,4 @@
 export class ProxyApiError extends Error {
-    code;
-    retryable;
-    httpStatus;
-    requestId;
-    technicalDetails;
     constructor(code, message, retryable, httpStatus, requestId, technicalDetails) {
         super(message);
         this.code = code;
@@ -14,10 +9,7 @@ export class ProxyApiError extends Error {
         this.name = "ProxyApiError";
     }
 }
-const configuredApiBaseUrl = undefined;
-const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length > 0
-    ? configuredApiBaseUrl
-    : new URL("api", document.baseURI).toString()).replace(/\/$/, "");
+const API_BASE_URL = new URL("api", document.baseURI).toString().replace(/\/$/, "");
 export function getProxyDiagnosticUrl() {
     return `${API_BASE_URL}/diagnostic.php`;
 }
@@ -53,26 +45,18 @@ async function readResponse(response) {
             `Diagnostic : ${getProxyDiagnosticUrl()}`
         ].join("\n"));
     }
-    if (!response.ok || payload.ok === false) {
-        const failure = payload.ok === false ? payload : null;
-        throw new ProxyApiError(failure?.error.code ?? "PROXY_REQUEST_FAILED", failure?.error.message ?? "La requête au proxy PHP a échoué.", failure?.error.retryable ?? response.status >= 500, response.status, failure?.request_id ?? response.headers.get("X-QCM-Request-Id"), `HTTP ${response.status} · ${failure?.error.code ?? "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`);
+    if ((!response.ok && response.status !== 202) || payload.ok === false) {
+        throw new ProxyApiError(payload.ok === false ? payload.error.code : "PROXY_REQUEST_FAILED", payload.ok === false ? payload.error.message : "La requête au proxy PHP a échoué.", payload.ok === false ? payload.error.retryable : response.status >= 500, response.status, payload.ok === false
+            ? payload.request_id ?? response.headers.get("X-QCM-Request-Id")
+            : response.headers.get("X-QCM-Request-Id"), `HTTP ${response.status} · ${payload.ok === false ? payload.error.code : "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`);
     }
     return payload;
 }
-async function sendPdf(endpoint, pdfBytes, filename, context, signal) {
-    const headers = new Headers({
-        "Content-Type": "application/pdf",
-        "X-QCM-Filename": encodeURIComponent(filename)
-    });
-    if (context !== null) {
-        headers.set("X-QCM-Context", encodeBase64Url(context));
-    }
+async function fetchProxy(endpoint, init, signal) {
     let response;
     try {
         response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-            method: "POST",
-            headers,
-            body: pdfBytes.slice(0),
+            ...init,
             cache: "no-store",
             credentials: "omit",
             redirect: "error",
@@ -88,8 +72,74 @@ async function sendPdf(endpoint, pdfBytes, filename, context, signal) {
     }
     return readResponse(response);
 }
-export function analyzeDocumentMap(pdfBytes, filename, signal) {
-    return sendPdf("analyze-map.php", pdfBytes, filename, null, signal);
+async function sendPdf(endpoint, pdfBytes, filename, context, signal) {
+    const headers = new Headers({
+        "Content-Type": "application/pdf",
+        "X-QCM-Filename": encodeURIComponent(filename)
+    });
+    if (context !== null) {
+        headers.set("X-QCM-Context", encodeBase64Url(context));
+    }
+    return fetchProxy(endpoint, {
+        method: "POST",
+        headers,
+        body: pdfBytes.slice(0)
+    }, signal);
+}
+function wait(milliseconds, signal) {
+    return new Promise((resolve, reject) => {
+        if (signal?.aborted === true) {
+            reject(new DOMException("Analyse annulée", "AbortError"));
+            return;
+        }
+        const timer = window.setTimeout(resolve, milliseconds);
+        signal?.addEventListener("abort", () => {
+            window.clearTimeout(timer);
+            reject(new DOMException("Analyse annulée", "AbortError"));
+        }, { once: true });
+    });
+}
+async function pollMappingJob(token, signal) {
+    return fetchProxy("mapping-status.php", { method: "POST", headers: { "X-QCM-Job": token } }, signal);
+}
+async function cancelMappingJob(token) {
+    await fetchProxy("mapping-cancel.php", { method: "POST", headers: { "X-QCM-Job": token } });
+}
+function isPending(response) {
+    return response.status === "queued" || response.status === "in_progress";
+}
+export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress) {
+    onProgress?.({ providerStatus: "uploading", pollCount: 0, requestId: null });
+    let pending = null;
+    try {
+        const start = await sendPdf("analyze-map.php", pdfBytes, filename, null, signal);
+        if (!isPending(start)) {
+            return start;
+        }
+        pending = start;
+        let pollCount = 0;
+        onProgress?.({ providerStatus: start.status, pollCount, requestId: start.request_id });
+        while (true) {
+            const remainingMilliseconds = pending.job.expires_at * 1000 - Date.now();
+            if (remainingMilliseconds <= 0) {
+                throw new ProxyApiError("BACKGROUND_JOB_EXPIRED", "Le résultat temporaire de la cartographie a expiré avant sa récupération.", true, 410, pending.request_id);
+            }
+            await wait(Math.min(pending.job.poll_after_ms, remainingMilliseconds), signal);
+            pollCount += 1;
+            const polled = await pollMappingJob(pending.job.token, signal);
+            if (!isPending(polled)) {
+                return polled;
+            }
+            pending = polled;
+            onProgress?.({ providerStatus: polled.status, pollCount, requestId: polled.request_id });
+        }
+    }
+    catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError" && pending !== null) {
+            void cancelMappingJob(pending.job.token).catch(() => undefined);
+        }
+        throw error;
+    }
 }
 export function extractQuestions(pdfBytes, filename, context, signal) {
     return sendPdf("extract-questions.php", pdfBytes, filename, context, signal);

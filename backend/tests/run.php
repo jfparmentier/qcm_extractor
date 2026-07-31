@@ -6,6 +6,7 @@ require dirname(__DIR__) . '/src/Autoload.php';
 
 use QcmProxy\ApiException;
 use QcmProxy\Base64Url;
+use QcmProxy\BackgroundJobToken;
 use QcmProxy\ClientAddress;
 use QcmProxy\Config;
 use QcmProxy\Filename;
@@ -49,6 +50,10 @@ putenv('QCM_ALLOWED_ORIGINS=http://localhost:5173');
 putenv('QCM_ALLOW_ORIGINLESS_REQUESTS=true');
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=120');
 putenv('QCM_PHP_MAX_EXECUTION_SECONDS=150');
+putenv('QCM_BACKGROUND_START_TIMEOUT_SECONDS=25');
+putenv('QCM_BACKGROUND_POLL_TIMEOUT_SECONDS=20');
+putenv('QCM_BACKGROUND_POLL_INTERVAL_MS=2000');
+putenv('QCM_BACKGROUND_JOB_TTL_SECONDS=900');
 putenv('QCM_TRUSTED_PROXY_ADDRESSES=192.0.2.1');
 
 $backendRoot = dirname(__DIR__);
@@ -61,6 +66,10 @@ expect($config->maxPdfBytes === 25 * 1024 * 1024, 'Limite PDF par défaut incorr
 expect($config->requestTimeoutSeconds === 120, 'Délai cURL incorrect.');
 expect($config->phpMaxExecutionSeconds === 150, 'Délai PHP incorrect.');
 expect($config->phpMaxExecutionSeconds > $config->requestTimeoutSeconds, 'Le délai PHP doit dépasser le délai cURL.');
+expect($config->backgroundStartTimeoutSeconds === 25, 'Délai de démarrage asynchrone incorrect.');
+expect($config->backgroundPollTimeoutSeconds === 20, 'Délai d’interrogation asynchrone incorrect.');
+expect($config->backgroundPollIntervalMilliseconds === 2000, 'Intervalle d’interrogation incorrect.');
+expect($config->backgroundJobTtlSeconds === 900, 'Durée du jeton de suivi incorrecte.');
 
 
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=155');
@@ -152,6 +161,33 @@ expect(base64_decode($encodedPdf, true) === $pdf, 'Le contenu Base64 du PDF est 
 $serializedPayload = json_encode($mappingPayload, JSON_THROW_ON_ERROR);
 expect(!str_contains($serializedPayload, $config->apiKey), 'La clé API apparaît dans la charge utile.');
 expect(!str_contains($serializedPayload, '/v1/files'), 'Un endpoint de stockage de fichiers est référencé.');
+$backgroundPayload = $mappingPayload;
+$backgroundPayload['background'] = true;
+expect($backgroundPayload['background'] === true, 'Le mode asynchrone doit être activé pour la cartographie longue.');
+expect($backgroundPayload['store'] === false, 'Le mode asynchrone ne doit pas activer la conservation persistante.');
+
+$job = BackgroundJobToken::issue('resp_test_background_12345678', Operation::Mapping, $config);
+expect(is_string($job['token']) && strlen($job['token']) > 40, 'Jeton de suivi absent.');
+$verifiedJob = BackgroundJobToken::verify($job['token'], $config);
+expect($verifiedJob['response_id'] === 'resp_test_background_12345678', 'Identifiant de réponse non conservé.');
+expect($verifiedJob['operation'] === Operation::Mapping, 'Opération du jeton incorrecte.');
+expectApiException(
+    static fn () => BackgroundJobToken::verify($job['token'] . 'x', $config),
+    'INVALID_JOB_TOKEN',
+);
+
+$queuedResponse = new UpstreamResponse(
+    200,
+    ['x-request-id' => 'req_background'],
+    json_encode([
+        'id' => 'resp_test_background_12345678',
+        'status' => 'queued',
+        'model' => 'gpt-test-mapping',
+    ], JSON_THROW_ON_ERROR),
+);
+$backgroundState = (new OpenAiResponseParser())->inspect($queuedResponse);
+expect($backgroundState->status === 'queued', 'État asynchrone incorrect.');
+expect($backgroundState->id === 'resp_test_background_12345678', 'Identifiant asynchrone incorrect.');
 
 $extractionPayload = $factory->build(Operation::Extraction, new PdfRequest('lot.pdf', $pdf, $normalizedContext));
 expect($extractionPayload['model'] === 'gpt-test-extraction', 'Modèle d’extraction incorrect.');
@@ -195,4 +231,4 @@ expectApiException(
     'LLM_REFUSAL',
 );
 
-print("OK phase 3.0.3 PHP : délais cohérents, charge utile sécurisée et réponses JSON robustes\n");
+print("OK phase 3.1.0 PHP : cartographie asynchrone, jetons signés et réponses JSON robustes\n");

@@ -13,7 +13,21 @@ export interface ProxySuccess<TData> {
   readonly ok: true;
   readonly request_id: string;
   readonly operation: "analyze-map" | "extract-questions";
+  readonly status?: "completed";
   readonly data: TData;
+  readonly meta: ProxyResponseMeta;
+}
+
+export interface ProxyJobPending {
+  readonly ok: true;
+  readonly request_id: string;
+  readonly operation: "analyze-map";
+  readonly status: "queued" | "in_progress";
+  readonly job: {
+    readonly token: string;
+    readonly expires_at: number;
+    readonly poll_after_ms: number;
+  };
   readonly meta: ProxyResponseMeta;
 }
 
@@ -25,6 +39,12 @@ export interface ProxyFailure {
     readonly message: string;
     readonly retryable: boolean;
   };
+}
+
+export interface MappingProgress {
+  readonly providerStatus: "uploading" | "queued" | "in_progress";
+  readonly pollCount: number;
+  readonly requestId: string | null;
 }
 
 export class ProxyApiError extends Error {
@@ -78,11 +98,11 @@ function responseSnippet(body: string): string {
   return normalized === "" ? "(corps vide)" : normalized.slice(0, 1200);
 }
 
-async function readResponse<TData>(response: Response): Promise<ProxySuccess<TData>> {
+async function readResponse<TPayload>(response: Response): Promise<TPayload> {
   const body = await response.text();
-  let payload: ProxySuccess<TData> | ProxyFailure;
+  let payload: TPayload | ProxyFailure;
   try {
-    payload = JSON.parse(body) as ProxySuccess<TData> | ProxyFailure;
+    payload = JSON.parse(body) as TPayload | ProxyFailure;
   } catch {
     const contentType = response.headers.get("Content-Type") ?? "non indiqué";
     const requestId = response.headers.get("X-QCM-Request-Id");
@@ -101,43 +121,32 @@ async function readResponse<TData>(response: Response): Promise<ProxySuccess<TDa
     );
   }
 
-  if (!response.ok || payload.ok === false) {
-    const failure = payload.ok === false ? payload : null;
+  const failure = payload as ProxyFailure;
+  if ((!response.ok && response.status !== 202) || failure.ok === false) {
     throw new ProxyApiError(
-      failure?.error.code ?? "PROXY_REQUEST_FAILED",
-      failure?.error.message ?? "La requête au proxy PHP a échoué.",
-      failure?.error.retryable ?? response.status >= 500,
+      failure.ok === false ? failure.error.code : "PROXY_REQUEST_FAILED",
+      failure.ok === false ? failure.error.message : "La requête au proxy PHP a échoué.",
+      failure.ok === false ? failure.error.retryable : response.status >= 500,
       response.status,
-      failure?.request_id ?? response.headers.get("X-QCM-Request-Id"),
-      `HTTP ${response.status} · ${failure?.error.code ?? "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`
+      failure.ok === false
+        ? failure.request_id ?? response.headers.get("X-QCM-Request-Id")
+        : response.headers.get("X-QCM-Request-Id"),
+      `HTTP ${response.status} · ${failure.ok === false ? failure.error.code : "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`
     );
   }
 
-  return payload;
+  return payload as TPayload;
 }
 
-async function sendPdf<TData>(
-  endpoint: "analyze-map.php" | "extract-questions.php",
-  pdfBytes: ArrayBuffer,
-  filename: string,
-  context: ExtractionContext | null,
+async function fetchProxy<TPayload>(
+  endpoint: string,
+  init: RequestInit,
   signal?: AbortSignal
-): Promise<ProxySuccess<TData>> {
-  const headers = new Headers({
-    "Content-Type": "application/pdf",
-    "X-QCM-Filename": encodeURIComponent(filename)
-  });
-
-  if (context !== null) {
-    headers.set("X-QCM-Context", encodeBase64Url(context));
-  }
-
+): Promise<TPayload> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-      method: "POST",
-      headers,
-      body: pdfBytes.slice(0),
+      ...init,
       cache: "no-store",
       credentials: "omit",
       redirect: "error",
@@ -159,15 +168,150 @@ async function sendPdf<TData>(
     );
   }
 
-  return readResponse<TData>(response);
+  return readResponse<TPayload>(response);
 }
 
-export function analyzeDocumentMap<TData>(
+async function sendPdf<TPayload>(
+  endpoint: "analyze-map.php" | "extract-questions.php",
   pdfBytes: ArrayBuffer,
   filename: string,
+  context: ExtractionContext | null,
   signal?: AbortSignal
+): Promise<TPayload> {
+  const headers = new Headers({
+    "Content-Type": "application/pdf",
+    "X-QCM-Filename": encodeURIComponent(filename)
+  });
+
+  if (context !== null) {
+    headers.set("X-QCM-Context", encodeBase64Url(context));
+  }
+
+  return fetchProxy<TPayload>(
+    endpoint,
+    {
+      method: "POST",
+      headers,
+      body: pdfBytes.slice(0)
+    },
+    signal
+  );
+}
+
+function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted === true) {
+      reject(new DOMException("Analyse annulée", "AbortError"));
+      return;
+    }
+
+    const timer = window.setTimeout(resolve, milliseconds);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timer);
+        reject(new DOMException("Analyse annulée", "AbortError"));
+      },
+      { once: true }
+    );
+  });
+}
+
+async function pollMappingJob<TData>(
+  token: string,
+  signal?: AbortSignal
+): Promise<ProxySuccess<TData> | ProxyJobPending> {
+  return fetchProxy<ProxySuccess<TData> | ProxyJobPending>(
+    "mapping-status.php",
+    {
+      method: "POST",
+      headers: { "X-QCM-Job": token }
+    },
+    signal
+  );
+}
+
+async function cancelMappingJob(token: string): Promise<void> {
+  await fetchProxy<{ readonly ok: true }>(
+    "mapping-cancel.php",
+    {
+      method: "POST",
+      headers: { "X-QCM-Job": token }
+    }
+  );
+}
+
+function isPending<TData>(
+  response: ProxySuccess<TData> | ProxyJobPending
+): response is ProxyJobPending {
+  return response.status === "queued" || response.status === "in_progress";
+}
+
+export async function analyzeDocumentMap<TData>(
+  pdfBytes: ArrayBuffer,
+  filename: string,
+  signal?: AbortSignal,
+  onProgress?: (progress: MappingProgress) => void
 ): Promise<ProxySuccess<TData>> {
-  return sendPdf<TData>("analyze-map.php", pdfBytes, filename, null, signal);
+  onProgress?.({ providerStatus: "uploading", pollCount: 0, requestId: null });
+  let pending: ProxyJobPending | null = null;
+
+  try {
+    const start = await sendPdf<ProxySuccess<TData> | ProxyJobPending>(
+      "analyze-map.php",
+      pdfBytes,
+      filename,
+      null,
+      signal
+    );
+
+    if (!isPending(start)) {
+      return start;
+    }
+
+    pending = start;
+    let pollCount = 0;
+    onProgress?.({
+      providerStatus: start.status,
+      pollCount,
+      requestId: start.request_id
+    });
+
+    while (true) {
+      const remainingMilliseconds = pending.job.expires_at * 1000 - Date.now();
+      if (remainingMilliseconds <= 0) {
+        throw new ProxyApiError(
+          "BACKGROUND_JOB_EXPIRED",
+          "Le résultat temporaire de la cartographie a expiré avant sa récupération.",
+          true,
+          410,
+          pending.request_id
+        );
+      }
+
+      await wait(Math.min(pending.job.poll_after_ms, remainingMilliseconds), signal);
+      pollCount += 1;
+      const polled: ProxySuccess<TData> | ProxyJobPending = await pollMappingJob<TData>(
+        pending.job.token,
+        signal
+      );
+      if (!isPending(polled)) {
+        return polled;
+      }
+
+      pending = polled;
+      onProgress?.({
+        providerStatus: polled.status,
+        pollCount,
+        requestId: polled.request_id
+      });
+    }
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === "AbortError" && pending !== null) {
+      void cancelMappingJob(pending.job.token).catch(() => undefined);
+    }
+    throw error;
+  }
 }
 
 export function extractQuestions<TData>(
@@ -176,5 +320,11 @@ export function extractQuestions<TData>(
   context: ExtractionContext,
   signal?: AbortSignal
 ): Promise<ProxySuccess<TData>> {
-  return sendPdf<TData>("extract-questions.php", pdfBytes, filename, context, signal);
+  return sendPdf<ProxySuccess<TData>>(
+    "extract-questions.php",
+    pdfBytes,
+    filename,
+    context,
+    signal
+  );
 }

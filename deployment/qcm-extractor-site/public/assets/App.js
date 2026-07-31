@@ -103,7 +103,11 @@ export default function App() {
         mappingAbortRef.current = controller;
         dispatch({ type: "MAPPING_STARTED", startedAt: Date.now() });
         try {
-            const response = await analyzeDocumentMap(pdf.bytes, pdf.fileName, controller.signal);
+            const response = await analyzeDocumentMap(pdf.bytes, pdf.fileName, controller.signal, (progress) => {
+                if (mappingAbortRef.current === controller) {
+                    dispatch({ type: "MAPPING_PROGRESS", progress });
+                }
+            });
             const { documentMap } = validateAndNormalizeDocumentMap(response.data, pdf.pageCount);
             if (mappingAbortRef.current !== controller) {
                 return;

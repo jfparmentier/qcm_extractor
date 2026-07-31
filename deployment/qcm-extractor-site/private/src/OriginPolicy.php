@@ -102,7 +102,7 @@ final class OriginPolicy
     {
         header('Access-Control-Allow-Origin: ' . $origin);
         header('Access-Control-Allow-Methods: POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, X-QCM-Filename, X-QCM-Context');
+        header('Access-Control-Allow-Headers: Content-Type, X-QCM-Filename, X-QCM-Context, X-QCM-Job');
         header('Access-Control-Max-Age: 600');
     }
 }

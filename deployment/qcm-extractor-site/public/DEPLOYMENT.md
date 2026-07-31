@@ -1,15 +1,12 @@
-# Racine publique
+# Racine publique — Phase 3.1
 
-Ce dossier doit être la racine web du site.
+Ce dossier doit être la racine web. Le code serveur et la clé API se trouvent dans `../private`.
 
-Le code serveur, la clé API, les prompts, les schémas et les journaux se trouvent dans le dossier frère `../private`, qui ne doit pas être exposé par le serveur HTTP.
+Endpoints utilisés :
 
-Avant le premier essai, ouvrir :
+- `api/analyze-map.php` ;
+- `api/mapping-status.php` ;
+- `api/mapping-cancel.php` ;
+- `api/diagnostic.php`.
 
-```text
-api/diagnostic.php
-```
-
-Le diagnostic ne révèle aucun secret. Il permet de vérifier cURL, la durée d’exécution PHP et les permissions des dossiers privés.
-
-Sous MAMP, redémarrer Apache après toute modification de `.user.ini` ou de `php.ini`.
+Sous MAMP, redémarrer Apache après le remplacement du dossier ou toute modification de `.user.ini`.

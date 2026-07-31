@@ -1,6 +1,6 @@
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { DocumentMap } from "./documentMap";
-import type { ProxyResponseMeta } from "../api/proxyClient";
+import type { MappingProgress, ProxyResponseMeta } from "../api/proxyClient";
 
 export type ProjectStatus = "empty" | "loading" | "pdf_loaded" | "error";
 export type MappingStatus = "idle" | "running" | "completed" | "failed";
@@ -42,6 +42,7 @@ export interface MappingState {
   readonly error: MappingError | null;
   readonly startedAt: number | null;
   readonly selectedSegmentId: string | null;
+  readonly progress: MappingProgress | null;
 }
 
 export interface ProjectState {
@@ -59,7 +60,8 @@ export const INITIAL_MAPPING_STATE: MappingState = {
   meta: null,
   error: null,
   startedAt: null,
-  selectedSegmentId: null
+  selectedSegmentId: null,
+  progress: null
 };
 
 export const INITIAL_PROJECT_STATE: ProjectState = {
@@ -78,6 +80,7 @@ export type ProjectAction =
   | { readonly type: "SET_PAGE"; readonly page: number }
   | { readonly type: "SET_ZOOM"; readonly zoom: number }
   | { readonly type: "MAPPING_STARTED"; readonly startedAt: number }
+  | { readonly type: "MAPPING_PROGRESS"; readonly progress: MappingProgress }
   | {
       readonly type: "MAPPING_SUCCEEDED";
       readonly documentMap: DocumentMap;
@@ -147,7 +150,17 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           meta: null,
           error: null,
           startedAt: action.startedAt,
-          selectedSegmentId: null
+          selectedSegmentId: null,
+          progress: { providerStatus: "uploading", pollCount: 0, requestId: null }
+        }
+      };
+
+    case "MAPPING_PROGRESS":
+      return {
+        ...state,
+        mapping: {
+          ...state.mapping,
+          progress: action.progress
         }
       };
 
@@ -162,7 +175,8 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           meta: action.meta,
           error: null,
           startedAt: null,
-          selectedSegmentId: firstSegment?.temporary_id ?? null
+          selectedSegmentId: firstSegment?.temporary_id ?? null,
+          progress: null
         }
       };
     }
@@ -176,7 +190,8 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           meta: null,
           error: action.error,
           startedAt: null,
-          selectedSegmentId: null
+          selectedSegmentId: null,
+          progress: null
         }
       };
 

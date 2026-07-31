@@ -129,7 +129,12 @@ export default function App(): React.ReactElement {
       const response = await analyzeDocumentMap<unknown>(
         pdf.bytes,
         pdf.fileName,
-        controller.signal
+        controller.signal,
+        (progress) => {
+          if (mappingAbortRef.current === controller) {
+            dispatch({ type: "MAPPING_PROGRESS", progress });
+          }
+        }
       );
       const { documentMap } = validateAndNormalizeDocumentMap(response.data, pdf.pageCount);
 

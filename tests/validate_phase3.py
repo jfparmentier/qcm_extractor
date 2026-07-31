@@ -21,12 +21,16 @@ required = {
     "deployment/qcm-extractor-site/public/assets/domain/documentMap.js",
     "deployment/qcm-extractor-site/public/assets/schemas/mappingSchema.js",
     "deployment/qcm-extractor-site/public/api/diagnostic.php",
+    "backend/src/BackgroundJobToken.php",
+    "backend/src/BackgroundResponseState.php",
+    "deployment/qcm-extractor-site/public/api/mapping-status.php",
+    "deployment/qcm-extractor-site/public/api/mapping-cancel.php",
 }
 missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.3.3"
+assert package["version"] == "0.4.0"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -39,6 +43,7 @@ for marker in (
     'type: "MAPPING_STARTED"',
     'type: "MAPPING_SUCCEEDED"',
     'type: "MAPPING_FAILED"',
+    'type: "MAPPING_PROGRESS"',
 ):
     assert marker in app, f"Intégration de cartographie absente : {marker}"
 
@@ -46,6 +51,8 @@ state = (FRONTEND / "src/domain/projectState.ts").read_text(encoding="utf-8")
 for status in ("idle", "running", "completed", "failed"):
     assert f'"{status}"' in state
 assert "selectedSegmentId" in state
+assert "progress" in state
+assert "MAPPING_PROGRESS" in state
 
 mapping = (FRONTEND / "src/domain/documentMap.ts").read_text(encoding="utf-8")
 for marker in (
@@ -59,7 +66,7 @@ for marker in (
     assert marker in mapping, f"Validation de cartographie incomplète : {marker}"
 
 panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
-for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons"):
+for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons", "tâche asynchrone", "Contrôles d’état"):
     assert marker in panel
 
 canvas = (FRONTEND / "src/components/PdfPageCanvas.tsx").read_text(encoding="utf-8")
@@ -75,6 +82,9 @@ assert "OPENAI_API_KEY" not in client
 assert "response.text()" in client
 assert "getProxyDiagnosticUrl" in client
 assert "technicalDetails" in client
+for marker in ("mapping-status.php", "mapping-cancel.php", "X-QCM-Job", "poll_after_ms", "BACKGROUND_JOB_EXPIRED"):
+    assert marker in client, f"Suivi asynchrone absent : {marker}"
+assert "?job=" not in client, "Le jeton de suivi ne doit pas apparaître dans l’URL."
 
 application = (ROOT / "backend/src/Application.php").read_text(encoding="utf-8")
 for marker in (
@@ -85,6 +95,9 @@ for marker in (
     "display_errors",
     "PHP_TIME_LIMIT_TOO_LOW",
     "Diagnostics::write",
+    "runBackgroundMapping",
+    "background_job_started",
+    "background_job_completed",
 ):
     assert marker in application, f"Protection PHP absente : {marker}"
 
@@ -93,6 +106,8 @@ assert "QCM_PHP_MAX_EXECUTION_SECONDS" in config_php
 assert "doit être supérieur à QCM_REQUEST_TIMEOUT_SECONDS" in config_php
 assert "gpt-5-mini" in config_php
 assert "QCM_MAPPING_REASONING_EFFORT" in config_php
+for marker in ("QCM_BACKGROUND_START_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_INTERVAL_MS", "QCM_BACKGROUND_JOB_TTL_SECONDS"):
+    assert marker in config_php
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 3" in index
@@ -107,8 +122,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "3.0.3"
-assert build_info["application_version"] == "0.3.3"
+assert build_info["version"] == "3.1.0"
+assert build_info["application_version"] == "0.4.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
-print("OK phase 3 : appel de cartographie, validation AJV, navigation et superpositions")
+print("OK phase 3.1 : cartographie asynchrone, validation AJV, navigation et superpositions")

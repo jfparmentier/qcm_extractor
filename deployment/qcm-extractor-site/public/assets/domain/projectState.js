@@ -4,7 +4,8 @@ export const INITIAL_MAPPING_STATE = {
     meta: null,
     error: null,
     startedAt: null,
-    selectedSegmentId: null
+    selectedSegmentId: null,
+    progress: null
 };
 export const INITIAL_PROJECT_STATE = {
     status: "empty",
@@ -65,7 +66,16 @@ export function projectReducer(state, action) {
                     meta: null,
                     error: null,
                     startedAt: action.startedAt,
-                    selectedSegmentId: null
+                    selectedSegmentId: null,
+                    progress: { providerStatus: "uploading", pollCount: 0, requestId: null }
+                }
+            };
+        case "MAPPING_PROGRESS":
+            return {
+                ...state,
+                mapping: {
+                    ...state.mapping,
+                    progress: action.progress
                 }
             };
         case "MAPPING_SUCCEEDED": {
@@ -79,7 +89,8 @@ export function projectReducer(state, action) {
                     meta: action.meta,
                     error: null,
                     startedAt: null,
-                    selectedSegmentId: firstSegment?.temporary_id ?? null
+                    selectedSegmentId: firstSegment?.temporary_id ?? null,
+                    progress: null
                 }
             };
         }
@@ -92,7 +103,8 @@ export function projectReducer(state, action) {
                     meta: null,
                     error: action.error,
                     startedAt: null,
-                    selectedSegmentId: null
+                    selectedSegmentId: null,
+                    progress: null
                 }
             };
         case "MAPPING_CANCELLED":

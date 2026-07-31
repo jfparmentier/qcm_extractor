@@ -1,104 +1,66 @@
-# Déploiement simplifié sur OVH Hosting Perso et MAMP
+# Déploiement sur OVH Hosting Perso et MAMP — version 3.1.0
 
-Le dossier prêt à copier se trouve dans :
+Le dossier à copier est :
 
 ```text
 deployment/qcm-extractor-site/
 ```
 
-Il contient le frontend de phase 3, les endpoints PHP, le code privé, les prompts et les schémas. Aucun `npm install` n’est nécessaire sur le serveur.
+## Préparation
 
-## Préparation unique
-
-Modifier :
+Renseigner `OPENAI_API_KEY` dans :
 
 ```text
 deployment/qcm-extractor-site/private/config/runtime.php
 ```
 
-et renseigner `OPENAI_API_KEY`.
-
-## OVH
-
-Téléverser le dossier complet puis définir la racine du domaine ou sous-domaine sur :
-
-```text
-qcm-extractor-site/public
-```
-
-Activer HTTPS. Le dossier `private` reste hors de la racine publique et possède en plus un `.htaccess` bloquant tout accès HTTP.
-
 ## MAMP
 
-Copier le dossier dans `htdocs`, démarrer Apache puis ouvrir :
+Copier le dossier dans `htdocs`, redémarrer complètement Apache, puis ouvrir par exemple :
 
 ```text
 http://localhost:8888/qcm-extractor-site/public/
 ```
 
-Le port peut différer. Un VirtualHost peut aussi pointer directement vers `public`.
+Le port dépend de la configuration MAMP. Le diagnostic est disponible sous `public/api/diagnostic.php`.
 
-Après la première copie ou après modification de `.user.ini`, **redémarrer complètement les serveurs MAMP**.
+## OVH Hosting Perso
 
-## Diagnostic intégré
-
-Ouvrir :
+Téléverser le dossier complet et définir la racine du domaine ou sous-domaine sur :
 
 ```text
-http://localhost:8888/qcm-extractor-site/public/api/diagnostic.php
+qcm-extractor-site/public
 ```
 
-Le diagnostic ne révèle ni la clé API, ni le contenu des PDF. Vérifier notamment :
+Le dossier `private` doit rester hors de la racine publique. Activer HTTPS avant l’utilisation.
 
-```json
-{
-  "curl_available": true,
-  "api_key_configured": true,
-  "max_execution_time": "150",
-  "rate_limit_directory_writable": true,
-  "diagnostic_log_directory_writable": true
-}
-```
+## Cartographie longue
 
-Une valeur `max_execution_time` égale à `30` indique que MAMP n’a pas encore pris en compte `.user.ini` ou les directives Apache. Dans ce cas, modifier le `php.ini` de la version PHP active, définir :
+La première passe n’attend plus la fin du LLM dans une connexion PHP unique :
 
-```ini
-max_execution_time = 180
-memory_limit = 512M
-```
+1. `analyze-map.php` envoie le PDF et démarre une tâche asynchrone ;
+2. le navigateur reçoit un jeton signé ;
+3. il appelle périodiquement `mapping-status.php` ;
+4. il récupère le JSON lorsque l’état devient `completed` ;
+5. une annulation appelle `mapping-cancel.php`.
 
-puis redémarrer MAMP.
+Les requêtes PHP de suivi sont courtes. Le PDF n’est pas écrit sur le disque du serveur. Le jeton de suivi n’est pas inclus dans l’URL.
 
-## Journal technique privé
-
-Les événements techniques sont écrits dans :
-
-```text
-qcm-extractor-site/private/runtime/logs/qcm-proxy.log
-```
-
-Le journal contient uniquement des identifiants de requête, durées, statuts HTTP et codes d’erreur. Il n’enregistre jamais le PDF, le prompt, la réponse complète du modèle ou la clé API.
-
-## Réglages de cartographie
-
-La cartographie utilise par défaut :
+## Paramètres principaux
 
 ```php
-'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5-mini',
-'QCM_MAPPING_REASONING_EFFORT' => 'low',
-'QCM_TEXT_VERBOSITY' => 'low',
-'QCM_REQUEST_TIMEOUT_SECONDS' => '120',
-'QCM_PHP_MAX_EXECUTION_SECONDS' => '150',
+'QCM_BACKGROUND_START_TIMEOUT_SECONDS' => '25',
+'QCM_BACKGROUND_POLL_TIMEOUT_SECONDS' => '20',
+'QCM_BACKGROUND_POLL_INTERVAL_MS' => '2000',
+'QCM_BACKGROUND_JOB_TTL_SECONDS' => '900',
 ```
 
-Le plafond PHP doit rester strictement supérieur au délai de l’appel fournisseur.
+Le délai synchrone `QCM_REQUEST_TIMEOUT_SECONDS` reste utilisé pour la future seconde passe.
 
-## Fonctionnement de la phase 3
+## Journal technique
 
-1. Le PDF est chargé localement dans le navigateur.
-2. Le clic sur **Cartographier** l’envoie au proxy PHP sans stockage applicatif.
-3. Le proxy appelle le LLM avec le prompt et le schéma serveur.
-4. Le navigateur valide la réponse avec AJV et applique des contrôles métier.
-5. Les segments apparaissent dans un panneau et leurs régions sont superposées au PDF.
+```text
+private/runtime/logs/qcm-proxy.log
+```
 
-Une cartographie échouée peut être relancée ; l’appel en cours peut être annulé. La phase 4 utilisera ces segments pour créer localement les sous-PDF.
+Le journal ne contient ni PDF, ni prompt, ni réponse complète, ni clé API. Les nouveaux événements utiles sont `background_job_started`, `background_job_completed` et `background_job_cancelled`.

@@ -31,6 +31,7 @@ $payload = [
         'openssl_available' => extension_loaded('openssl'),
         'bootstrap_available' => $runtimeAvailable,
         'environment_example_available' => is_file($configPath),
+        'background_mapping_enabled' => true,
     ],
 ];
 

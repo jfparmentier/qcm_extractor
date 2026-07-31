@@ -1,5 +1,18 @@
 # Journal des modifications
 
+## 3.1.0 — Cartographie asynchrone des documents longs
+
+- lancement de la première passe avec `background: true` ;
+- ajout de `mapping-status.php` pour interroger l’état de la réponse ;
+- ajout de `mapping-cancel.php` pour annuler une analyse ;
+- remplacement de la connexion PHP longue par des requêtes courtes de démarrage et d’interrogation ;
+- ajout d’un jeton de suivi signé, sans base de données ni stockage de tâche local ;
+- transmission du jeton par `X-QCM-Job`, hors des URL et des journaux d’accès ;
+- affichage des états `uploading`, `queued` et `in_progress` dans l’interface ;
+- conservation de `store: false` et absence d’utilisation de `/v1/files` ;
+- ajout des paramètres de délais et d’intervalle de suivi ;
+- mise à jour des tests, de la documentation et du dossier OVH/MAMP.
+
 ## 3.0.3 — Diagnostic MAMP et robustesse du proxy
 
 - contrôle de la valeur **effective** de `max_execution_time` avant l’appel au LLM ;

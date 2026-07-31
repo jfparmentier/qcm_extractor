@@ -19,6 +19,8 @@ required = [
     PUBLIC / "api" / "extract-questions.php",
     PUBLIC / "api" / "_entry.php",
     PUBLIC / "api" / "diagnostic.php",
+    PUBLIC / "api" / "mapping-status.php",
+    PUBLIC / "api" / "mapping-cancel.php",
     PUBLIC / ".user.ini",
     PUBLIC / "api" / ".user.ini",
     PRIVATE / ".htaccess",
@@ -40,10 +42,13 @@ assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives
 assert "Phase 3" in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
-for endpoint in ("analyze-map.php", "extract-questions.php"):
+source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
+assert "_entry.php" in source and "qcmRunMappingJobEndpoint('start')" in source
+for endpoint, action in (("mapping-status.php", "status"), ("mapping-cancel.php", "cancel")):
     source = (PUBLIC / "api" / endpoint).read_text(encoding="utf-8")
-    assert "_entry.php" in source
-    assert "qcmRunEndpoint" in source
+    assert "_entry.php" in source and f"qcmRunMappingJobEndpoint('{action}')" in source
+source = (PUBLIC / "api" / "extract-questions.php").read_text(encoding="utf-8")
+assert "_entry.php" in source and "qcmRunEndpoint('extraction')" in source
 
 entrypoint = (PUBLIC / "api" / "_entry.php").read_text(encoding="utf-8")
 assert "dirname(__DIR__, 2) . '/private'" in entrypoint
@@ -64,6 +69,17 @@ assert "QCM_RATE_LIMIT_STORAGE_DIR" in runtime
 assert "QCM_DIAGNOSTIC_LOG_PATH" in runtime
 assert "gpt-5-mini" in runtime
 assert "QCM_MAPPING_REASONING_EFFORT" in runtime
+for marker in ("QCM_BACKGROUND_START_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_INTERVAL_MS", "QCM_BACKGROUND_JOB_TTL_SECONDS"):
+    assert marker in runtime
+
+application = (PRIVATE / "src" / "Application.php").read_text(encoding="utf-8")
+assert "runBackgroundMapping" in application
+assert "HTTP_X_QCM_JOB" in application
+assert "$_GET['job']" not in application
+client = (PUBLIC / "assets" / "api" / "proxyClient.js").read_text(encoding="utf-8")
+assert '"X-QCM-Job"' in client
+assert "mapping-status.php" in client and "mapping-cancel.php" in client
+assert "?job=" not in client
 
 rate_limiter = (PRIVATE / "src" / "RateLimiter.php").read_text(encoding="utf-8")
 assert "flock(" in rate_limiter
@@ -83,4 +99,4 @@ for schema_name in ("mapping.openai.schema.json", "extraction.openai.schema.json
 assert not any(path.name == "node_modules" for path in SITE.rglob("*"))
 assert not any(path.suffix == ".map" for path in PUBLIC.rglob("*")), "Les source maps ne doivent pas être déployées."
 
-print("OK déploiement : arborescence public/privé, MAMP, OVH et absence de secret")
+print("OK déploiement 3.1 : arborescence public/privé, cartographie asynchrone et absence de secret")
