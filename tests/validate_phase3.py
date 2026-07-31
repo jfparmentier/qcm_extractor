@@ -122,8 +122,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "3.1.0"
+assert build_info["version"] == "3.1.1"
 assert build_info["application_version"] == "0.4.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
-print("OK phase 3.1 : cartographie asynchrone, validation AJV, navigation et superpositions")
+print("OK phase 3.1.1 : cartographie asynchrone et quota local distinct")

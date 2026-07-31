@@ -109,6 +109,7 @@ assert "QCM_OPENAI_EXTRACTION_MODEL" in php_sources
 assert "X-QCM-Context" in php_sources or "HTTP_X_QCM_CONTEXT" in php_sources
 assert "apcu_" in php_sources
 assert "QCM_RATE_LIMIT_STORAGE_DIR" in php_sources
+assert "QCM_RATE_LIMIT_LOCAL_REQUESTS" in php_sources
 assert "flock(" in php_sources
 assert "QCM_TRUSTED_PROXY_ADDRESSES" in php_sources
 assert "Content-Security-Policy" in php_sources
@@ -149,7 +150,7 @@ assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase3_qcm_extractor"
-assert manifest["version"] == "3.1.0"
+assert manifest["version"] == "3.1.1"
 assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:

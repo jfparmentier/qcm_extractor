@@ -1,4 +1,4 @@
-# Déploiement sur OVH Hosting Perso et MAMP — version 3.1.0
+# Déploiement sur OVH Hosting Perso et MAMP — version 3.1.1
 
 Le dossier à copier est :
 
@@ -64,3 +64,7 @@ private/runtime/logs/qcm-proxy.log
 ```
 
 Le journal ne contient ni PDF, ni prompt, ni réponse complète, ni clé API. Les nouveaux événements utiles sont `background_job_started`, `background_job_completed` et `background_job_cancelled`.
+
+## Quotas de test MAMP
+
+La version 3.1.1 distingue automatiquement les essais réellement locaux des requêtes publiques. La valeur `QCM_RATE_LIMIT_LOCAL_REQUESTS=100` s’applique seulement si l’adresse cliente est une boucle locale et si le site est ouvert avec `localhost`, `127.0.0.1` ou `::1`. La limite publique demeure définie par `QCM_RATE_LIMIT_REQUESTS=10`.

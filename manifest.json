@@ -1,22 +1,22 @@
 {
   "artifact": "phase3_qcm_extractor",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "phase": 3,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "8b679688de3830066cb231bacf7f430b70ddb918c831af9a6a395e2c0abe6c6c",
-      "bytes": 5329
+      "sha256": "5d6386b633dca7898cfe7b2631abf1ccd691bccf4551a7d92017b013d350d0d8",
+      "bytes": 5951
     },
     {
       "path": "DEPLOIEMENT_OVH_MAMP.md",
-      "sha256": "06dc15a419b54d272d2d3561116850818483caf462394d232ecf42dfaa9fe1e2",
-      "bytes": 1898
+      "sha256": "541b094cfede846083a3859f949d8648c263f6af5920c8bdf5f6a43ccfb5d85e",
+      "bytes": 2270
     },
     {
       "path": "README.md",
-      "sha256": "83752b0dab9595236d5925e6290a6e02320f8e2a9eb12bc88ea9258c64c92f72",
-      "bytes": 2216
+      "sha256": "7c63c777389de359e356de2697a547411daab246b4ae6ba72f26f47be00cf755",
+      "bytes": 2774
     },
     {
       "path": "backend/README.md",
@@ -30,8 +30,8 @@
     },
     {
       "path": "backend/config/environment.example",
-      "sha256": "ae3dc3be2f50a9b08d420f16c6b95f738c16a11a3309c55993bc85417924dd37",
-      "bytes": 2000
+      "sha256": "5c5cf5dacf3eedc04006ca59b9d4a89dee570d4b1fd53e5a4775a9e84656b094",
+      "bytes": 2034
     },
     {
       "path": "backend/config/nginx-location.example.conf",
@@ -150,8 +150,8 @@
     },
     {
       "path": "backend/src/Config.php",
-      "sha256": "859f24a3c0632b974267fa37ac79e208a6c424316131727e83e97a573b0e9a39",
-      "bytes": 7984
+      "sha256": "245a63ce846c729200be23adc017af217a7ffdaf54be022a10d21114ca89c553",
+      "bytes": 8137
     },
     {
       "path": "backend/src/Diagnostics.php",
@@ -175,7 +175,7 @@
     },
     {
       "path": "backend/src/OpenAiResponsesClient.php",
-      "sha256": "93d727d9cba60277213561ddd03300ffd3d1225322d85406240a4714e2f58b68",
+      "sha256": "d802937e40081d22e15bf86a9ab560b57fde26e4948d0d51bbdc4691d94e9b8c",
       "bytes": 7647
     },
     {
@@ -205,8 +205,8 @@
     },
     {
       "path": "backend/src/RateLimiter.php",
-      "sha256": "5bea5270310fa820bce6d1742ead09bb23b68d48ef820f3589e610c6545bd41c",
-      "bytes": 5359
+      "sha256": "b12397921db0075a45b8210a42c375955fce7829c35e6e192a8d7596ae1289ea",
+      "bytes": 6641
     },
     {
       "path": "backend/src/RequestValidator.php",
@@ -225,8 +225,8 @@
     },
     {
       "path": "backend/tests/run.php",
-      "sha256": "49b5dae1dd5d1fa6070cacf946137e4a633b68fd17e6c9aaca715cc2cfdfb104",
-      "bytes": 11488
+      "sha256": "f6669f9b36eea7697f5f7213300222980f22c0649ab4b78f6acb40852d62b33f",
+      "bytes": 12136
     },
     {
       "path": "deployment/qcm-extractor-site/.ovhconfig",
@@ -235,8 +235,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/README.md",
-      "sha256": "7bf5869970ccc964670360e9275f05353f7fa0fafe0fd82090b86c900277eb87",
-      "bytes": 1052
+      "sha256": "874860be871fd22ed5f348e782bbcb10b4bdacdd86f57e5f4b100e3ed6eed63f",
+      "bytes": 1544
     },
     {
       "path": "deployment/qcm-extractor-site/TEST_MAMP.command",
@@ -255,8 +255,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/private/config/runtime.php",
-      "sha256": "d5c5db56118249bb3a808fa4ada82a04b00ddb83da18105dc87f9152e0b77a36",
-      "bytes": 1914
+      "sha256": "30f0906e24d9c5e9acd0b2c615766235965518cd1897407b0f6c753888e0eb36",
+      "bytes": 2106
     },
     {
       "path": "deployment/qcm-extractor-site/private/prompts/extraction.txt",
@@ -335,8 +335,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/Config.php",
-      "sha256": "859f24a3c0632b974267fa37ac79e208a6c424316131727e83e97a573b0e9a39",
-      "bytes": 7984
+      "sha256": "245a63ce846c729200be23adc017af217a7ffdaf54be022a10d21114ca89c553",
+      "bytes": 8137
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/Diagnostics.php",
@@ -360,7 +360,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/OpenAiResponsesClient.php",
-      "sha256": "93d727d9cba60277213561ddd03300ffd3d1225322d85406240a4714e2f58b68",
+      "sha256": "d802937e40081d22e15bf86a9ab560b57fde26e4948d0d51bbdc4691d94e9b8c",
       "bytes": 7647
     },
     {
@@ -390,8 +390,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/RateLimiter.php",
-      "sha256": "5bea5270310fa820bce6d1742ead09bb23b68d48ef820f3589e610c6545bd41c",
-      "bytes": 5359
+      "sha256": "b12397921db0075a45b8210a42c375955fce7829c35e6e192a8d7596ae1289ea",
+      "bytes": 6641
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/RequestValidator.php",
@@ -450,8 +450,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/api/diagnostic.php",
-      "sha256": "beac8bd30261e889483ebc9c0e16e4d6960ae6fa897639cd568f91b9d1496167",
-      "bytes": 2923
+      "sha256": "ed3fd3116fc42c5f07aa363941f24a233e60433f7ce38f61e9951100d087faa3",
+      "bytes": 3470
     },
     {
       "path": "deployment/qcm-extractor-site/public/api/extract-questions.php",
@@ -575,8 +575,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/build-info.json",
-      "sha256": "36af95befa45b8c88a4bb2c18cbaa94f063261eb019c6b8b1ce144ed287188c4",
-      "bytes": 538
+      "sha256": "3ba3f584b6a410871c81da7d6250ff7e6de7ad8c766e04d94afcb9b552d3f6af",
+      "bytes": 516
     },
     {
       "path": "deployment/qcm-extractor-site/public/index.html",
@@ -780,7 +780,7 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "e00f106db2eda71dec48580e53884a2be91c5ff3b63cc7cc68fd32cfa6b64d06",
+      "sha256": "2c7683f3057942fa2be3348de80a1737314b26cd997ad2ea44e70eacd5c89763",
       "bytes": 1304
     },
     {
@@ -790,8 +790,8 @@
     },
     {
       "path": "tests/validate_deployment.py",
-      "sha256": "57aab3567f44b78e242870ea5c916c854318adfe228b7eece0298c0f5df885d0",
-      "bytes": 4441
+      "sha256": "0a5345de9dc7837b544a9d19065ec1c93c5840763a97489c6be2e53fcccfd033",
+      "bytes": 4564
     },
     {
       "path": "tests/validate_phase1.py",
@@ -800,13 +800,13 @@
     },
     {
       "path": "tests/validate_phase2.py",
-      "sha256": "0a9ba856c50900f2082ebf661d3961c5b649dbb58cdd714bc5d2f0a14dc1bf04",
-      "bytes": 7224
+      "sha256": "a8b10483e81a1fa4ce4c80bae3975dfe472d67f712e8b592e7aa3cb5949afde1",
+      "bytes": 7278
     },
     {
       "path": "tests/validate_phase3.py",
-      "sha256": "a1eafda266d34fea2d1dad05f1419aec2b0c21b852e273ba1a9176b34ee97e96",
-      "bytes": 5468
+      "sha256": "9d1ae15c23f01839f71e18b7163e1fd56756fe08b47d031fd5f7bcecbeee16c1",
+      "bytes": 5448
     }
   ]
 }

@@ -42,6 +42,7 @@ QCM_ALLOW_ORIGINLESS_REQUESTS=false
 QCM_RATE_LIMIT_BACKEND=file
 QCM_RATE_LIMIT_STORAGE_DIR=/chemin/prive/qcm-rate-limit
 QCM_RATE_LIMIT_REQUESTS=10
+QCM_RATE_LIMIT_LOCAL_REQUESTS=100
 QCM_RATE_LIMIT_WINDOW_SECONDS=3600
 
 # Facultatif : adresses IP exactes des reverse proxies autorisés à fournir X-Forwarded-For.

@@ -46,6 +46,7 @@ putenv('QCM_MAPPING_REASONING_EFFORT=low');
 putenv('QCM_EXTRACTION_REASONING_EFFORT=medium');
 putenv('QCM_TEXT_VERBOSITY=low');
 putenv('QCM_RATE_LIMIT_BACKEND=disabled');
+putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS=100');
 putenv('QCM_ALLOWED_ORIGINS=http://localhost:5173');
 putenv('QCM_ALLOW_ORIGINLESS_REQUESTS=true');
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=120');
@@ -70,6 +71,7 @@ expect($config->backgroundStartTimeoutSeconds === 25, 'Délai de démarrage asyn
 expect($config->backgroundPollTimeoutSeconds === 20, 'Délai d’interrogation asynchrone incorrect.');
 expect($config->backgroundPollIntervalMilliseconds === 2000, 'Intervalle d’interrogation incorrect.');
 expect($config->backgroundJobTtlSeconds === 900, 'Durée du jeton de suivi incorrecte.');
+expect($config->rateLimitLocalRequests === 100, 'Limite locale incorrecte.');
 
 
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=155');
@@ -128,12 +130,24 @@ putenv('QCM_RATE_LIMIT_BACKEND=file');
 putenv('QCM_RATE_LIMIT_STORAGE_DIR=' . $rateLimitDirectory);
 putenv('QCM_RATE_LIMIT_REQUESTS=2');
 putenv('QCM_RATE_LIMIT_WINDOW_SECONDS=60');
+putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS=4');
 $fileRateLimitConfig = Config::fromEnvironment($backendRoot);
 $fileRateLimiter = new RateLimiter($fileRateLimitConfig);
+$_SERVER['HTTP_HOST'] = 'example.test';
 $fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
 $fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
 expectApiException(
     static fn () => $fileRateLimiter->consume('203.0.113.77', Operation::Mapping),
+    'RATE_LIMIT_EXCEEDED',
+);
+
+$_SERVER['HTTP_HOST'] = 'localhost:8083';
+$fileRateLimiter->consume('127.0.0.1', Operation::Mapping);
+$fileRateLimiter->consume('127.0.0.1', Operation::Mapping);
+$fileRateLimiter->consume('127.0.0.1', Operation::Mapping);
+$fileRateLimiter->consume('127.0.0.1', Operation::Mapping);
+expectApiException(
+    static fn () => $fileRateLimiter->consume('127.0.0.1', Operation::Mapping),
     'RATE_LIMIT_EXCEEDED',
 );
 foreach (glob($rateLimitDirectory . '/*') ?: [] as $rateLimitFile) {
@@ -143,6 +157,7 @@ foreach (glob($rateLimitDirectory . '/*') ?: [] as $rateLimitFile) {
 putenv('QCM_RATE_LIMIT_BACKEND=disabled');
 putenv('QCM_RATE_LIMIT_STORAGE_DIR');
 putenv('QCM_RATE_LIMIT_REQUESTS');
+putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS');
 putenv('QCM_RATE_LIMIT_WINDOW_SECONDS');
 
 $factory = new OpenAiPayloadFactory($config);
@@ -231,4 +246,4 @@ expectApiException(
     'LLM_REFUSAL',
 );
 
-print("OK phase 3.1.0 PHP : cartographie asynchrone, jetons signés et réponses JSON robustes\n");
+print("OK phase 3.1.1 PHP : cartographie asynchrone et limitation locale distincte\n");

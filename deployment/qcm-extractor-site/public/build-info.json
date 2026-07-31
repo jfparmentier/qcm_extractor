@@ -1,6 +1,6 @@
 {
   "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T12:17:06Z",
+  "generated_at": "2026-07-31T14:40:00Z",
   "application_version": "0.4.0",
   "dependencies": {
     "react": "19.2.8",
@@ -13,6 +13,6 @@
     "https://cdn.jsdelivr.net"
   ],
   "artifact": "phase3-qcm-extractor-deployment",
-  "version": "3.1.0",
-  "notes": "Cartographie longue exécutée en mode asynchrone avec interrogation périodique, annulation et jeton de suivi signé."
+  "version": "3.1.1",
+  "notes": "Cartographie asynchrone avec quota MAMP distinct, suivi périodique, annulation et jeton signé."
 }

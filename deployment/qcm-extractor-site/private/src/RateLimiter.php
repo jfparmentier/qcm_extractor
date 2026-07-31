@@ -20,11 +20,16 @@ final class RateLimiter
         $window = $this->config->rateLimitWindowSeconds;
         $bucket = intdiv($now, $window);
         $resetAt = ($bucket + 1) * $window;
-        $key = hash('sha256', $clientAddress . '|' . $operation->value . '|' . $bucket);
+        $isLocalDevelopment = $this->isLocalDevelopmentRequest($clientAddress);
+        $limit = $isLocalDevelopment
+            ? $this->config->rateLimitLocalRequests
+            : $this->config->rateLimitRequests;
+        $scope = $isLocalDevelopment ? 'local' : 'standard';
+        $key = hash('sha256', $clientAddress . '|' . $operation->value . '|' . $scope . '|' . $bucket);
         $ttl = max(1, $resetAt - $now + 2);
 
         $count = match ($this->config->rateLimitBackend) {
-            'apcu' => $this->consumeApcu($key, $ttl),
+            'apcu' => $this->consumeApcu($key, $ttl, $limit),
             'file' => $this->consumeFile($key, $now, $window),
             default => throw new ApiException(
                 'RATE_LIMIT_UNAVAILABLE',
@@ -34,18 +39,49 @@ final class RateLimiter
             ),
         };
 
-        $remaining = max(0, $this->config->rateLimitRequests - $count);
-        header('X-RateLimit-Limit: ' . $this->config->rateLimitRequests);
+        $remaining = max(0, $limit - $count);
+        header('X-RateLimit-Limit: ' . $limit);
         header('X-RateLimit-Remaining: ' . $remaining);
         header('X-RateLimit-Reset: ' . $resetAt);
+        header('X-RateLimit-Scope: ' . $scope);
 
-        if ($count > $this->config->rateLimitRequests) {
-            header('Retry-After: ' . max(1, $resetAt - $now));
-            throw new ApiException('RATE_LIMIT_EXCEEDED', 'Trop de requêtes ont été envoyées.', 429, true);
+        if ($count > $limit) {
+            $retryAfter = max(1, $resetAt - $now);
+            header('Retry-After: ' . $retryAfter);
+            $minutes = max(1, (int) ceil($retryAfter / 60));
+            throw new ApiException(
+                'RATE_LIMIT_EXCEEDED',
+                "Trop de requêtes ont été envoyées. Réessayez dans environ {$minutes} minute(s).",
+                429,
+                true,
+            );
         }
     }
 
-    private function consumeApcu(string $key, int $ttl): int
+    private function isLocalDevelopmentRequest(string $clientAddress): bool
+    {
+        $isLoopback = $clientAddress === '::1'
+            || preg_match('/^127(?:\.\d{1,3}){3}$/', $clientAddress) === 1;
+        if (!$isLoopback) {
+            return false;
+        }
+
+        $rawHost = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '')));
+        if ($rawHost === '') {
+            return false;
+        }
+
+        if (str_starts_with($rawHost, '[')) {
+            $closingBracket = strpos($rawHost, ']');
+            $host = $closingBracket === false ? $rawHost : substr($rawHost, 1, $closingBracket - 1);
+        } else {
+            $host = explode(':', $rawHost, 2)[0];
+        }
+
+        return in_array($host, ['localhost', '127.0.0.1', '::1'], true);
+    }
+
+    private function consumeApcu(string $key, int $ttl, int $limit): int
     {
         if (
             !function_exists('apcu_add')
@@ -69,7 +105,7 @@ final class RateLimiter
         $incremented = apcu_inc($apcuKey, 1, $success, $ttl);
         return $success && is_int($incremented)
             ? $incremented
-            : $this->config->rateLimitRequests + 1;
+            : $limit + 1;
     }
 
     private function consumeFile(string $key, int $now, int $window): int

@@ -27,11 +27,20 @@ return [
     'QCM_REQUEST_TIMEOUT_SECONDS' => '120',
     'QCM_PHP_MAX_EXECUTION_SECONDS' => '150',
 
+    // Première passe asynchrone : les requêtes PHP restent courtes, même pour un PDF long.
+    'QCM_BACKGROUND_START_TIMEOUT_SECONDS' => '25',
+    'QCM_BACKGROUND_POLL_TIMEOUT_SECONDS' => '20',
+    'QCM_BACKGROUND_POLL_INTERVAL_MS' => '2000',
+    'QCM_BACKGROUND_JOB_TTL_SECONDS' => '900',
+
     // Compatible avec OVH mutualisé et MAMP, sans dépendre d’APCu.
     // Seuls de petits compteurs anonymisés sont écrits; les PDF ne sont jamais stockés.
     'QCM_RATE_LIMIT_BACKEND' => 'file',
     'QCM_RATE_LIMIT_STORAGE_DIR' => dirname(__DIR__) . '/runtime/rate-limit',
+    // Limite standard appliquée sur le site public.
     'QCM_RATE_LIMIT_REQUESTS' => '10',
+    // Limite distincte pour MAMP, uniquement si le client ET le nom d’hôte sont locaux.
+    'QCM_RATE_LIMIT_LOCAL_REQUESTS' => '100',
     'QCM_RATE_LIMIT_WINDOW_SECONDS' => '3600',
 
     // Journal technique sans PDF, prompt ni clé API. Utile pour diagnostiquer MAMP/OVH.

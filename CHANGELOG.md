@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 3.1.1 — Quota local distinct pour MAMP
+
+- identification stricte des requêtes locales par l’adresse de boucle locale et le nom d’hôte ;
+- limite locale configurable avec `QCM_RATE_LIMIT_LOCAL_REQUESTS`, fixée à 100 par défaut ;
+- maintien de la limite publique à 10 démarrages d’analyse par heure et par adresse IP ;
+- séparation des clés de compteur locales et publiques ;
+- ajout des paramètres de limitation au diagnostic ;
+- message 429 enrichi avec une estimation du délai avant réinitialisation ;
+- confirmation que les interrogations de statut et les annulations ne consomment pas le quota.
+
 ## 3.1.0 — Cartographie asynchrone des documents longs
 
 - lancement de la première passe avec `background: true` ;

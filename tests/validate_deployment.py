@@ -66,6 +66,7 @@ runtime = (PRIVATE / "config" / "runtime.php").read_text(encoding="utf-8")
 assert "\'OPENAI_API_KEY\' => \'\'" in runtime
 assert "QCM_RATE_LIMIT_BACKEND" in runtime and "'file'" in runtime
 assert "QCM_RATE_LIMIT_STORAGE_DIR" in runtime
+assert "QCM_RATE_LIMIT_LOCAL_REQUESTS" in runtime
 assert "QCM_DIAGNOSTIC_LOG_PATH" in runtime
 assert "gpt-5-mini" in runtime
 assert "QCM_MAPPING_REASONING_EFFORT" in runtime
@@ -84,6 +85,8 @@ assert "?job=" not in client
 rate_limiter = (PRIVATE / "src" / "RateLimiter.php").read_text(encoding="utf-8")
 assert "flock(" in rate_limiter
 assert "*.count" in rate_limiter
+assert "isLocalDevelopmentRequest" in rate_limiter
+assert "X-RateLimit-Scope" in rate_limiter
 
 all_text = "\n".join(
     path.read_text(encoding="utf-8", errors="ignore")
@@ -99,4 +102,4 @@ for schema_name in ("mapping.openai.schema.json", "extraction.openai.schema.json
 assert not any(path.name == "node_modules" for path in SITE.rglob("*"))
 assert not any(path.suffix == ".map" for path in PUBLIC.rglob("*")), "Les source maps ne doivent pas être déployées."
 
-print("OK déploiement 3.1 : arborescence public/privé, cartographie asynchrone et absence de secret")
+print("OK déploiement 3.1.1 : quota MAMP distinct et limite publique conservée")

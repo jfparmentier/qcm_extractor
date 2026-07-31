@@ -78,7 +78,7 @@ final class OpenAiResponsesClient
             'Accept: application/json',
             'Accept-Encoding: identity',
             'Expect:',
-            'User-Agent: qcm-extractor-proxy/3.1.0',
+            'User-Agent: qcm-extractor-proxy/3.1.1',
             'X-Client-Request-Id: ' . $requestId,
         ];
         if ($body !== null) {

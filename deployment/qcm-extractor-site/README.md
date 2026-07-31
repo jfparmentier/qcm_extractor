@@ -1,4 +1,4 @@
-# Dossier prêt pour OVH Hosting Perso et MAMP — Phase 3.1.0
+# Dossier prêt pour OVH Hosting Perso et MAMP — Phase 3.1.1
 
 ## Installation
 
@@ -21,3 +21,9 @@ private/runtime/logs/qcm-proxy.log
 ```
 
 Les événements `background_job_started`, `background_job_completed` et `background_job_cancelled` permettent de vérifier le déroulement sans exposer de contenu sensible.
+
+## Limitation de débit
+
+Le site public conserve une limite de 10 démarrages de cartographie par heure et par adresse IP. Sous MAMP, la limite est automatiquement portée à 100 lorsque la requête provient réellement de la machine locale et utilise un nom d’hôte local. Les requêtes de suivi de la tâche asynchrone ne sont pas comptabilisées.
+
+Ces valeurs peuvent être modifiées dans `private/config/runtime.php` avec `QCM_RATE_LIMIT_REQUESTS` et `QCM_RATE_LIMIT_LOCAL_REQUESTS`.
