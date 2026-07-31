@@ -81,6 +81,18 @@ python tests/validate_deployment.py
 
 Aucun test fourni n’envoie de document au fournisseur LLM.
 
-## Correctif 3.0.1
+## Correctif 3.0.2 — exécutions longues sous MAMP
 
-La charge utile `input_file.file_data` est maintenant envoyée sous la forme d’une data URL PDF Base64. Cette correction évite le rejet HTTP de la requête par la Responses API, précédemment remonté au navigateur sous la forme d’une erreur 502.
+Le proxy applique désormais un plafond PHP explicite supérieur au délai cURL. La configuration
+de déploiement utilise 140 secondes pour l’appel fournisseur et 155 secondes pour PHP. Les
+avertissements et erreurs fatales ne peuvent plus corrompre la réponse JSON : un dépassement
+de durée est retourné avec le code `PHP_EXECUTION_TIMEOUT`.
+
+Les valeurs se règlent dans `deployment/qcm-extractor-site/private/config/runtime.php` :
+
+```php
+'QCM_REQUEST_TIMEOUT_SECONDS' => '140',
+'QCM_PHP_MAX_EXECUTION_SECONDS' => '155',
+```
+
+Le second nombre doit toujours être strictement supérieur au premier.

@@ -18,6 +18,7 @@ final class Config
         public readonly int $extractionMaxOutputTokens,
         public readonly int $connectTimeoutSeconds,
         public readonly int $requestTimeoutSeconds,
+        public readonly int $phpMaxExecutionSeconds,
         public readonly int $maxUpstreamResponseBytes,
         public readonly array $allowedOrigins,
         public readonly bool $allowOriginlessRequests,
@@ -34,6 +35,15 @@ final class Config
     public static function fromEnvironment(string $projectRoot): self
     {
         $apiKey = self::requiredString('OPENAI_API_KEY');
+        $requestTimeoutSeconds = self::integer('QCM_REQUEST_TIMEOUT_SECONDS', 240, 10, 600);
+        $phpMaxExecutionSeconds = self::integer('QCM_PHP_MAX_EXECUTION_SECONDS', 255, 30, 660);
+        if ($phpMaxExecutionSeconds <= $requestTimeoutSeconds) {
+            throw new ApiException(
+                'SERVER_MISCONFIGURED',
+                'QCM_PHP_MAX_EXECUTION_SECONDS doit être supérieur à QCM_REQUEST_TIMEOUT_SECONDS.',
+                503,
+            );
+        }
 
         return new self(
             projectRoot: rtrim($projectRoot, '/'),
@@ -45,7 +55,8 @@ final class Config
             mappingMaxOutputTokens: self::integer('QCM_MAPPING_MAX_OUTPUT_TOKENS', 12_000, 512, 64_000),
             extractionMaxOutputTokens: self::integer('QCM_EXTRACTION_MAX_OUTPUT_TOKENS', 16_000, 512, 64_000),
             connectTimeoutSeconds: self::integer('QCM_CONNECT_TIMEOUT_SECONDS', 10, 1, 60),
-            requestTimeoutSeconds: self::integer('QCM_REQUEST_TIMEOUT_SECONDS', 240, 10, 600),
+            requestTimeoutSeconds: $requestTimeoutSeconds,
+            phpMaxExecutionSeconds: $phpMaxExecutionSeconds,
             maxUpstreamResponseBytes: self::integer('QCM_MAX_UPSTREAM_RESPONSE_BYTES', 16 * 1024 * 1024, 1_024, 64 * 1024 * 1024),
             allowedOrigins: self::csv('QCM_ALLOWED_ORIGINS'),
             allowOriginlessRequests: self::boolean('QCM_ALLOW_ORIGINLESS_REQUESTS', false),

@@ -8,9 +8,12 @@ use JsonException;
 
 final class ApiResponse
 {
+    private static bool $sent = false;
+
     /** @param array<string, mixed> $payload */
     public static function send(int $status, array $payload): void
     {
+        self::$sent = true;
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
 
@@ -20,5 +23,10 @@ final class ApiResponse
             http_response_code(500);
             echo '{"ok":false,"error":{"code":"RESPONSE_ENCODING_FAILED","message":"La réponse du proxy ne peut pas être encodée.","retryable":false}}';
         }
+    }
+
+    public static function wasSent(): bool
+    {
+        return self::$sent;
     }
 }

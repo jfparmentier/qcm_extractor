@@ -55,3 +55,20 @@ Le frontend charge React et AJV depuis `esm.sh`, ainsi que PDF.js et son worker 
 ## Correctif 3.0.1
 
 Le proxy transmet désormais le PDF à la Responses API sous la forme `data:application/pdf;base64,...`. Aucun changement de configuration MAMP ou OVH n’est requis.
+
+## Durée d’analyse sous MAMP
+
+Le proxy configure automatiquement `max_execution_time` avec `ini_set()` et
+`set_time_limit()`. Les valeurs par défaut sont définies dans `private/config/runtime.php` :
+
+```php
+'QCM_REQUEST_TIMEOUT_SECONDS' => '140',
+'QCM_PHP_MAX_EXECUTION_SECONDS' => '155',
+```
+
+Le plafond PHP doit être supérieur au délai cURL. Si MAMP interdit la modification dynamique,
+modifier le fichier `php.ini` de la version PHP active, fixer `max_execution_time = 180`, puis
+redémarrer les serveurs MAMP.
+
+Le proxy désactive l’affichage HTML des erreurs et renvoie désormais une erreur JSON exploitable
+même lorsqu’une erreur PHP fatale survient.

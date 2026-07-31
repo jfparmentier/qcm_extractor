@@ -50,3 +50,14 @@ Le port peut différer. Un VirtualHost peut aussi pointer directement vers `publ
 
 Une cartographie échouée peut être relancée ; l’appel en cours peut être annulé. La phase 4
 utilisera ces segments pour créer localement les sous-PDF.
+
+## Délais PHP et cURL
+
+La version 3.0.2 distingue deux limites :
+
+- `QCM_REQUEST_TIMEOUT_SECONDS` : durée maximale de l’appel au fournisseur ;
+- `QCM_PHP_MAX_EXECUTION_SECONDS` : durée maximale du script PHP.
+
+La seconde doit être strictement supérieure à la première. La configuration commune OVH/MAMP
+utilise respectivement 140 et 155 secondes afin de laisser au proxy le temps de transformer un
+échec cURL en réponse JSON avant l’arrêt du processus PHP.

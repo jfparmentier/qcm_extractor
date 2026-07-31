@@ -1,11 +1,12 @@
 ; Configuration minimale indicative pour PHP-FPM ou Apache mod_php.
 memory_limit = 256M
 post_max_size = 32M
-max_execution_time = 300
+max_execution_time = 255
 max_input_time = 60
 expose_php = Off
 log_errors = On
 display_errors = Off
+html_errors = Off
 
-; APCu est utilisé uniquement pour les compteurs de limitation de débit.
-apc.enabled = 1
+; Le proxy applique aussi QCM_PHP_MAX_EXECUTION_SECONDS avec ini_set()/set_time_limit().
+; Le délai PHP doit rester supérieur à QCM_REQUEST_TIMEOUT_SECONDS.

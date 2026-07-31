@@ -44,6 +44,8 @@ putenv('QCM_OPENAI_EXTRACTION_MODEL=gpt-test-extraction');
 putenv('QCM_RATE_LIMIT_BACKEND=disabled');
 putenv('QCM_ALLOWED_ORIGINS=http://localhost:5173');
 putenv('QCM_ALLOW_ORIGINLESS_REQUESTS=true');
+putenv('QCM_REQUEST_TIMEOUT_SECONDS=140');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
 putenv('QCM_TRUSTED_PROXY_ADDRESSES=192.0.2.1');
 
 $backendRoot = dirname(__DIR__);
@@ -51,6 +53,19 @@ $config = Config::fromEnvironment($backendRoot);
 expect($config->mappingModel === 'gpt-test-mapping', 'Modèle de cartographie incorrect.');
 expect($config->extractionModel === 'gpt-test-extraction', 'Modèle d’extraction incorrect.');
 expect($config->maxPdfBytes === 25 * 1024 * 1024, 'Limite PDF par défaut incorrecte.');
+expect($config->requestTimeoutSeconds === 140, 'Délai cURL incorrect.');
+expect($config->phpMaxExecutionSeconds === 155, 'Délai PHP incorrect.');
+expect($config->phpMaxExecutionSeconds > $config->requestTimeoutSeconds, 'Le délai PHP doit dépasser le délai cURL.');
+
+
+putenv('QCM_REQUEST_TIMEOUT_SECONDS=155');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
+expectApiException(
+    static fn () => Config::fromEnvironment($backendRoot),
+    'SERVER_MISCONFIGURED',
+);
+putenv('QCM_REQUEST_TIMEOUT_SECONDS=140');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
 
 expect(Filename::sanitize('../cours') === 'cours.pdf', 'Assainissement du nom incorrect.');
 expect(Filename::sanitize('chapitre%201.pdf') === 'chapitre 1.pdf', 'Décodage du nom incorrect.');
@@ -173,4 +188,4 @@ expectApiException(
     'LLM_REFUSAL',
 );
 
-print("OK phase 2 PHP : validation, charge utile sécurisée et normalisation des réponses\n");
+print("OK phase 3.0.2 PHP : délais cohérents, charge utile sécurisée et réponses JSON robustes\n");

@@ -11,13 +11,22 @@ final class Application
     public static function run(Operation $operation, string $backendRoot): void
     {
         $requestId = self::requestId();
+        $bufferLevel = ob_get_level();
+        ob_start();
+
+        self::hardenPhpOutput();
+        self::registerFatalHandler($requestId, $operation, $bufferLevel);
+
         SecurityHeaders::apply();
         header('X-QCM-Request-Id: ' . $requestId);
 
         try {
             $config = Config::fromEnvironment($backendRoot);
+            self::configureExecutionLimit($config->phpMaxExecutionSeconds);
+
             $originPolicy = new OriginPolicy($config);
             if ($originPolicy->handlePreflight()) {
+                self::discardBufferedOutput($bufferLevel);
                 return;
             }
             $originPolicy->enforceForRequest();
@@ -35,6 +44,7 @@ final class Application
             $upstream = (new OpenAiResponsesClient($config))->create($payload, $requestId);
             $result = (new OpenAiResponseParser())->parse($upstream);
 
+            self::discardBufferedOutput($bufferLevel);
             ApiResponse::send(200, [
                 'ok' => true,
                 'request_id' => $requestId,
@@ -44,6 +54,7 @@ final class Application
             ]);
         } catch (ApiException $exception) {
             self::logFailure($requestId, $operation, $exception->errorCode, $exception->httpStatus);
+            self::discardBufferedOutput($bufferLevel);
             ApiResponse::send($exception->httpStatus, [
                 'ok' => false,
                 'request_id' => $requestId,
@@ -55,6 +66,7 @@ final class Application
             ]);
         } catch (Throwable $exception) {
             self::logFailure($requestId, $operation, 'INTERNAL_ERROR', 500, $exception::class);
+            self::discardBufferedOutput($bufferLevel);
             ApiResponse::send(500, [
                 'ok' => false,
                 'request_id' => $requestId,
@@ -64,6 +76,72 @@ final class Application
                     'retryable' => false,
                 ],
             ]);
+        }
+    }
+
+    private static function hardenPhpOutput(): void
+    {
+        @ini_set('display_errors', '0');
+        @ini_set('display_startup_errors', '0');
+        @ini_set('html_errors', '0');
+        @ini_set('log_errors', '1');
+    }
+
+    private static function configureExecutionLimit(int $seconds): void
+    {
+        @ini_set('max_execution_time', (string) $seconds);
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($seconds);
+        }
+    }
+
+    private static function registerFatalHandler(
+        string $requestId,
+        Operation $operation,
+        int $bufferLevel,
+    ): void {
+        register_shutdown_function(static function () use ($requestId, $operation, $bufferLevel): void {
+            $error = error_get_last();
+            if ($error === null || ApiResponse::wasSent()) {
+                return;
+            }
+
+            $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR];
+            if (!in_array((int) ($error['type'] ?? 0), $fatalTypes, true)) {
+                return;
+            }
+
+            $message = is_string($error['message'] ?? null) ? $error['message'] : '';
+            $isTimeout = stripos($message, 'maximum execution time') !== false;
+            $code = $isTimeout ? 'PHP_EXECUTION_TIMEOUT' : 'PHP_FATAL_ERROR';
+            $publicMessage = $isTimeout
+                ? 'Le délai maximal d’exécution PHP a été atteint avant la fin de l’analyse.'
+                : 'Le processus PHP a été interrompu par une erreur fatale.';
+
+            self::logFailure($requestId, $operation, $code, 500, 'PHP_FATAL');
+            self::discardBufferedOutput($bufferLevel);
+
+            if (!headers_sent()) {
+                SecurityHeaders::apply();
+                header('X-QCM-Request-Id: ' . $requestId);
+            }
+
+            ApiResponse::send(500, [
+                'ok' => false,
+                'request_id' => $requestId,
+                'error' => [
+                    'code' => $code,
+                    'message' => $publicMessage,
+                    'retryable' => $isTimeout,
+                ],
+            ]);
+        });
+    }
+
+    private static function discardBufferedOutput(int $targetLevel): void
+    {
+        while (ob_get_level() > $targetLevel) {
+            @ob_end_clean();
         }
     }
 

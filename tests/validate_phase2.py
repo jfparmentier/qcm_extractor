@@ -135,7 +135,7 @@ assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase3_qcm_extractor"
-assert manifest["version"] == "3.0.1"
+assert manifest["version"] == "3.0.2"
 assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:

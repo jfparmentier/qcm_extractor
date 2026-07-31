@@ -1,10 +1,19 @@
 # Journal des modifications
 
-## 3.0.1 — Correctif de transmission des PDF
+## 3.0.2 — Correctif du délai PHP et des réponses 500
 
-- correction de `input_file.file_data` pour utiliser une data URL `data:application/pdf;base64,...` conforme aux exemples de la Responses API ;
-- ajout d’un test de non-régression sur le préfixe MIME et le décodage Base64 ;
-- mise à jour des numéros de version et du manifeste.
+- configuration automatique de `max_execution_time` et appel à `set_time_limit()` ;
+- ajout de `QCM_PHP_MAX_EXECUTION_SECONDS`, obligatoirement supérieur au délai cURL ;
+- valeurs de déploiement ramenées à 140 s pour cURL et 155 s pour PHP ;
+- désactivation de l’affichage HTML des erreurs PHP ;
+- ajout d’un tampon de sortie empêchant les avertissements de corrompre le JSON ;
+- ajout d’un gestionnaire d’arrêt pour les erreurs fatales et les délais PHP ;
+- ajout des codes `PHP_EXECUTION_TIMEOUT` et `PHP_FATAL_ERROR` ;
+- mise à jour des tests et de la documentation MAMP/OVH.
+
+## 3.0.1 — Correctif de transmission du PDF
+
+- transmission du PDF incorporé sous forme de data URL `data:application/pdf;base64,...`.
 
 ## 3.0.0 — Phase 3 : première passe de cartographie
 

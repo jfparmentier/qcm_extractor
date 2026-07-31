@@ -72,6 +72,20 @@ assert "AbortError" in client
 assert 'credentials: "omit"' in client
 assert "OPENAI_API_KEY" not in client
 
+application = (ROOT / "backend/src/Application.php").read_text(encoding="utf-8")
+for marker in (
+    "configureExecutionLimit",
+    "registerFatalHandler",
+    "PHP_EXECUTION_TIMEOUT",
+    "discardBufferedOutput",
+    "display_errors",
+):
+    assert marker in application, f"Protection PHP absente : {marker}"
+
+config_php = (ROOT / "backend/src/Config.php").read_text(encoding="utf-8")
+assert "QCM_PHP_MAX_EXECUTION_SECONDS" in config_php
+assert "doit être supérieur à QCM_REQUEST_TIMEOUT_SECONDS" in config_php
+
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 3" in index
 assert '"ajv/dist/2020"' in index
@@ -85,7 +99,7 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "3.0.1"
+assert build_info["version"] == "3.0.2"
 assert build_info["application_version"] == "0.3.1"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
