@@ -20,7 +20,7 @@ avec PDF.js. Aucun endpoint PHP ni appel réseau applicatif n’est utilisé dan
 
 ## Prérequis
 
-- Node.js 22.12 ou version ultérieure compatible ;
+- Node.js 22.13 ou version ultérieure compatible ;
 - npm.
 
 ## Installation et exécution
@@ -89,10 +89,13 @@ Un rechargement ou la fermeture de l’onglet supprime donc le projet courant.
 
 ### Worker PDF.js
 
-Dans la construction Vite standard, le worker est importé comme ressource avec le suffixe
-`?url` et incorporé au paquet. Dans le dossier `dist/` préconstruit fourni dans l’archive,
-PDF.js et son worker sont chargés depuis jsDelivr afin de rendre le déploiement immédiatement
-possible sans installation préalable des dépendances.
+Le worker PDF.js est référencé par une URL jsDelivr strictement versionnée. Ce choix évite
+les échecs observés avec certains serveurs locaux qui ne publient pas les fichiers `.mjs`
+avec un type MIME JavaScript approprié. La construction Vite standard ne génère donc plus
+de fichier local `pdf.worker.min-*.mjs`.
+
+Le navigateur doit pouvoir accéder à `https://cdn.jsdelivr.net`. Le PDF sélectionné n’est
+pas transmis à ce CDN : seul le programme du worker PDF.js y est téléchargé.
 
 ### Miniatures
 

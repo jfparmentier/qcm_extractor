@@ -23,7 +23,7 @@ export default function App(): React.ReactElement {
 
   useEffect(() => {
     return () => {
-      void activeDocumentRef.current?.destroy();
+      void activeDocumentRef.current?.loadingTask.destroy();
     };
   }, []);
 
@@ -32,7 +32,7 @@ export default function App(): React.ReactElement {
     const document = activeDocumentRef.current;
     activeDocumentRef.current = null;
     dispatch({ type: "RESET" });
-    void document?.destroy();
+    void document?.loadingTask.destroy();
   }, []);
 
   const handleFileSelected = useCallback(async (file: File): Promise<void> => {
@@ -42,13 +42,13 @@ export default function App(): React.ReactElement {
     const previousDocument = activeDocumentRef.current;
     activeDocumentRef.current = null;
     dispatch({ type: "LOAD_STARTED" });
-    await previousDocument?.destroy().catch(() => undefined);
+    await previousDocument?.loadingTask.destroy().catch(() => undefined);
 
     try {
       const pdf = await loadPdfFromFile(file);
 
       if (loadSequenceRef.current !== sequence) {
-        await pdf.document.destroy();
+        await pdf.document.loadingTask.destroy();
         return;
       }
 

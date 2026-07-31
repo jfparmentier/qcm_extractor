@@ -40,7 +40,8 @@ Le fichier PDF demeure dans la mémoire du navigateur. L’application n’emplo
 
 Le dossier `frontend/dist/` fourni est une construction portable reposant sur des modules ES.
 Il charge React depuis `esm.sh` et PDF.js depuis `cdn.jsdelivr.net`, mais ne transmet jamais le
-PDF sélectionné. Pour un paquet totalement autonome, exécutez `npm install` puis
+PDF sélectionné. La construction Vite standard utilise également le worker PDF.js versionné
+depuis jsDelivr afin d’éviter les incompatibilités MIME des fichiers `.mjs` sur certains serveurs. Pour un paquet totalement autonome, exécutez `npm install` puis
 `npm run build` sur une machine disposant d’un accès au registre npm.
 
 ## Démarrage du frontend

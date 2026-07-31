@@ -1,5 +1,33 @@
 # Journal des modifications
 
+## 1.1.4 — Correctif de chargement du worker PDF.js
+
+### Corrigé
+
+- suppression de l’import Vite `pdf.worker.min.mjs?url`, qui produisait un fichier local `.mjs` susceptible d’être servi avec un type MIME incorrect ;
+- configuration du worker PDF.js par une URL jsDelivr strictement versionnée ;
+- absence de fichier `pdf.worker.min-*.mjs` dans la construction Vite ;
+- documentation de la dépendance réseau du worker ;
+- mise à jour des validations et du manifeste.
+
+## 1.1.3 — Correctif DocumentInitParameters
+
+### Corrigé
+
+- suppression de l’option `isEvalSupported`, qui ne fait pas partie de `DocumentInitParameters` dans `pdfjs-dist` 6.1.200 ;
+- conservation des options compatibles `data` et `useSystemFonts` ;
+- régénération de la distribution portable et du manifeste.
+
+## 1.1.2 — Correctif de compatibilité PDF.js 6.1.200
+
+### Corrigé
+
+- suppression de l’import racine non exporté `DocumentInitParameters` ;
+- destruction des ressources par `PDFDocumentLoadingTask.destroy()` ;
+- compatibilité du typage avec `pdfjs-dist` 6.1.200 ;
+- version minimale de Node.js alignée sur l’exigence de PDF.js (`22.13.0`) ;
+- régénération du dossier `frontend/dist/`.
+
 ## 1.1.1 — Phase 1 avec distribution déployable
 
 ### Ajouté

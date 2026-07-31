@@ -1,17 +1,17 @@
 {
   "artifact": "phase1_qcm_extractor",
-  "version": "1.1.1",
+  "version": "1.1.4",
   "phase": 1,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "564fd416949bc9f5727f3c95d14c9c03362cb00dcd11a7bfb840c26781894a2e",
-      "bytes": 899
+      "sha256": "a0fcb912b6d81f52452ae712c0a67cd4f822bfa37e575a9176ff93d09999e99c",
+      "bytes": 2097
     },
     {
       "path": "README.md",
-      "sha256": "cfcf5369ce8534b8ad55e398e1d84796a1e58953b0636bcac2da922e59b1a351",
-      "bytes": 3694
+      "sha256": "17f2384ce3da232978e593a9c1b8c25ab123781bfa025d1c4ae5cb231251ebb5",
+      "bytes": 3874
     },
     {
       "path": "examples/export.example.json",
@@ -40,8 +40,8 @@
     },
     {
       "path": "frontend/README.md",
-      "sha256": "b50a6316517d947cc7d017d74fe62201e76b53fb926fba2709df88a583bed6a4",
-      "bytes": 3826
+      "sha256": "a7156b9b166f9450ff5c8ef337b171bc0616ff805c54b0978a2dd52e81845238",
+      "bytes": 3987
     },
     {
       "path": "frontend/dist/DEPLOYMENT.md",
@@ -50,8 +50,8 @@
     },
     {
       "path": "frontend/dist/assets/App.js",
-      "sha256": "e2b7857dfa6c1e86056d4fe9970db1ab16a486102296903e225ba08a6f6054e5",
-      "bytes": 4119
+      "sha256": "b8843d497de946e696e9a3fdc970047a7a2990a5ff085dff31e1479f664c7c2f",
+      "bytes": 4167
     },
     {
       "path": "frontend/dist/assets/app.css",
@@ -120,8 +120,8 @@
     },
     {
       "path": "frontend/dist/assets/pdf/loadPdf.js",
-      "sha256": "21e94f88a05e26a4845fd9ae3e3a638af7fc0684ade70153ad6473dec22fe424",
-      "bytes": 2875
+      "sha256": "01ccd0381bfb0f1d55d2cc23a23199885c6164e62e04b6b5f439b5f8795c4bc2",
+      "bytes": 2866
     },
     {
       "path": "frontend/dist/assets/pdf/pdfWorker.js",
@@ -130,7 +130,7 @@
     },
     {
       "path": "frontend/dist/build-info.json",
-      "sha256": "0f71ff2e577fcbe6e977298feedef5d7eab6fff82965cd349d0ac0b3776b6314",
+      "sha256": "4b57d1849ce317fb3aa59207e7c95ee6383a5f2260f1d02b56a05efd55b0fe99",
       "bytes": 317
     },
     {
@@ -145,18 +145,18 @@
     },
     {
       "path": "frontend/package.json",
-      "sha256": "8d81e9a03f81cc5a11d7ec4773fa82be01861dc2f83d7f0c17b87265daeb8d70",
-      "bytes": 603
+      "sha256": "9ad401d43c642261f4ea3c267a90f953eb678a43858adc12d666cc4de41c20da",
+      "bytes": 611
     },
     {
       "path": "frontend/scripts/build-portable-dist.mjs",
-      "sha256": "e90c82697e0984d111afdf801c8ff4fb824a028ecdae6535548dde05d5d3ec2c",
+      "sha256": "c03c275ccbfecd94dd639cc9516c1d35e2f28dd3705b6c1153ed035b34d3a1c4",
       "bytes": 6008
     },
     {
       "path": "frontend/src/App.tsx",
-      "sha256": "865177e34d18021260cdc4ead2649f4b0b82ee4d040f5bce188a60fc81e011ec",
-      "bytes": 3968
+      "sha256": "40f636ba06cfd514e757ce0bef8cd0477983fbc1aa93ec41450e7c766b3ea281",
+      "bytes": 4016
     },
     {
       "path": "frontend/src/components/ErrorPanel.tsx",
@@ -220,13 +220,13 @@
     },
     {
       "path": "frontend/src/pdf/loadPdf.ts",
-      "sha256": "abb54972cebb251540bd5aa39a083aec0489551a0d05af53dd7f162983fb5f3b",
-      "bytes": 3005
+      "sha256": "54febe9cce9b83c332232867fbc62b883b9d027ad3bb6ec019209088eba8b01a",
+      "bytes": 3007
     },
     {
       "path": "frontend/src/pdf/pdfWorker.ts",
-      "sha256": "db708a67fadfb93d97932026045b1d7ff02cff4d65aeaec06baddeae59875508",
-      "bytes": 159
+      "sha256": "55e1b7bb9037b8c208f9a7479f679c558695ebb314a7e965f68d6f56feda9a5e",
+      "bytes": 452
     },
     {
       "path": "frontend/src/styles/app.css",
@@ -285,7 +285,7 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "89041e1be3f705dbb482b931840675084a344e275437f3a366956b6cbc9d4c64",
+      "sha256": "efd311f08367ea268f2e35e6e7559c9114140f7634c34bce2961ec117b787480",
       "bytes": 1296
     },
     {
@@ -295,8 +295,8 @@
     },
     {
       "path": "tests/validate_phase1.py",
-      "sha256": "592d2aac4b013ab54149c73e77a766543b5d50b35fe707adb840051299c93074",
-      "bytes": 5530
+      "sha256": "6bcccdd08641c06720a5e31820c9d8ebe3a801bcfb19c7e9472348000c13523f",
+      "bytes": 5992
     }
   ]
 }

@@ -84,11 +84,13 @@ assert "MAX_ZOOM = 2.5" in state_source
 loader_source = (FRONTEND / "src/pdf/loadPdf.ts").read_text(encoding="utf-8")
 assert '"%PDF-"' in loader_source
 assert "MAX_PDF_SIZE_BYTES" in loader_source
-assert "isEvalSupported: false" in loader_source
+assert "isEvalSupported" not in loader_source, "Option absente de DocumentInitParameters dans PDF.js 6.1.200."
+assert "useSystemFonts: true" in loader_source
 
 worker_source = (FRONTEND / "src/pdf/pdfWorker.ts").read_text(encoding="utf-8")
 assert "GlobalWorkerOptions.workerSrc" in worker_source
-assert "pdf.worker.min.mjs?url" in worker_source
+assert "pdf.worker.min.mjs?url" not in worker_source
+assert "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs" in worker_source
 
 source_files = sorted((FRONTEND / "src").rglob("*"))
 source_text = "\n".join(
@@ -101,12 +103,14 @@ for pattern, description in FORBIDDEN_SOURCE_PATTERNS.items():
 
 assert "IntersectionObserver" in source_text, "Chargement paresseux des miniatures absent."
 assert "devicePixelRatio" in source_text, "Rendu haute densité absent."
-assert ".destroy()" in source_text, "Libération explicite du PDF absente."
+assert "loadingTask.destroy()" in source_text, "Libération explicite via PDFDocumentLoadingTask absente."
+assert "DocumentInitParameters" not in loader_source, "Import racine incompatible avec PDF.js 6.1.200."
+assert ".document.destroy()" not in source_text, "PDFDocumentProxy.destroy() n’existe plus dans PDF.js 6.1.200."
 assert "useKeyboardNavigation" in source_text, "Navigation clavier absente."
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase1_qcm_extractor"
-assert manifest["version"] == "1.1.1"
+assert manifest["version"] == "1.1.4"
 assert manifest["phase"] == 1
 
 manifest_paths = set()

@@ -1,6 +1,6 @@
 import {
   getDocument,
-  type DocumentInitParameters,
+  type PDFDocumentLoadingTask,
   type PDFDocumentProxy
 } from "pdfjs-dist";
 import type { LoadedPdf, ProjectError } from "../domain/projectState";
@@ -67,16 +67,16 @@ export async function loadPdfFromFile(file: File): Promise<LoadedPdf> {
     } satisfies ProjectError;
   }
 
+  let loadingTask: PDFDocumentLoadingTask | null = null;
   let document: PDFDocumentProxy | null = null;
 
   try {
-    const parameters: DocumentInitParameters = {
+    loadingTask = getDocument({
       data: byteView.slice(),
-      isEvalSupported: false,
       useSystemFonts: true
-    };
+    });
 
-    document = await getDocument(parameters).promise;
+    document = await loadingTask.promise;
     const metadata = await document.getMetadata().catch(() => null);
     const info = metadata?.info as Record<string, unknown> | undefined;
 
@@ -90,7 +90,7 @@ export async function loadPdfFromFile(file: File): Promise<LoadedPdf> {
       author: normalizeMetadataValue(info?.Author)
     };
   } catch (error: unknown) {
-    await document?.destroy().catch(() => undefined);
+    await loadingTask?.destroy().catch(() => undefined);
 
     if (isProjectError(error)) {
       throw error;

@@ -166,7 +166,7 @@ await fs.writeFile(path.join(distDir, 'DEPLOYMENT.md'), deployment, 'utf8');
 const buildInfo = {
   build_format: 'portable-es-modules',
   generated_at: new Date().toISOString(),
-  application_version: '0.1.0',
+  application_version: '0.1.3',
   dependencies: {
     react: '19.2.8',
     react_dom: '19.2.8',
