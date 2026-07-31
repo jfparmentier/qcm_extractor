@@ -1,18 +1,21 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js";
 import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js";
 import { analyzeDocumentMap, extractQuestions, ProxyApiError } from "./api/proxyClient.js";
 import { createBatchPlan } from "./domain/batchPlan.js";
 import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js";
 import { createExtractionContext } from "./domain/extractionContext.js";
-import { ExtractionValidationError, validateAndNormalizeExtractionResult } from "./domain/extraction.js";
+import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js";
+import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js";
+import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js";
 import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js";
 import { ErrorPanel } from "./components/ErrorPanel.js";
 import { FileDropZone } from "./components/FileDropZone.js";
 import { LoadingPanel } from "./components/LoadingPanel.js";
 import { PdfViewer } from "./components/PdfViewer.js";
+
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
         return {
@@ -75,6 +78,20 @@ function artifactArrayBuffer(bytes) {
 function delay(milliseconds) {
     return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
+const EMPTY_ILLUSTRATION_PLAN = {
+    candidates: [],
+    segmentCount: 0,
+    questionCount: 0,
+    warnings: [],
+    fingerprint: ""
+};
+function illustrationErrorMessage(error) {
+    if (error instanceof IllustrationGenerationError)
+        return error.message;
+    if (error instanceof Error)
+        return error.message;
+    return "La génération locale de l’illustration a échoué.";
+}
 export default function App() {
     const [state, dispatch] = useReducer(projectReducer, INITIAL_PROJECT_STATE);
     const activeDocumentRef = useRef(state.pdf?.document ?? null);
@@ -83,15 +100,46 @@ export default function App() {
     const batchGenerationSequenceRef = useRef(0);
     const extractionRunSequenceRef = useRef(0);
     const extractionControllersRef = useRef(new Map());
+    const illustrationAbortRef = useRef(null);
+    const illustrationAssetsRef = useRef({});
+    const illustrationFingerprintRef = useRef("");
+    const [illustrationGeneration, setIllustrationGeneration] = useState(INITIAL_ILLUSTRATION_GENERATION_STATE);
+    const completedExtractions = useMemo(() => Object.entries(state.extraction.batches).flatMap(([batchId, batchState]) => batchState.status === "completed" && batchState.result !== null && batchState.meta !== null
+        ? [{ batchId, result: batchState.result, meta: batchState.meta }]
+        : []), [state.extraction.batches]);
+    const mergedExtraction = useMemo(() => state.mapping.data === null
+        ? null
+        : mergeExtractionResults(state.mapping.data, completedExtractions), [completedExtractions, state.mapping.data]);
+    const illustrationPlan = useMemo(() => state.mapping.data === null || mergedExtraction === null
+        ? EMPTY_ILLUSTRATION_PLAN
+        : createIllustrationPlan(state.mapping.data, mergedExtraction.questions), [mergedExtraction, state.mapping.data]);
     useEffect(() => {
         activeDocumentRef.current = state.pdf?.document ?? null;
     }, [state.pdf]);
+    useEffect(() => {
+        illustrationAssetsRef.current = illustrationGeneration.assets;
+    }, [illustrationGeneration.assets]);
+    const resetIllustrations = useCallback(() => {
+        illustrationAbortRef.current?.abort();
+        illustrationAbortRef.current = null;
+        revokeIllustrationAssets(illustrationAssetsRef.current);
+        illustrationAssetsRef.current = {};
+        setIllustrationGeneration(INITIAL_ILLUSTRATION_GENERATION_STATE);
+    }, []);
+    useEffect(() => {
+        if (illustrationFingerprintRef.current === illustrationPlan.fingerprint)
+            return;
+        illustrationFingerprintRef.current = illustrationPlan.fingerprint;
+        resetIllustrations();
+    }, [illustrationPlan.fingerprint, resetIllustrations]);
     useEffect(() => {
         return () => {
             mappingAbortRef.current?.abort();
             extractionRunSequenceRef.current += 1;
             extractionControllersRef.current.forEach((controller) => controller.abort());
             extractionControllersRef.current.clear();
+            illustrationAbortRef.current?.abort();
+            revokeIllustrationAssets(illustrationAssetsRef.current);
             void activeDocumentRef.current?.loadingTask.destroy();
         };
     }, []);
@@ -103,11 +151,12 @@ export default function App() {
         extractionRunSequenceRef.current += 1;
         extractionControllersRef.current.forEach((controller) => controller.abort());
         extractionControllersRef.current.clear();
+        resetIllustrations();
         const document = activeDocumentRef.current;
         activeDocumentRef.current = null;
         dispatch({ type: "RESET" });
         void document?.loadingTask.destroy();
-    }, []);
+    }, [resetIllustrations]);
     const handleFileSelected = useCallback(async (file) => {
         const sequence = loadSequenceRef.current + 1;
         loadSequenceRef.current = sequence;
@@ -117,6 +166,7 @@ export default function App() {
         extractionRunSequenceRef.current += 1;
         extractionControllersRef.current.forEach((controller) => controller.abort());
         extractionControllersRef.current.clear();
+        resetIllustrations();
         const previousDocument = activeDocumentRef.current;
         activeDocumentRef.current = null;
         dispatch({ type: "LOAD_STARTED" });
@@ -145,7 +195,7 @@ export default function App() {
                     }
             });
         }
-    }, []);
+    }, [resetIllustrations]);
     const analyzeMapping = useCallback(async () => {
         const pdf = state.pdf;
         if (pdf === null || state.mapping.status === "running") {
@@ -495,6 +545,107 @@ export default function App() {
         extractionControllersRef.current.clear();
         dispatch({ type: "EXTRACTION_CLEARED" });
     }, []);
+    const runIllustrationGeneration = useCallback(async (candidates) => {
+        const pdf = state.pdf;
+        if (pdf === null || candidates.length === 0 || illustrationAbortRef.current !== null)
+            return;
+        const controller = new AbortController();
+        illustrationAbortRef.current = controller;
+        const targetIds = new Set(candidates.map((candidate) => candidate.id));
+        setIllustrationGeneration((previous) => ({
+            ...previous,
+            status: "running",
+            errors: Object.fromEntries(Object.entries(previous.errors).filter(([candidateId]) => !targetIds.has(candidateId))),
+            progress: {
+                completed: 0,
+                total: candidates.length,
+                currentPage: null,
+                currentCandidateId: null
+            },
+            startedAt: Date.now()
+        }));
+        try {
+            const generated = await generateIllustrationAssets(pdf.document, candidates, controller.signal, (progress) => setIllustrationGeneration((previous) => ({ ...previous, progress })));
+            if (illustrationAbortRef.current !== controller) {
+                generated.forEach((asset) => URL.revokeObjectURL(asset.previewUrl));
+                return;
+            }
+            const nextAssets = {
+                ...illustrationAssetsRef.current
+            };
+            generated.forEach((asset) => {
+                const previous = nextAssets[asset.id];
+                if (previous !== undefined)
+                    URL.revokeObjectURL(previous.previewUrl);
+                nextAssets[asset.id] = asset;
+            });
+            illustrationAssetsRef.current = nextAssets;
+            illustrationAbortRef.current = null;
+            setIllustrationGeneration((previous) => ({
+                ...previous,
+                status: "completed",
+                assets: nextAssets,
+                progress: null,
+                startedAt: null
+            }));
+        }
+        catch (error) {
+            if (illustrationAbortRef.current !== controller)
+                return;
+            illustrationAbortRef.current = null;
+            if (error instanceof DOMException && error.name === "AbortError") {
+                setIllustrationGeneration((previous) => ({
+                    ...previous,
+                    status: "cancelled",
+                    progress: null,
+                    startedAt: null
+                }));
+                return;
+            }
+            const failedId = error instanceof IllustrationGenerationError
+                ? error.candidateId
+                : null;
+            const message = illustrationErrorMessage(error);
+            const failedIds = failedId === null ? candidates.map((candidate) => candidate.id) : [failedId];
+            setIllustrationGeneration((previous) => ({
+                ...previous,
+                status: "failed",
+                errors: {
+                    ...previous.errors,
+                    ...Object.fromEntries(failedIds.map((candidateId) => [candidateId, message]))
+                },
+                progress: null,
+                startedAt: null
+            }));
+        }
+    }, [state.pdf]);
+    const generateAllIllustrations = useCallback(() => {
+        void runIllustrationGeneration(illustrationPlan.candidates);
+    }, [illustrationPlan.candidates, runIllustrationGeneration]);
+    const generateOneIllustration = useCallback((candidateId) => {
+        const candidate = illustrationPlan.candidates.find((entry) => entry.id === candidateId);
+        if (candidate !== undefined)
+            void runIllustrationGeneration([candidate]);
+    }, [illustrationPlan.candidates, runIllustrationGeneration]);
+    const cancelIllustrationGeneration = useCallback(() => {
+        illustrationAbortRef.current?.abort();
+        illustrationAbortRef.current = null;
+        setIllustrationGeneration((previous) => ({
+            ...previous,
+            status: "cancelled",
+            progress: null,
+            startedAt: null
+        }));
+    }, []);
+    const downloadIllustration = useCallback((candidateId) => {
+        const asset = illustrationAssetsRef.current[candidateId];
+        if (asset === undefined)
+            return;
+        const link = document.createElement("a");
+        link.href = asset.previewUrl;
+        link.download = asset.fileName;
+        link.click();
+    }, []);
     const zoomIn = useCallback(() => {
         dispatch({ type: "SET_ZOOM", zoom: state.zoom + ZOOM_STEP });
     }, [state.zoom]);
@@ -518,5 +669,5 @@ export default function App() {
         onZoomOut: zoomOut,
         onResetZoom: resetZoom
     });
-    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onClearBatches: clearBatches, onClose: closeDocument, onDownloadBatch: downloadBatch, onExtractAll: () => void extractAllBatches(), onExtractBatch: (batchId) => void extractSingleBatch(batchId), onCancelExtraction: cancelExtraction, onClearExtraction: clearExtraction, onGenerateAllBatches: () => void generateAllPlannedBatches(), onGenerateBatch: (batchId) => void generatePlannedBatch(batchId), onAddRegion: addRegion, onDeleteRegion: deleteRegion, onPageChange: setPage, onPlanBatches: planBatches, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateBatchSettings: updateBatchSettings, onUpdateExtractionSettings: updateExtractionSettings, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
+    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onClearBatches: clearBatches, onClose: closeDocument, onDownloadBatch: downloadBatch, onExtractAll: () => void extractAllBatches(), onExtractBatch: (batchId) => void extractSingleBatch(batchId), onCancelExtraction: cancelExtraction, onClearExtraction: clearExtraction, onGenerateAllBatches: () => void generateAllPlannedBatches(), onGenerateBatch: (batchId) => void generatePlannedBatch(batchId), onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onPageChange: setPage, onPlanBatches: planBatches, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateBatchSettings: updateBatchSettings, onUpdateExtractionSettings: updateExtractionSettings, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
 }

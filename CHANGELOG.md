@@ -1,5 +1,18 @@
 # Journal des modifications
 
+## 6.0.0 — Extraction et correction déterministe des illustrations
+
+- ajout d’un onglet « Images » après la seconde passe d’extraction ;
+- utilisation exclusive des zones `essential_image` et `decorative_image` définies dans la cartographie ;
+- rendu local haute résolution des pages avec réutilisation d’un même rendu pour plusieurs zones ;
+- découpe exacte des boîtes englobantes normalisées et génération de PNG avec fond blanc ;
+- association aux questions, textes alternatifs et jetons d’insertion issus de l’extraction ;
+- aperçu, dimensions, taille, téléchargement individuel et régénération locale ;
+- génération globale annulable et nettoyage systématique des URL objet ;
+- avertissements pour les zones trop petites, les métadonnées non associées et les images décrites sans zone ;
+- absence volontaire de retouche géométrique et de remplacement par un fichier local dans l’onglet Images ;
+- mise à jour du dossier portable OVH/MAMP sans création de `frontend/dist`.
+
 ## 5.0.1 — Correctif de compatibilité AJV strictTypes
 
 - ajout des types explicites dans les sous-schémas conditionnels utilisant `maxItems`, `minItems`, `maxLength` et `properties` ;

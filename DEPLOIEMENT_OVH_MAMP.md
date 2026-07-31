@@ -1,4 +1,4 @@
-# Déploiement sur OVH Hosting Perso et MAMP — version 5.0.1
+# Déploiement sur OVH Hosting Perso et MAMP — version 6.0.0
 
 Le dossier à copier est `deployment/qcm-extractor-site/`.
 

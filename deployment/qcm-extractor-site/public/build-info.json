@@ -1,9 +1,9 @@
 {
   "artifact": "qcm-extractor-portable",
-  "generated_at": "2026-07-31T18:35:00Z",
-  "application_version": "0.7.1",
-  "phase": 5,
-  "version": "5.0.1",
+  "generated_at": "2026-07-31T19:10:00Z",
+  "application_version": "0.8.0",
+  "phase": 6,
+  "version": "6.0.0",
   "features": [
     "pdf-local",
     "mapping-background",
@@ -12,7 +12,11 @@
     "background-extraction",
     "batch-retries",
     "result-validation",
-    "merged-preview"
+    "merged-preview",
+    "local-illustration-cropping",
+    "high-resolution-page-render",
+    "png-assets",
+    "image-question-association"
   ],
   "persistent_pdf_storage": false,
   "dependencies": {

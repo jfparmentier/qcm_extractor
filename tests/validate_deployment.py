@@ -41,7 +41,7 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
-assert "Phase 5" in index
+assert "Phase 6" in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
@@ -114,4 +114,4 @@ for marker in ("region-editor", "Tracer", "Supprimer la zone"):
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
     assert marker in state
 
-print("OK déploiement 5.0.1 : cartographie, zones, lots et extraction")
+print("OK déploiement 6.0.0 : cartographie, lots, extraction et illustrations")

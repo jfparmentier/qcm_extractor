@@ -1,22 +1,22 @@
 {
   "artifact": "phase5_qcm_extractor",
-  "version": "5.0.1",
-  "phase": 5,
+  "version": "6.0.0",
+  "phase": 6,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "798328916fb77b9a3bdd783f8a542eb497cb85817938308ca6aa46a354dd1376",
-      "bytes": 9066
+      "sha256": "e111177c33667abe29af435aa7fba4d6073e45c703905d8b4dc06778aa809faa",
+      "bytes": 10088
     },
     {
       "path": "DEPLOIEMENT_OVH_MAMP.md",
-      "sha256": "dd8f66dc396c72ca493a8facdcd89d8b5ed04c91683be2db7fabe3cfc38d7e55",
+      "sha256": "cd5096f610699dbaf4e8d46607932731423586c2a25aa5f6e1c659b95a9b02c1",
       "bytes": 1740
     },
     {
       "path": "README.md",
-      "sha256": "b58e7683090f3e9f9f4bdd7b1c27ca127517b1e392156a4fa3c595dccd030ae3",
-      "bytes": 3126
+      "sha256": "5142b2180ecdc64daacf8a40ade01dbcbfdef8ca17992f031c2a95676275572d",
+      "bytes": 3283
     },
     {
       "path": "backend/README.md",
@@ -245,8 +245,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/README.md",
-      "sha256": "7fa977f4ecd758ad66ee0c434ce2e97ee701cdd6f075ea5dea68b0ee9c2293ed",
-      "bytes": 691
+      "sha256": "a158af3630bf0f4418b721ce3abeb0e08807bc80d288f836643b6e3a8ccf4d2c",
+      "bytes": 858
     },
     {
       "path": "deployment/qcm-extractor-site/TEST_MAMP.command",
@@ -435,7 +435,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/DEPLOYMENT.md",
-      "sha256": "5040e96f5909c5851bb6c099d4b4bb8ce5381ca3911d4056f5903c36324dcf1a",
+      "sha256": "0891618b061eb18fc275701ac15662df37b9c1430958b0e1e0622ed45f5a3f7f",
       "bytes": 336
     },
     {
@@ -495,8 +495,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/App.js",
-      "sha256": "a15959177925bbca0bd54d6692dd362a73cf9afc64b5f0cb03b08d02e11a6d80",
-      "bytes": 24421
+      "sha256": "b5e698e5caaa50c2182d74c1219847087839f1d6228f20e20442aa3dbe79bdd2",
+      "bytes": 31867
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/api/proxyClient.js",
@@ -505,8 +505,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/app.css",
-      "sha256": "e6ef2f92cdc11922fa81d1d5a27989bd90372d414a86691843aee0472121a168",
-      "bytes": 36062
+      "sha256": "796e13e9d94ceb5df9729763f48af49edfa2d386c3de8f17c0aed7194aceb984",
+      "bytes": 39519
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/BatchPanel.js",
@@ -534,6 +534,11 @@
       "bytes": 5838
     },
     {
+      "path": "deployment/qcm-extractor-site/public/assets/components/IllustrationPanel.js",
+      "sha256": "0afa9b68673596ae55fb1a5850661f1cf647be5f99f4df4cef13730e4bd3ce22",
+      "bytes": 7709
+    },
+    {
       "path": "deployment/qcm-extractor-site/public/assets/components/LoadingPanel.js",
       "sha256": "e68dcbdc010ab3eba4ad71533fffb7d5be3895c1aec1eea384f23d007ae290a6",
       "bytes": 463
@@ -555,8 +560,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PdfViewer.js",
-      "sha256": "1a9db99c1b7f0e1af282bdaf8483b451ad26cbf9be8ccce59e6a0310f40656b1",
-      "bytes": 10192
+      "sha256": "d58671a7ba9b528912b2894a56b23ca02f6cb7af58299583af4cd0a7927c2b8a",
+      "bytes": 11980
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/domain/batchPlan.js",
@@ -579,6 +584,11 @@
       "bytes": 2093
     },
     {
+      "path": "deployment/qcm-extractor-site/public/assets/domain/illustration.js",
+      "sha256": "b3233eacd01b6897357a77f547f2d1e4e070e912fccdce3e5463e89c9a986ced",
+      "bytes": 7171
+    },
+    {
       "path": "deployment/qcm-extractor-site/public/assets/domain/projectState.js",
       "sha256": "8d4b6c3cd4915555952b45aded4b3930275d08bda8abf1c21af6609edbb2bd81",
       "bytes": 22753
@@ -597,6 +607,11 @@
       "path": "deployment/qcm-extractor-site/public/assets/pdf/createSubPdf.js",
       "sha256": "12c67155a7b87920af4f6f50f2eb3f8f782990ee4c1b1cbf2035d902a428b3db",
       "bytes": 1853
+    },
+    {
+      "path": "deployment/qcm-extractor-site/public/assets/pdf/extractIllustrations.js",
+      "sha256": "cb1320d4f6b6825b697e48a81b09cd7b275367949fa39d9cc5188574c48c337c",
+      "bytes": 6846
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/pdf/formatFileSize.js",
@@ -625,12 +640,12 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/build-info.json",
-      "sha256": "bb9657bebef6e36d347f09f3733600534444ab867e7205d4bc396d8e79f48456",
-      "bytes": 511
+      "sha256": "bee5892b0df5fabb9d1528883f6ecc0cc30783c76b373be60aba337ed42a31b1",
+      "bytes": 633
     },
     {
       "path": "deployment/qcm-extractor-site/public/index.html",
-      "sha256": "8c36f3578a193d29eaa6b8791674890a0a2508b9f7706fdaf9fced61d18b8b25",
+      "sha256": "a71419f490c6c61d7be45092e3453cc03f606f80e7454227631932f41ea2cabc",
       "bytes": 1135
     },
     {
@@ -665,23 +680,23 @@
     },
     {
       "path": "frontend/README.md",
-      "sha256": "31a9df10456ed62eeda3d45cc0fb70c5dc7ea4b8417b651bae4213e975d39518",
+      "sha256": "5fe1643b1c34ebb86c7d2d6a736c16dbd6c34259edf7f86fee904f4c74618702",
       "bytes": 482
     },
     {
       "path": "frontend/index.html",
-      "sha256": "9dbb22e71e806d15f1ce46d657c60cd5f7f97e07fef96208c818d145f2e828fb",
+      "sha256": "d069a9d058a2749e9023595bc9255ae99536d62fbf55de29d96c6c653ac0faf2",
       "bytes": 504
     },
     {
       "path": "frontend/package.json",
-      "sha256": "b040187cc1eb460946a327557dae583d5a80806cdba6973d493343bd1ae8e411",
+      "sha256": "c02763eb78f0478bdf2f6798a462765ef61964c020378a35b794c090a3b239b6",
       "bytes": 595
     },
     {
       "path": "frontend/src/App.tsx",
-      "sha256": "68912de10b5b71fd31fce8e8e36053b13f10dab1f497b9ca66ac1903de6c2c44",
-      "bytes": 23304
+      "sha256": "8e226e491c7414ad5d3c41367b2ac09f8949262daeaf3797b41e9ea3cbd9de7b",
+      "bytes": 30630
     },
     {
       "path": "frontend/src/api/proxyClient.ts",
@@ -714,6 +729,11 @@
       "bytes": 6200
     },
     {
+      "path": "frontend/src/components/IllustrationPanel.tsx",
+      "sha256": "de87eda73883b3e8859e5830b5e37da0d57586a098141a0df6c086a82bd5d45c",
+      "bytes": 8608
+    },
+    {
       "path": "frontend/src/components/LoadingPanel.tsx",
       "sha256": "c2ec264f1688c9949f6ebfdcd55f468bbe644865af6cc90227273b4bb485d779",
       "bytes": 361
@@ -740,8 +760,8 @@
     },
     {
       "path": "frontend/src/components/PdfViewer.tsx",
-      "sha256": "3dc47c1eeacf729d4f67c3db5c5c4d26c75a275561ec7b44553d68e704f43a80",
-      "bytes": 13255
+      "sha256": "04022260f8550766d498e4fb3ae75ad4ed36cfa383f6eb1e08dd03c1ba6a0915",
+      "bytes": 15784
     },
     {
       "path": "frontend/src/domain/batchPlan.ts",
@@ -764,6 +784,11 @@
       "bytes": 2181
     },
     {
+      "path": "frontend/src/domain/illustration.ts",
+      "sha256": "38c674ca46ffe2d36416ddf17e43bc3b1f8459b1d4626056520be430e55cea97",
+      "bytes": 9122
+    },
+    {
       "path": "frontend/src/domain/projectState.ts",
       "sha256": "b007fb6eafbbdef45c3e77fcbd2130464fd73327c5f794c5b4559fdb63039a3c",
       "bytes": 25383
@@ -782,6 +807,11 @@
       "path": "frontend/src/pdf/createSubPdf.ts",
       "sha256": "79e66accf7c934e4c8194dedfcf5d09f13c2f73eccdce40550ff8ed3e54c7a08",
       "bytes": 1898
+    },
+    {
+      "path": "frontend/src/pdf/extractIllustrations.ts",
+      "sha256": "dfe5c8c243bcded35cd92495571d117e23aa4236c2a27c1767bbb3c8444b8339",
+      "bytes": 7350
     },
     {
       "path": "frontend/src/pdf/formatFileSize.ts",
@@ -810,8 +840,8 @@
     },
     {
       "path": "frontend/src/styles/app.css",
-      "sha256": "e6ef2f92cdc11922fa81d1d5a27989bd90372d414a86691843aee0472121a168",
-      "bytes": 36062
+      "sha256": "796e13e9d94ceb5df9729763f48af49edfa2d386c3de8f17c0aed7194aceb984",
+      "bytes": 39519
     },
     {
       "path": "frontend/src/vite-env.d.ts",
@@ -865,7 +895,7 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "66103c2fc0920bf51cc11e7256539edad5cc0f01113b1600294160231cf7317e",
+      "sha256": "b5799648abafcb972254fd8c1763d3061b1b69a211f89234926186632233f9a6",
       "bytes": 1304
     },
     {
@@ -879,14 +909,19 @@
       "bytes": 1161
     },
     {
+      "path": "tests/test_illustration_plan.mjs",
+      "sha256": "ee8f977b492ae5b45bdec70087bf14b3997eafa0c9ca778b5012ee17e8eced3c",
+      "bytes": 2631
+    },
+    {
       "path": "tests/validate.py",
       "sha256": "71fe74c29843c97f2b34cfc7dab235b3e14b33cfb85ec7185507997af158b13a",
       "bytes": 3007
     },
     {
       "path": "tests/validate_deployment.py",
-      "sha256": "f1f4d7960815fbf8ace768393d4d9cb7d61de85aa07f24e96eb6ca49837f7b3d",
-      "bytes": 5278
+      "sha256": "0428762bebd50e4ee171bd2643ff34ffa06b6454458cfb2724157acda7402853",
+      "bytes": 5286
     },
     {
       "path": "tests/validate_phase1.py",
@@ -895,23 +930,28 @@
     },
     {
       "path": "tests/validate_phase2.py",
-      "sha256": "400617048e9b9155394e9b08873eb7e8e1fcafe5798ad3a34baab385f32b3cfa",
+      "sha256": "6c1a9b820fc2b4133630c261610fbe0bc935580d3f640b992d26822e73cb7855",
       "bytes": 7278
     },
     {
       "path": "tests/validate_phase3.py",
-      "sha256": "a53be3eb3a90168449dd30b5b9fd0954fc562accda0c86a1d39d801ea8ddc263",
+      "sha256": "5529aabfea62f7c2e3d03fe6cc68e962bd8ff68a1dc40a39b621c127f2b46906",
       "bytes": 6736
     },
     {
       "path": "tests/validate_phase4.py",
-      "sha256": "29173a599498bdb2f636cf3ce811325c2166f5c25787947dc02369fd77816f73",
+      "sha256": "7624992d4c265f037a9e38046be2766a37d906fdd95684744b10ed64ea815781",
       "bytes": 4245
     },
     {
       "path": "tests/validate_phase5.py",
-      "sha256": "6b8e7c3a22a8d70503612bc5caf2e3292822ed4f03822fde68b5b38ae0db8de1",
-      "bytes": 5260
+      "sha256": "be8e9dbfd4c12984f6a4ba13d9a3286d407a3333eef1697af39365b38b52859d",
+      "bytes": 5267
+    },
+    {
+      "path": "tests/validate_phase6.py",
+      "sha256": "b92720cbaf0212be13d9df822679fc40a362e22eda87bf4dc2e22c437d8079b6",
+      "bytes": 3672
     }
   ]
 }

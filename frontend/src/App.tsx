@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   INITIAL_PROJECT_STATE,
   ZOOM_STEP,
@@ -23,8 +23,22 @@ import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf";
 import { createExtractionContext } from "./domain/extractionContext";
 import {
   ExtractionValidationError,
-  validateAndNormalizeExtractionResult
+  mergeExtractionResults,
+  validateAndNormalizeExtractionResult,
+  type CompletedBatchExtraction
 } from "./domain/extraction";
+import {
+  createIllustrationPlan,
+  INITIAL_ILLUSTRATION_GENERATION_STATE,
+  revokeIllustrationAssets,
+  type GeneratedIllustrationAsset,
+  type IllustrationGenerationState,
+  type IllustrationPlan
+} from "./domain/illustration";
+import {
+  generateIllustrationAssets,
+  IllustrationGenerationError
+} from "./pdf/extractIllustrations";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf";
 import { ErrorPanel } from "./components/ErrorPanel";
@@ -103,6 +117,20 @@ function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+const EMPTY_ILLUSTRATION_PLAN: IllustrationPlan = {
+  candidates: [],
+  segmentCount: 0,
+  questionCount: 0,
+  warnings: [],
+  fingerprint: ""
+};
+
+function illustrationErrorMessage(error: unknown): string {
+  if (error instanceof IllustrationGenerationError) return error.message;
+  if (error instanceof Error) return error.message;
+  return "La génération locale de l’illustration a échoué.";
+}
+
 export default function App(): React.ReactElement {
   const [state, dispatch] = useReducer(projectReducer, INITIAL_PROJECT_STATE);
   const activeDocumentRef = useRef(state.pdf?.document ?? null);
@@ -111,10 +139,53 @@ export default function App(): React.ReactElement {
   const batchGenerationSequenceRef = useRef(0);
   const extractionRunSequenceRef = useRef(0);
   const extractionControllersRef = useRef(new Map<string, AbortController>());
+  const illustrationAbortRef = useRef<AbortController | null>(null);
+  const illustrationAssetsRef = useRef<Readonly<Record<string, GeneratedIllustrationAsset>>>({});
+  const illustrationFingerprintRef = useRef("");
+  const [illustrationGeneration, setIllustrationGeneration] = useState<IllustrationGenerationState>(
+    INITIAL_ILLUSTRATION_GENERATION_STATE
+  );
+
+  const completedExtractions = useMemo<CompletedBatchExtraction[]>(() =>
+    Object.entries(state.extraction.batches).flatMap(([batchId, batchState]) =>
+      batchState.status === "completed" && batchState.result !== null && batchState.meta !== null
+        ? [{ batchId, result: batchState.result, meta: batchState.meta }]
+        : []
+    ), [state.extraction.batches]);
+
+  const mergedExtraction = useMemo(() =>
+    state.mapping.data === null
+      ? null
+      : mergeExtractionResults(state.mapping.data, completedExtractions),
+  [completedExtractions, state.mapping.data]);
+
+  const illustrationPlan = useMemo<IllustrationPlan>(() =>
+    state.mapping.data === null || mergedExtraction === null
+      ? EMPTY_ILLUSTRATION_PLAN
+      : createIllustrationPlan(state.mapping.data, mergedExtraction.questions),
+  [mergedExtraction, state.mapping.data]);
 
   useEffect(() => {
     activeDocumentRef.current = state.pdf?.document ?? null;
   }, [state.pdf]);
+
+  useEffect(() => {
+    illustrationAssetsRef.current = illustrationGeneration.assets;
+  }, [illustrationGeneration.assets]);
+
+  const resetIllustrations = useCallback((): void => {
+    illustrationAbortRef.current?.abort();
+    illustrationAbortRef.current = null;
+    revokeIllustrationAssets(illustrationAssetsRef.current);
+    illustrationAssetsRef.current = {};
+    setIllustrationGeneration(INITIAL_ILLUSTRATION_GENERATION_STATE);
+  }, []);
+
+  useEffect(() => {
+    if (illustrationFingerprintRef.current === illustrationPlan.fingerprint) return;
+    illustrationFingerprintRef.current = illustrationPlan.fingerprint;
+    resetIllustrations();
+  }, [illustrationPlan.fingerprint, resetIllustrations]);
 
   useEffect(() => {
     return () => {
@@ -122,6 +193,8 @@ export default function App(): React.ReactElement {
       extractionRunSequenceRef.current += 1;
       extractionControllersRef.current.forEach((controller) => controller.abort());
       extractionControllersRef.current.clear();
+      illustrationAbortRef.current?.abort();
+      revokeIllustrationAssets(illustrationAssetsRef.current);
       void activeDocumentRef.current?.loadingTask.destroy();
     };
   }, []);
@@ -134,11 +207,12 @@ export default function App(): React.ReactElement {
     extractionRunSequenceRef.current += 1;
     extractionControllersRef.current.forEach((controller) => controller.abort());
     extractionControllersRef.current.clear();
+    resetIllustrations();
     const document = activeDocumentRef.current;
     activeDocumentRef.current = null;
     dispatch({ type: "RESET" });
     void document?.loadingTask.destroy();
-  }, []);
+  }, [resetIllustrations]);
 
   const handleFileSelected = useCallback(async (file: File): Promise<void> => {
     const sequence = loadSequenceRef.current + 1;
@@ -149,6 +223,7 @@ export default function App(): React.ReactElement {
     extractionRunSequenceRef.current += 1;
     extractionControllersRef.current.forEach((controller) => controller.abort());
     extractionControllersRef.current.clear();
+    resetIllustrations();
 
     const previousDocument = activeDocumentRef.current;
     activeDocumentRef.current = null;
@@ -181,7 +256,7 @@ export default function App(): React.ReactElement {
             }
       });
     }
-  }, []);
+  }, [resetIllustrations]);
 
   const analyzeMapping = useCallback(async (): Promise<void> => {
     const pdf = state.pdf;
@@ -609,6 +684,119 @@ export default function App(): React.ReactElement {
     dispatch({ type: "EXTRACTION_CLEARED" });
   }, []);
 
+  const runIllustrationGeneration = useCallback(async (
+    candidates: IllustrationPlan["candidates"]
+  ): Promise<void> => {
+    const pdf = state.pdf;
+    if (pdf === null || candidates.length === 0 || illustrationAbortRef.current !== null) return;
+
+    const controller = new AbortController();
+    illustrationAbortRef.current = controller;
+    const targetIds = new Set(candidates.map((candidate) => candidate.id));
+    setIllustrationGeneration((previous) => ({
+      ...previous,
+      status: "running",
+      errors: Object.fromEntries(
+        Object.entries(previous.errors).filter(([candidateId]) => !targetIds.has(candidateId))
+      ),
+      progress: {
+        completed: 0,
+        total: candidates.length,
+        currentPage: null,
+        currentCandidateId: null
+      },
+      startedAt: Date.now()
+    }));
+
+    try {
+      const generated = await generateIllustrationAssets(
+        pdf.document,
+        candidates,
+        controller.signal,
+        (progress) => setIllustrationGeneration((previous) => ({ ...previous, progress }))
+      );
+      if (illustrationAbortRef.current !== controller) {
+        generated.forEach((asset) => URL.revokeObjectURL(asset.previewUrl));
+        return;
+      }
+
+      const nextAssets: Record<string, GeneratedIllustrationAsset> = {
+        ...illustrationAssetsRef.current
+      };
+      generated.forEach((asset) => {
+        const previous = nextAssets[asset.id];
+        if (previous !== undefined) URL.revokeObjectURL(previous.previewUrl);
+        nextAssets[asset.id] = asset;
+      });
+      illustrationAssetsRef.current = nextAssets;
+      illustrationAbortRef.current = null;
+      setIllustrationGeneration((previous) => ({
+        ...previous,
+        status: "completed",
+        assets: nextAssets,
+        progress: null,
+        startedAt: null
+      }));
+    } catch (error: unknown) {
+      if (illustrationAbortRef.current !== controller) return;
+      illustrationAbortRef.current = null;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setIllustrationGeneration((previous) => ({
+          ...previous,
+          status: "cancelled",
+          progress: null,
+          startedAt: null
+        }));
+        return;
+      }
+
+      const failedId = error instanceof IllustrationGenerationError
+        ? error.candidateId
+        : null;
+      const message = illustrationErrorMessage(error);
+      const failedIds = failedId === null ? candidates.map((candidate) => candidate.id) : [failedId];
+      setIllustrationGeneration((previous) => ({
+        ...previous,
+        status: "failed",
+        errors: {
+          ...previous.errors,
+          ...Object.fromEntries(failedIds.map((candidateId) => [candidateId, message]))
+        },
+        progress: null,
+        startedAt: null
+      }));
+    }
+  }, [state.pdf]);
+
+  const generateAllIllustrations = useCallback((): void => {
+    void runIllustrationGeneration(illustrationPlan.candidates);
+  }, [illustrationPlan.candidates, runIllustrationGeneration]);
+
+  const generateOneIllustration = useCallback((candidateId: string): void => {
+    const candidate = illustrationPlan.candidates.find((entry) => entry.id === candidateId);
+    if (candidate !== undefined) void runIllustrationGeneration([candidate]);
+  }, [illustrationPlan.candidates, runIllustrationGeneration]);
+
+  const cancelIllustrationGeneration = useCallback((): void => {
+    illustrationAbortRef.current?.abort();
+    illustrationAbortRef.current = null;
+    setIllustrationGeneration((previous) => ({
+      ...previous,
+      status: "cancelled",
+      progress: null,
+      startedAt: null
+    }));
+  }, []);
+
+  const downloadIllustration = useCallback((candidateId: string): void => {
+    const asset = illustrationAssetsRef.current[candidateId];
+    if (asset === undefined) return;
+    const link = document.createElement("a");
+    link.href = asset.previewUrl;
+    link.download = asset.fileName;
+    link.click();
+  }, []);
+
   const zoomIn = useCallback((): void => {
     dispatch({ type: "SET_ZOOM", zoom: state.zoom + ZOOM_STEP });
   }, [state.zoom]);
@@ -650,6 +838,8 @@ export default function App(): React.ReactElement {
           batching={state.batching}
           currentPage={state.currentPage}
           extraction={state.extraction}
+          illustrationGeneration={illustrationGeneration}
+          illustrationPlan={illustrationPlan}
           mapping={state.mapping}
           onAnalyze={() => void analyzeMapping()}
           onCancelMapping={cancelMapping}
@@ -662,6 +852,11 @@ export default function App(): React.ReactElement {
           onClearExtraction={clearExtraction}
           onGenerateAllBatches={() => void generateAllPlannedBatches()}
           onGenerateBatch={(batchId) => void generatePlannedBatch(batchId)}
+          onGenerateAllIllustrations={generateAllIllustrations}
+          onGenerateIllustration={generateOneIllustration}
+          onCancelIllustrationGeneration={cancelIllustrationGeneration}
+          onClearIllustrations={resetIllustrations}
+          onDownloadIllustration={downloadIllustration}
           onAddRegion={addRegion}
           onDeleteRegion={deleteRegion}
           onPageChange={setPage}

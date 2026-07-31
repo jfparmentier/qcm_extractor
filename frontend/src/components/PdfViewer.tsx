@@ -7,14 +7,19 @@ import type {
   LoadedPdf,
   MappingState
 } from "../domain/projectState";
+import type {
+  IllustrationGenerationState,
+  IllustrationPlan
+} from "../domain/illustration";
 import {
   getSegmentDisplayName,
   type NormalizedBoundingBox,
   type PageRegionRole
 } from "../domain/documentMap";
 import { formatFileSize } from "../pdf/formatFileSize";
-import { CloseIcon, FileIcon, LayersIcon, SelectionIcon, SparklesIcon } from "./Icons";
+import { CloseIcon, FileIcon, ImageIcon, LayersIcon, SelectionIcon, SparklesIcon } from "./Icons";
 import { ExtractionPanel } from "./ExtractionPanel";
+import { IllustrationPanel } from "./IllustrationPanel";
 import { BatchPanel } from "./BatchPanel";
 import { MappingPanel } from "./MappingPanel";
 import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
@@ -27,6 +32,8 @@ interface PdfViewerProps {
   readonly mapping: MappingState;
   readonly batching: BatchPreparationState;
   readonly extraction: ExtractionState;
+  readonly illustrationPlan: IllustrationPlan;
+  readonly illustrationGeneration: IllustrationGenerationState;
   readonly onAnalyze: () => void;
   readonly onCancelMapping: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
@@ -59,6 +66,11 @@ interface PdfViewerProps {
   readonly onExtractBatch: (batchId: string) => void;
   readonly onCancelExtraction: () => void;
   readonly onClearExtraction: () => void;
+  readonly onGenerateAllIllustrations: () => void;
+  readonly onGenerateIllustration: (candidateId: string) => void;
+  readonly onCancelIllustrationGeneration: () => void;
+  readonly onClearIllustrations: () => void;
+  readonly onDownloadIllustration: (candidateId: string) => void;
   readonly onPageChange: (page: number) => void;
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
@@ -80,6 +92,8 @@ export function PdfViewer({
   mapping,
   batching,
   extraction,
+  illustrationPlan,
+  illustrationGeneration,
   onAnalyze,
   onCancelMapping,
   onSelectSegment,
@@ -99,6 +113,11 @@ export function PdfViewer({
   onExtractBatch,
   onCancelExtraction,
   onClearExtraction,
+  onGenerateAllIllustrations,
+  onGenerateIllustration,
+  onCancelIllustrationGeneration,
+  onClearIllustrations,
+  onDownloadIllustration,
   onPageChange,
   onZoomIn,
   onZoomOut,
@@ -108,7 +127,7 @@ export function PdfViewer({
   const [renderError, setRenderError] = useState<string | null>(null);
   const [drawingRole, setDrawingRole] = useState<PageRegionRole>("question");
   const [isDrawing, setIsDrawing] = useState(false);
-  const [activePanel, setActivePanel] = useState<"mapping" | "batches" | "extraction">("mapping");
+  const [activePanel, setActivePanel] = useState<"mapping" | "batches" | "extraction" | "illustrations">("mapping");
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
   const showSidePanel = mapping.status !== "idle";
 
@@ -174,6 +193,13 @@ export function PdfViewer({
   }, [extraction.runStatus]);
 
   useEffect(() => {
+    if (illustrationGeneration.status === "running") {
+      setIsDrawing(false);
+      setActivePanel("illustrations");
+    }
+  }, [illustrationGeneration.status]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (
         (event.key !== "Delete" && event.key !== "Backspace") ||
@@ -223,7 +249,7 @@ export function PdfViewer({
           <span className="local-badge">PDF en mémoire</span>
           <button
             className="button button--primary analysis-header-button"
-            disabled={mapping.status === "running" || batching.activeBatchId !== null || extraction.runStatus === "running"}
+            disabled={mapping.status === "running" || batching.activeBatchId !== null || extraction.runStatus === "running" || illustrationGeneration.status === "running"}
             onClick={onAnalyze}
             type="button"
           >
@@ -263,9 +289,9 @@ export function PdfViewer({
             <PdfPageCanvas
               document={pdf.document}
               drawRole={isDrawing && activePanel === "mapping" ? drawingRole : null}
-              onOverlaySelect={extraction.runStatus === "running" ? undefined : onSelectRegion}
-              onRegionAdd={extraction.runStatus === "running" ? undefined : handleRegionAdd}
-              onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" ? onUpdateRegionBbox : undefined}
+              onOverlaySelect={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion}
+              onRegionAdd={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd}
+              onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined}
               onRenderError={handleRenderError}
               overlays={overlays}
               pageNumber={currentPage}
@@ -281,7 +307,7 @@ export function PdfViewer({
                 <button
                   aria-current={activePanel === "mapping" ? "page" : undefined}
                   className={activePanel === "mapping" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={extraction.runStatus === "running"}
+                  disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
                   onClick={() => setActivePanel("mapping")}
                   type="button"
                 >
@@ -290,7 +316,7 @@ export function PdfViewer({
                 <button
                   aria-current={activePanel === "batches" ? "page" : undefined}
                   className={activePanel === "batches" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={extraction.runStatus === "running"}
+                  disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
                   onClick={() => {
                     setIsDrawing(false);
                     setActivePanel("batches");
@@ -314,6 +340,19 @@ export function PdfViewer({
                   {Object.values(extraction.batches).some((batch) => batch.status === "completed") && (
                     <span>{Object.values(extraction.batches).filter((batch) => batch.status === "completed").length}</span>
                   )}
+                </button>
+                <button
+                  aria-current={activePanel === "illustrations" ? "page" : undefined}
+                  className={activePanel === "illustrations" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                  disabled={illustrationPlan.candidates.length === 0 || extraction.runStatus === "running"}
+                  onClick={() => {
+                    setIsDrawing(false);
+                    setActivePanel("illustrations");
+                  }}
+                  type="button"
+                >
+                  <ImageIcon /> Images
+                  {illustrationPlan.candidates.length > 0 && <span>{illustrationPlan.candidates.length}</span>}
                 </button>
               </nav>
             )}
@@ -341,6 +380,18 @@ export function PdfViewer({
                 onSelectSegment={onSelectSegment}
                 onSettingsChange={onUpdateExtractionSettings}
                 plan={batching.plan}
+              />
+            ) : activePanel === "illustrations" && mappingCompleted ? (
+              <IllustrationPanel
+                generation={illustrationGeneration}
+                onCancel={onCancelIllustrationGeneration}
+                onClear={onClearIllustrations}
+                onDownload={onDownloadIllustration}
+                onGenerateAll={onGenerateAllIllustrations}
+                onGenerateOne={onGenerateIllustration}
+                onPageChange={onPageChange}
+                onSelectSegment={onSelectSegment}
+                plan={illustrationPlan}
               />
             ) : (
               <MappingPanel
