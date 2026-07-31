@@ -1,0 +1,35 @@
+# Secret obligatoire. Ne jamais placer cette valeur dans le frontend ou dans Git.
+OPENAI_API_KEY=sk-proj-remplacer-cette-valeur
+
+# Modèles choisis exclusivement par le serveur. Le navigateur ne peut pas les modifier.
+QCM_OPENAI_MAPPING_MODEL=gpt-5
+QCM_OPENAI_EXTRACTION_MODEL=gpt-5
+
+# Identifiants OpenAI facultatifs.
+# OPENAI_PROJECT_ID=proj_...
+# OPENAI_ORGANIZATION_ID=org_...
+
+# Taille maximale du PDF brut reçu par le proxy : 25 Mio par défaut, 50 Mio au maximum.
+QCM_MAX_PDF_BYTES=26214400
+QCM_MAX_CONTEXT_HEADER_BYTES=6144
+
+# Limites de génération et délais.
+QCM_MAPPING_MAX_OUTPUT_TOKENS=12000
+QCM_EXTRACTION_MAX_OUTPUT_TOKENS=16000
+QCM_CONNECT_TIMEOUT_SECONDS=10
+QCM_REQUEST_TIMEOUT_SECONDS=240
+QCM_MAX_UPSTREAM_RESPONSE_BYTES=16777216
+
+# Origines supplémentaires autorisées, séparées par des virgules.
+# L’origine exacte du serveur est toujours acceptée automatiquement.
+QCM_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8083
+QCM_ALLOW_ORIGINLESS_REQUESTS=false
+
+# Limitation de débit en mémoire. APCu ne stocke aucun PDF.
+QCM_RATE_LIMIT_BACKEND=apcu
+QCM_RATE_LIMIT_REQUESTS=10
+QCM_RATE_LIMIT_WINDOW_SECONDS=3600
+
+# Facultatif : adresses IP exactes des reverse proxies autorisés à fournir X-Forwarded-For.
+# Ne jamais utiliser une valeur générique ou une adresse contrôlée par le public.
+# QCM_TRUSTED_PROXY_ADDRESSES=127.0.0.1,10.0.0.10

@@ -1,0 +1,11 @@
+; Configuration minimale indicative pour PHP-FPM ou Apache mod_php.
+memory_limit = 256M
+post_max_size = 32M
+max_execution_time = 300
+max_input_time = 60
+expose_php = Off
+log_errors = On
+display_errors = Off
+
+; APCu est utilisé uniquement pour les compteurs de limitation de débit.
+apc.enabled = 1

@@ -1,0 +1,144 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "batch_id", "source_document", "questions"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "batch_id": {"type": "string"},
+    "source_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "language"],
+      "properties": {
+        "title": {"type": "string"},
+        "language": {"type": "string"}
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "segment_id",
+          "type",
+          "title",
+          "content_format",
+          "statement",
+          "choices",
+          "correct_choice_ids",
+          "correct_answer_origin",
+          "feedback",
+          "images",
+          "source_pages",
+          "confidence",
+          "warnings",
+          "status"
+        ],
+        "properties": {
+          "id": {"type": "string"},
+          "segment_id": {"type": "string"},
+          "type": {
+            "type": "string",
+            "enum": ["single_choice", "multiple_choice", "true_false"]
+          },
+          "title": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["content", "origin"],
+            "properties": {
+              "content": {"type": "string"},
+              "origin": {
+                "type": "string",
+                "enum": ["explicit_in_document", "generated_by_model", "provided_by_user", "not_available"]
+              }
+            }
+          },
+          "content_format": {
+            "type": "string",
+            "enum": ["markdown-latex"]
+          },
+          "statement": {"type": "string"},
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "content"],
+              "properties": {
+                "id": {"type": "string"},
+                "content": {"type": "string"}
+              }
+            }
+          },
+          "correct_choice_ids": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "correct_answer_origin": {
+            "type": "string",
+            "enum": ["explicit_in_document", "inferred_by_model", "provided_by_user", "not_available"]
+          },
+          "feedback": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["content", "origin"],
+            "properties": {
+              "content": {"type": "string"},
+              "origin": {
+                "type": "string",
+                "enum": ["explicit_in_document", "generated_by_model", "provided_by_user", "not_available"]
+              }
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "role", "source_page", "bbox", "alt_text", "insertion_token"],
+              "properties": {
+                "id": {"type": "string"},
+                "role": {
+                  "type": "string",
+                  "enum": ["essential", "decorative"]
+                },
+                "source_page": {"type": "integer"},
+                "bbox": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["x", "y", "width", "height"],
+                  "properties": {
+                    "x": {"type": "number"},
+                    "y": {"type": "number"},
+                    "width": {"type": "number"},
+                    "height": {"type": "number"}
+                  }
+                },
+                "alt_text": {"type": "string"},
+                "insertion_token": {"type": "string"}
+              }
+            }
+          },
+          "source_pages": {
+            "type": "array",
+            "items": {"type": "integer"}
+          },
+          "confidence": {"type": "number"},
+          "warnings": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,14 +1,13 @@
 {
   "name": "qcm-pdf-extractor-frontend",
   "private": true,
-  "version": "0.1.3",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --pretty false",
-    "build:portable": "node scripts/build-portable-dist.mjs"
+    "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
     "pdfjs-dist": "6.1.200",

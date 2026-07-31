@@ -1,17 +1,187 @@
 {
-  "artifact": "phase1_qcm_extractor",
-  "version": "1.1.4",
-  "phase": 1,
+  "artifact": "phase2_qcm_extractor",
+  "version": "2.0.0",
+  "phase": 2,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "a0fcb912b6d81f52452ae712c0a67cd4f822bfa37e575a9176ff93d09999e99c",
-      "bytes": 2097
+      "sha256": "5b2559ae5c51ca06486e7a872c17337fd646a2c6f3dc003543adb325f1324ed8",
+      "bytes": 1697
     },
     {
       "path": "README.md",
-      "sha256": "17f2384ce3da232978e593a9c1b8c25ab123781bfa025d1c4ae5cb231251ebb5",
-      "bytes": 3874
+      "sha256": "5c6bdd4022c3d041b7a1d28b1352f4033de86189139b944a4e775239b9b559eb",
+      "bytes": 3504
+    },
+    {
+      "path": "backend/README.md",
+      "sha256": "9100532b3a8c9ac0c606ff15d4172a00b6623d6305b483b32ec947cf5ea254c5",
+      "bytes": 4748
+    },
+    {
+      "path": "backend/config/apache-vhost.example.conf",
+      "sha256": "efc0b6c93d585afc7e2d02fb9f67b878f5ca732efe032d3606cec8a3c6aba72f",
+      "bytes": 635
+    },
+    {
+      "path": "backend/config/environment.example",
+      "sha256": "5a0b949436796cc43b2e03201e3f60b6815d24e981f5f914ed037dade0707346",
+      "bytes": 1378
+    },
+    {
+      "path": "backend/config/nginx-location.example.conf",
+      "sha256": "f0a2cedc92100da6ab13f38bcd02f8cfd0843c7cd9e11a38b2874acb1b2c10ff",
+      "bytes": 412
+    },
+    {
+      "path": "backend/config/php.ini.example",
+      "sha256": "984dea7063e5646d007d8e4072ef0945c130b2bd7dccaedc4bdf66b84449a7aa",
+      "bytes": 299
+    },
+    {
+      "path": "backend/prompts/extraction.txt",
+      "sha256": "49a98357ab79d468747e9769ba7399f389c1b7bf64539479a9e14661f4499e1a",
+      "bytes": 2547
+    },
+    {
+      "path": "backend/prompts/mapping.txt",
+      "sha256": "4f40585af4a78bbe492659deef4921810c3136997cf32bf7e2b0aa9dd49b7d6f",
+      "bytes": 2000
+    },
+    {
+      "path": "backend/public/.htaccess",
+      "sha256": "bc155ce3d4790f2bd2fbe6de4d077b5a708d384c6bb75d11bea3154625cafafa",
+      "bytes": 238
+    },
+    {
+      "path": "backend/public/analyze-map.php",
+      "sha256": "dbce28837d51f04192bf8877acb3e2a97daa7268d5a8224ff8223cca87ed5bc7",
+      "bytes": 189
+    },
+    {
+      "path": "backend/public/extract-questions.php",
+      "sha256": "703aa4f9e77a1441b23d2fa742cfd03e8ae140a1a74ffcb130fff2a6a53a9dd8",
+      "bytes": 192
+    },
+    {
+      "path": "backend/public/index.php",
+      "sha256": "8e1dbabdf57ace1fb4c554c776e5f31d351af57b7957e34e92ecb1268d763427",
+      "bytes": 296
+    },
+    {
+      "path": "backend/schemas/extraction.openai.schema.json",
+      "sha256": "dd29dc171db4f7d166e44e56e48ee0e4c0a7249b9a2cce65faf9adb9f95ba644",
+      "bytes": 4384
+    },
+    {
+      "path": "backend/schemas/mapping.openai.schema.json",
+      "sha256": "b9df074f9e9d71732fef891ea72b9e3e969af6de188735e802f6b71df7acb6b2",
+      "bytes": 3062
+    },
+    {
+      "path": "backend/src/ApiException.php",
+      "sha256": "112df4e63698e62890e768ae72f9b5c104e267f0f29780e65c01f0aaf8c74e09",
+      "bytes": 375
+    },
+    {
+      "path": "backend/src/ApiResponse.php",
+      "sha256": "590a8d21eed3ce897a75614a140758c77449a46043d5374e8d98a868b118b4e3",
+      "bytes": 694
+    },
+    {
+      "path": "backend/src/Application.php",
+      "sha256": "c528bf5d1d6d8513b7411540bcfb5e8a01c3a441eb59ad77dbcc62086b3b36ac",
+      "bytes": 3587
+    },
+    {
+      "path": "backend/src/Autoload.php",
+      "sha256": "0cb2ee9b3f644196f6bad9f84cb437fca3018d1990d226e22517160aefd675d9",
+      "bytes": 371
+    },
+    {
+      "path": "backend/src/Base64Url.php",
+      "sha256": "e832c9eea1a98c61eb4aa7f1065d4831117a63c0f0ed17f4dbc7fefe009120b8",
+      "bytes": 1799
+    },
+    {
+      "path": "backend/src/ClientAddress.php",
+      "sha256": "6c1b0172fae560555a0ae2d0d30a48ccba04049fe0dffccfd2de93c12b129f90",
+      "bytes": 919
+    },
+    {
+      "path": "backend/src/Config.php",
+      "sha256": "751fe62c82294e5561a1525ab2650d0085c6d0248937b6bc8db1e1f35ca11cec",
+      "bytes": 5654
+    },
+    {
+      "path": "backend/src/Filename.php",
+      "sha256": "25ef81f64487e81abe45d29219f8e31a72663b50338efd2a0ee59585d00429e1",
+      "bytes": 874
+    },
+    {
+      "path": "backend/src/OpenAiPayloadFactory.php",
+      "sha256": "318175777bbf5162b5f466c50beb1a400ef131c64dd8e73fd86650eb39cfa00d",
+      "bytes": 3581
+    },
+    {
+      "path": "backend/src/OpenAiResponseParser.php",
+      "sha256": "8e745d5814e3539f6d9db49a7eb766f72932018c2c7f85ef06ebcf2f8e48448c",
+      "bytes": 4236
+    },
+    {
+      "path": "backend/src/OpenAiResponsesClient.php",
+      "sha256": "fe92380fc6da2a517f278fea7ceefa8fab5b008618b250e4184181ed0dad7da0",
+      "bytes": 4145
+    },
+    {
+      "path": "backend/src/Operation.php",
+      "sha256": "458bdca51a9e2cb8196d348070b4ddc9dc4f4a4fe356c260ba0316c2edab706e",
+      "bytes": 1423
+    },
+    {
+      "path": "backend/src/OriginPolicy.php",
+      "sha256": "750fc209bba91307dbf70893d4f34228040b5156252e608fb39ee50adb6f8b1e",
+      "bytes": 3367
+    },
+    {
+      "path": "backend/src/ParsedLlmResult.php",
+      "sha256": "a8ff6088b75d51f8619a44129a290b3560e685f82488a2167057d54a94bb92c5",
+      "bytes": 277
+    },
+    {
+      "path": "backend/src/PdfPayload.php",
+      "sha256": "614194a75aa96b58cb7156702d8ba1c182116f4d68460f350b412a0b65eff1ba",
+      "bytes": 669
+    },
+    {
+      "path": "backend/src/PdfRequest.php",
+      "sha256": "ab6bd666701f20b0e7e6524f35e8081a362537f30a4ab077d6123dffb57ce27c",
+      "bytes": 279
+    },
+    {
+      "path": "backend/src/RateLimiter.php",
+      "sha256": "5db01b241d7184f2d69bd31781475d063ffaa1cab8d953b38d65d4345014e6c2",
+      "bytes": 1831
+    },
+    {
+      "path": "backend/src/RequestValidator.php",
+      "sha256": "cd3d4fb780385a82b2059191266c6e9509c95c25542867aabccc66123ddb4031",
+      "bytes": 5629
+    },
+    {
+      "path": "backend/src/SecurityHeaders.php",
+      "sha256": "3b844da9484ef85768629cb4cb2d84ed3789491782785c37d8fad43ddcd18b59",
+      "bytes": 597
+    },
+    {
+      "path": "backend/src/UpstreamResponse.php",
+      "sha256": "757141cc7b17b4d54a5706c69e48a2f16b30e18ebbfb529f684fcaa0eab3a81e",
+      "bytes": 280
+    },
+    {
+      "path": "backend/tests/run.php",
+      "sha256": "6b658a667481ff959cc9073cfa80acb63b860f9dacd6dd5af7b50a4f2fcccabe",
+      "bytes": 7164
     },
     {
       "path": "examples/export.example.json",
@@ -34,109 +204,19 @@
       "bytes": 975
     },
     {
+      "path": "frontend/.env.example",
+      "sha256": "b60b6844c7c1aa4d6268f94c2ca1b6e8fed411f32583c1439cdc7001b4a29ae8",
+      "bytes": 140
+    },
+    {
       "path": "frontend/.gitignore",
       "sha256": "3aef4c1678d94ef60efd5c3d8f5287bd27ffbba5279ef54d806497cd42e65eb9",
       "bytes": 38
     },
     {
       "path": "frontend/README.md",
-      "sha256": "a7156b9b166f9450ff5c8ef337b171bc0616ff805c54b0978a2dd52e81845238",
-      "bytes": 3987
-    },
-    {
-      "path": "frontend/dist/DEPLOYMENT.md",
-      "sha256": "a1ae188b78c0663549e4e0f492d72a41fed4aed5e9f402a06e104dc0376b4072",
-      "bytes": 503
-    },
-    {
-      "path": "frontend/dist/assets/App.js",
-      "sha256": "b8843d497de946e696e9a3fdc970047a7a2990a5ff085dff31e1479f664c7c2f",
-      "bytes": 4167
-    },
-    {
-      "path": "frontend/dist/assets/app.css",
-      "sha256": "48d09fbfe88f3f0cbb515f7ddc139c21bffe8da74e7f5290f5e6da4bc830ff52",
-      "bytes": 11438
-    },
-    {
-      "path": "frontend/dist/assets/components/ErrorPanel.js",
-      "sha256": "50169b412a1c232ffa079e4b3ed8eae88ba9cea8db60abb6306983c0a993eb79",
-      "bytes": 798
-    },
-    {
-      "path": "frontend/dist/assets/components/FileDropZone.js",
-      "sha256": "810ffa3bb958d7b30249bf68e6a5871e2cf605a3154b50d53d4acecf611639d2",
-      "bytes": 3267
-    },
-    {
-      "path": "frontend/dist/assets/components/Icons.js",
-      "sha256": "57fc52ba7e67b70f26f8112dbc672d60706f8e284cf4d1e4ec1411cfe443ea87",
-      "bytes": 3187
-    },
-    {
-      "path": "frontend/dist/assets/components/LoadingPanel.js",
-      "sha256": "e68dcbdc010ab3eba4ad71533fffb7d5be3895c1aec1eea384f23d007ae290a6",
-      "bytes": 463
-    },
-    {
-      "path": "frontend/dist/assets/components/PdfPageCanvas.js",
-      "sha256": "2749abed8b93723b8210961d907b1dc2173c78d57fee6c81f68ab8a47be1076d",
-      "bytes": 2813
-    },
-    {
-      "path": "frontend/dist/assets/components/PdfThumbnail.js",
-      "sha256": "3a5b22179813360bcab39620ab84ba8ce4242f48e4b58244d37d797e9500d505",
-      "bytes": 1593
-    },
-    {
-      "path": "frontend/dist/assets/components/PdfToolbar.js",
-      "sha256": "3014dbd46d44f25eb9082510c6e34572946532ac721f55654cb0696b76b55f45",
-      "bytes": 2925
-    },
-    {
-      "path": "frontend/dist/assets/components/PdfViewer.js",
-      "sha256": "bcd761edc88d46f08227ced940f030f655334f1188fadc31e25e16343066cd63",
-      "bytes": 2945
-    },
-    {
-      "path": "frontend/dist/assets/domain/projectState.js",
-      "sha256": "b17db2e86b3108b02d5b0e256b7bc954da647a57ca58331fa1e64139c4d47446",
-      "bytes": 1421
-    },
-    {
-      "path": "frontend/dist/assets/hooks/useKeyboardNavigation.js",
-      "sha256": "357613e7a7f5c135a6cf9697a632be1cbc5e3bfb45901a8f854fddf8ce1df0f7",
-      "bytes": 1866
-    },
-    {
-      "path": "frontend/dist/assets/main.js",
-      "sha256": "e175c16db2fd088021321c30c8fec07f46e087d9f99973392e54f694f96724a2",
-      "bytes": 382
-    },
-    {
-      "path": "frontend/dist/assets/pdf/formatFileSize.js",
-      "sha256": "b76f67b1ab1c746d98152682f23e9da78123f9fd04d8c999d68df1791fdb6553",
-      "bytes": 410
-    },
-    {
-      "path": "frontend/dist/assets/pdf/loadPdf.js",
-      "sha256": "01ccd0381bfb0f1d55d2cc23a23199885c6164e62e04b6b5f439b5f8795c4bc2",
-      "bytes": 2866
-    },
-    {
-      "path": "frontend/dist/assets/pdf/pdfWorker.js",
-      "sha256": "6b520ceeaf0bafedf67e70e9f033455813f044a8c6f09b0a8da46dbdfa85fac0",
-      "bytes": 159
-    },
-    {
-      "path": "frontend/dist/build-info.json",
-      "sha256": "4b57d1849ce317fb3aa59207e7c95ee6383a5f2260f1d02b56a05efd55b0fe99",
-      "bytes": 317
-    },
-    {
-      "path": "frontend/dist/index.html",
-      "sha256": "ee1cac0a3164a2b88b028267cbd17f4b659a99ccd7d12038924ca74dac80c607",
-      "bytes": 898
+      "sha256": "c73ea78189de9a92e4cbe63f86e25983aac053b13fc192b2d5e182ce2e85bada",
+      "bytes": 1689
     },
     {
       "path": "frontend/index.html",
@@ -145,18 +225,18 @@
     },
     {
       "path": "frontend/package.json",
-      "sha256": "9ad401d43c642261f4ea3c267a90f953eb678a43858adc12d666cc4de41c20da",
-      "bytes": 611
-    },
-    {
-      "path": "frontend/scripts/build-portable-dist.mjs",
-      "sha256": "c03c275ccbfecd94dd639cc9516c1d35e2f28dd3705b6c1153ed035b34d3a1c4",
-      "bytes": 6008
+      "sha256": "24731cb8591e40fd8efd44e4f36964e9119615406c5f418ab8e08e4e84eded17",
+      "bytes": 549
     },
     {
       "path": "frontend/src/App.tsx",
       "sha256": "40f636ba06cfd514e757ce0bef8cd0477983fbc1aa93ec41450e7c766b3ea281",
       "bytes": 4016
+    },
+    {
+      "path": "frontend/src/api/proxyClient.ts",
+      "sha256": "c6ccfbdc9ad83ffd73d45bb2fcb1c9f52f29f29e94cd0dee1db690a4f3281723",
+      "bytes": 3801
     },
     {
       "path": "frontend/src/components/ErrorPanel.tsx",
@@ -285,8 +365,8 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "efd311f08367ea268f2e35e6e7559c9114140f7634c34bce2961ec117b787480",
-      "bytes": 1296
+      "sha256": "79838e07fd6da25b9108ef2c89d0ed22d05d0987268258988a36fe946dfc0d51",
+      "bytes": 1304
     },
     {
       "path": "tests/validate.py",
@@ -295,8 +375,13 @@
     },
     {
       "path": "tests/validate_phase1.py",
-      "sha256": "6bcccdd08641c06720a5e31820c9d8ebe3a801bcfb19c7e9472348000c13523f",
-      "bytes": 5992
+      "sha256": "4488c080ae5c7e387f1ef33aed611a296c9156a5ac2cd2d117cfd88bd405c0dd",
+      "bytes": 2756
+    },
+    {
+      "path": "tests/validate_phase2.py",
+      "sha256": "abf4a13f1fd2d1b0a0b8c865287810d22d50f23f08141cdfc2c9e797cf59f896",
+      "bytes": 5865
     }
   ]
 }

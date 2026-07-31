@@ -1,116 +1,56 @@
-# Frontend — Phase 1
+# Frontend — Sources des phases 1 et 2
 
-Cette application React/TypeScript constitue le socle local du futur extracteur de QCM.
-Elle charge un PDF depuis le poste de l’utilisateur, le conserve en mémoire, puis l’affiche
-avec PDF.js. Aucun endpoint PHP ni appel réseau applicatif n’est utilisé dans cette phase.
+L’application React/TypeScript charge et affiche un PDF localement avec PDF.js. La phase 2
+ajoute un client HTTP typé dans `src/api/proxyClient.ts`, sans encore le connecter à
+l’interface.
 
-## Fonctionnalités réalisées
+## Fonctionnalités actives
 
-- sélection d’un PDF par boîte de dialogue ou glisser-déposer ;
-- contrôle du type réel par signature `%PDF-` et limite de 50 Mo ;
-- chargement en mémoire avec PDF.js ;
-- affichage des métadonnées disponibles ;
-- rendu de la page courante sur `canvas` avec prise en compte de la densité de pixels ;
-- miniatures chargées paresseusement au moyen d’`IntersectionObserver` ;
-- navigation par miniatures, boutons, numéro de page et clavier ;
-- zoom de 50 % à 250 % ;
-- interface adaptative pour écran étroit ;
-- gestion explicite des états `empty`, `loading`, `pdf_loaded` et `error` ;
-- destruction du document PDF et libération des ressources à la fermeture.
+- sélection ou glisser-déposer d’un PDF ;
+- contrôle de la signature `%PDF-` et limite locale de 50 Mo ;
+- affichage PDF.js avec miniatures, navigation et zoom ;
+- conservation du document uniquement en mémoire ;
+- gestion explicite des états de chargement et d’erreur.
 
-## Prérequis
+## Client de proxy préparé
+
+Le module `src/api/proxyClient.ts` fournit :
+
+```ts
+analyzeDocumentMap(pdfBytes, filename, signal)
+extractQuestions(pdfBytes, filename, context, signal)
+```
+
+Il envoie le PDF comme corps HTTP brut `application/pdf`, omet les cookies et n’accepte
+aucun modèle ni prompt venant du navigateur. L’URL de base est configurée par :
+
+```bash
+VITE_QCM_API_BASE_URL=/api
+```
+
+Pour un développement séparé :
+
+```bash
+VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
+```
+
+## Prérequis et exécution
 
 - Node.js 22.13 ou version ultérieure compatible ;
 - npm.
 
-## Installation et exécution
-
 ```bash
-cd frontend
 npm install
+npm run typecheck
 npm run dev
 ```
 
-L’application est alors disponible à l’adresse indiquée par Vite, normalement
-`http://127.0.0.1:5173`.
+Une construction peut être produite ultérieurement avec `npm run build`, mais aucun dossier
+`dist` n’est inclus dans l’archive de phase 2.
 
-## Vérifications et constructions
+## Confidentialité
 
-```bash
-npm run typecheck
-npm run build
-```
-
-La construction Vite standard produit le répertoire `frontend/dist/` et incorpore les
-dépendances installées par npm.
-
-L’archive fournit également un dossier `dist/` déjà déployable. Il peut être régénéré avec :
-
-```bash
-npm run build:portable
-```
-
-Cette variante utilise des modules ES natifs et charge React ainsi que PDF.js depuis des CDN
-versionnés. Le contenu du PDF reste néanmoins local au navigateur et n’est jamais transmis à
-ces CDN.
-
-## Raccourcis clavier
-
-| Touche | Action |
-|---|---|
-| `←` ou `Page précédente` | page précédente |
-| `→` ou `Page suivante` | page suivante |
-| `+` ou `=` | augmenter le zoom |
-| `-` | réduire le zoom |
-| `0` | revenir à 100 % |
-
-Les raccourcis sont désactivés lorsque le foyer se trouve dans un champ éditable.
-
-## Structure
-
-```text
-src/
-├── components/          composants visuels
-├── domain/              état et réducteur du projet
-├── hooks/               navigation clavier
-├── pdf/                 chargement et configuration de PDF.js
-├── styles/              feuille de style globale
-├── App.tsx               orchestration de l’interface
-└── main.tsx              point d’entrée React
-```
-
-## Choix techniques
-
-### Absence de stockage
-
-Le fichier est lu avec `File.arrayBuffer()` puis conservé dans l’état de l’application.
-Aucun usage de `localStorage`, IndexedDB, cookie applicatif ou téléversement n’est effectué.
-Un rechargement ou la fermeture de l’onglet supprime donc le projet courant.
-
-### Worker PDF.js
-
-Le worker PDF.js est référencé par une URL jsDelivr strictement versionnée. Ce choix évite
-les échecs observés avec certains serveurs locaux qui ne publient pas les fichiers `.mjs`
-avec un type MIME JavaScript approprié. La construction Vite standard ne génère donc plus
-de fichier local `pdf.worker.min-*.mjs`.
-
-Le navigateur doit pouvoir accéder à `https://cdn.jsdelivr.net`. Le PDF sélectionné n’est
-pas transmis à ce CDN : seul le programme du worker PDF.js y est téléchargé.
-
-### Miniatures
-
-Les pages ne sont pas toutes rendues immédiatement. Les quatre premières miniatures sont
-préparées au chargement, puis les suivantes lorsqu’elles approchent de la zone visible.
-Cette stratégie limite la consommation de mémoire pour les documents de plusieurs dizaines
-de pages.
-
-## Périmètre non inclus
-
-La phase 1 n’effectue pas encore :
-
-- d’appel au proxy PHP ;
-- de cartographie par LLM ;
-- de découpage en sous-PDF ;
-- d’extraction ou d’édition de QCM ;
-- de persistance locale volontaire ;
-- d’export JSON ou ZIP.
+Avant la phase 3, le PDF n’est envoyé nulle part par l’interface. Lorsque le client de proxy
+sera connecté, le transfert ne se fera qu’après une action explicite de l’utilisateur vers
+les endpoints PHP configurés. Aucun usage de `localStorage`, IndexedDB, cookie applicatif ou
+compte utilisateur n’est prévu.
