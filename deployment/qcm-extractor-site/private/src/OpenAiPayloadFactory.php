@@ -37,6 +37,9 @@ final class OpenAiPayloadFactory
             'store' => false,
             'max_output_tokens' => $operation->maxOutputTokens($this->config),
             'truncation' => 'disabled',
+            'reasoning' => [
+                'effort' => $operation->reasoningEffort($this->config),
+            ],
             'input' => [
                 [
                     'role' => 'developer',
@@ -57,6 +60,7 @@ final class OpenAiPayloadFactory
                 ],
             ],
             'text' => [
+                'verbosity' => $this->config->textVerbosity,
                 'format' => [
                     'type' => 'json_schema',
                     'name' => $operation->responseFormatName(),

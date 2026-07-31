@@ -17,12 +17,18 @@ required = [
     PUBLIC / ".htaccess",
     PUBLIC / "api" / "analyze-map.php",
     PUBLIC / "api" / "extract-questions.php",
+    PUBLIC / "api" / "_entry.php",
+    PUBLIC / "api" / "diagnostic.php",
+    PUBLIC / ".user.ini",
+    PUBLIC / "api" / ".user.ini",
     PRIVATE / ".htaccess",
     PRIVATE / "config" / "runtime.php",
     PRIVATE / "config" / "bootstrap.php",
     PRIVATE / "src" / "Application.php",
     PRIVATE / "src" / "Config.php",
     PRIVATE / "src" / "RateLimiter.php",
+    PRIVATE / "src" / "Diagnostics.php",
+    PRIVATE / "runtime" / "logs" / ".gitkeep",
     PRIVATE / "prompts" / "mapping.txt",
     PRIVATE / "schemas" / "mapping.openai.schema.json",
 ]
@@ -36,8 +42,16 @@ assert (PUBLIC / "assets" / "main.js").is_file()
 
 for endpoint in ("analyze-map.php", "extract-questions.php"):
     source = (PUBLIC / "api" / endpoint).read_text(encoding="utf-8")
-    assert "dirname(__DIR__, 2) . '/private'" in source
-    assert "bootstrap.php" in source
+    assert "_entry.php" in source
+    assert "qcmRunEndpoint" in source
+
+entrypoint = (PUBLIC / "api" / "_entry.php").read_text(encoding="utf-8")
+assert "dirname(__DIR__, 2) . '/private'" in entrypoint
+assert "bootstrap.php" in entrypoint
+assert "PHP_BOOTSTRAP_FAILED" in entrypoint
+assert (PUBLIC / "api" / "diagnostic.php").is_file()
+assert (PUBLIC / ".user.ini").is_file()
+assert (PUBLIC / "api" / ".user.ini").is_file()
 
 private_htaccess = (PRIVATE / ".htaccess").read_text(encoding="utf-8")
 assert "Require all denied" in private_htaccess
@@ -47,6 +61,9 @@ runtime = (PRIVATE / "config" / "runtime.php").read_text(encoding="utf-8")
 assert "\'OPENAI_API_KEY\' => \'\'" in runtime
 assert "QCM_RATE_LIMIT_BACKEND" in runtime and "'file'" in runtime
 assert "QCM_RATE_LIMIT_STORAGE_DIR" in runtime
+assert "QCM_DIAGNOSTIC_LOG_PATH" in runtime
+assert "gpt-5-mini" in runtime
+assert "QCM_MAPPING_REASONING_EFFORT" in runtime
 
 rate_limiter = (PRIVATE / "src" / "RateLimiter.php").read_text(encoding="utf-8")
 assert "flock(" in rate_limiter

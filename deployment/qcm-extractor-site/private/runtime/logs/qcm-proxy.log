@@ -1,0 +1,6 @@
+{"timestamp":"2026-07-31T11:14:01+00:00","event":"request_started","request_id":"ab2e6dc7674cd0db2feca2948dcde7cc","operation":"mapping","php_sapi":"cgi-fcgi","php_version":"8.3.30"}
+{"timestamp":"2026-07-31T11:14:01+00:00","event":"execution_limit_checked","configured_seconds":150,"effective_seconds":150,"upstream_timeout_seconds":120}
+{"timestamp":"2026-07-31T11:14:01+00:00","event":"pdf_validated","request_id":"ab2e6dc7674cd0db2feca2948dcde7cc","operation":"mapping","pdf_bytes":219036}
+{"timestamp":"2026-07-31T11:14:01+00:00","event":"upstream_started","request_id":"ab2e6dc7674cd0db2feca2948dcde7cc","payload_bytes":297763,"timeout_seconds":120}
+{"timestamp":"2026-07-31T11:14:26+00:00","event":"upstream_finished","request_id":"ab2e6dc7674cd0db2feca2948dcde7cc","http_status":200,"curl_errno":0,"curl_error":null,"duration_ms":24824,"response_bytes":16751}
+{"timestamp":"2026-07-31T11:14:26+00:00","event":"request_completed","request_id":"ab2e6dc7674cd0db2feca2948dcde7cc","operation":"mapping","upstream_status":200}

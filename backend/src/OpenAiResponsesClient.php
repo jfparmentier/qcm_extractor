@@ -38,9 +38,11 @@ final class OpenAiResponsesClient
         $requestHeaders = [
             'Authorization: Bearer ' . $this->config->apiKey,
             'Content-Type: application/json',
+            'Content-Length: ' . strlen($json),
             'Accept: application/json',
             'Accept-Encoding: identity',
-            'User-Agent: qcm-extractor-proxy/2.0',
+            'Expect:',
+            'User-Agent: qcm-extractor-proxy/3.0.3',
             'X-Client-Request-Id: ' . $requestId,
         ];
         if ($this->config->openAiProject !== null) {
@@ -58,6 +60,7 @@ final class OpenAiResponsesClient
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_CONNECTTIMEOUT => $this->config->connectTimeoutSeconds,
             CURLOPT_TIMEOUT => $this->config->requestTimeoutSeconds,
+            CURLOPT_NOSIGNAL => true,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_HEADERFUNCTION => static function ($handle, string $line) use (&$headers): int {
@@ -81,6 +84,9 @@ final class OpenAiResponsesClient
                 return strlen($chunk);
             },
         ];
+        if (defined('CURL_HTTP_VERSION_1_1')) {
+            $options[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
         if (defined('CURLOPT_PROTOCOLS') && defined('CURLPROTO_HTTPS')) {
             $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTPS;
         }
@@ -89,16 +95,57 @@ final class OpenAiResponsesClient
         }
 
         curl_setopt_array($curl, $options);
+        Diagnostics::write('upstream_started', [
+            'request_id' => $requestId,
+            'payload_bytes' => strlen($json),
+            'timeout_seconds' => $this->config->requestTimeoutSeconds,
+        ]);
+
         $result = curl_exec($curl);
         $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        $duration = (float) curl_getinfo($curl, CURLINFO_TOTAL_TIME);
         $errorNumber = curl_errno($curl);
+        $errorMessage = curl_error($curl);
         curl_close($curl);
+
+        Diagnostics::write('upstream_finished', [
+            'request_id' => $requestId,
+            'http_status' => $status,
+            'curl_errno' => $errorNumber,
+            'curl_error' => $errorMessage !== '' ? substr($errorMessage, 0, 300) : null,
+            'duration_ms' => (int) round($duration * 1000),
+            'response_bytes' => strlen($body),
+        ]);
 
         if ($responseTooLarge) {
             throw new ApiException('UPSTREAM_RESPONSE_TOO_LARGE', 'La réponse du fournisseur est trop volumineuse.', 502, true);
         }
         if ($result === false || $errorNumber !== 0) {
-            throw new ApiException('UPSTREAM_UNAVAILABLE', 'Le fournisseur LLM ne peut pas être contacté.', 503, true);
+            $timeoutCode = defined('CURLE_OPERATION_TIMEDOUT') ? CURLE_OPERATION_TIMEDOUT : 28;
+            if ($errorNumber === $timeoutCode) {
+                throw new ApiException(
+                    'UPSTREAM_TIMEOUT',
+                    'Le fournisseur LLM n’a pas terminé l’analyse avant l’expiration du délai.',
+                    504,
+                    true,
+                );
+            }
+
+            $sslErrors = array_filter([
+                defined('CURLE_SSL_CONNECT_ERROR') ? CURLE_SSL_CONNECT_ERROR : null,
+                defined('CURLE_PEER_FAILED_VERIFICATION') ? CURLE_PEER_FAILED_VERIFICATION : null,
+                defined('CURLE_SSL_CACERT') ? CURLE_SSL_CACERT : null,
+            ], static fn ($value): bool => is_int($value));
+            if (in_array($errorNumber, $sslErrors, true)) {
+                throw new ApiException(
+                    'UPSTREAM_TLS_FAILED',
+                    'La connexion TLS vers le fournisseur LLM a échoué. Vérifiez les certificats cURL de PHP/MAMP.',
+                    503,
+                    false,
+                );
+            }
+
+            throw new ApiException('UPSTREAM_CONNECTION_FAILED', 'Le fournisseur LLM ne peut pas être contacté.', 503, true);
         }
 
         return new UpstreamResponse($status, $headers, $body);

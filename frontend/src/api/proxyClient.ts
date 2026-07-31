@@ -33,7 +33,8 @@ export class ProxyApiError extends Error {
     message: string,
     public readonly retryable: boolean,
     public readonly httpStatus: number,
-    public readonly requestId: string | null
+    public readonly requestId: string | null,
+    public readonly technicalDetails?: string
   ) {
     super(message);
     this.name = "ProxyApiError";
@@ -54,6 +55,10 @@ const API_BASE_URL = (
     : new URL("api", document.baseURI).toString()
 ).replace(/\/$/, "");
 
+export function getProxyDiagnosticUrl(): string {
+  return `${API_BASE_URL}/diagnostic.php`;
+}
+
 function encodeBase64Url(value: unknown): string {
   const json = JSON.stringify(value);
   const bytes = new TextEncoder().encode(json);
@@ -65,17 +70,34 @@ function encodeBase64Url(value: unknown): string {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
+function responseSnippet(body: string): string {
+  const normalized = body
+    .replace(/<script[\s\S]*?<\/script>/gi, "[script supprimé]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized === "" ? "(corps vide)" : normalized.slice(0, 1200);
+}
+
 async function readResponse<TData>(response: Response): Promise<ProxySuccess<TData>> {
+  const body = await response.text();
   let payload: ProxySuccess<TData> | ProxyFailure;
   try {
-    payload = (await response.json()) as ProxySuccess<TData> | ProxyFailure;
+    payload = JSON.parse(body) as ProxySuccess<TData> | ProxyFailure;
   } catch {
+    const contentType = response.headers.get("Content-Type") ?? "non indiqué";
+    const requestId = response.headers.get("X-QCM-Request-Id");
     throw new ProxyApiError(
       "INVALID_PROXY_RESPONSE",
       "Le proxy PHP a renvoyé une réponse illisible.",
       response.status >= 500,
       response.status,
-      response.headers.get("X-QCM-Request-Id")
+      requestId,
+      [
+        `HTTP ${response.status}`,
+        `Type : ${contentType}`,
+        `Réponse : ${responseSnippet(body)}`,
+        `Diagnostic : ${getProxyDiagnosticUrl()}`
+      ].join("\n")
     );
   }
 
@@ -86,7 +108,8 @@ async function readResponse<TData>(response: Response): Promise<ProxySuccess<TDa
       failure?.error.message ?? "La requête au proxy PHP a échoué.",
       failure?.error.retryable ?? response.status >= 500,
       response.status,
-      failure?.request_id ?? response.headers.get("X-QCM-Request-Id")
+      failure?.request_id ?? response.headers.get("X-QCM-Request-Id"),
+      `HTTP ${response.status} · ${failure?.error.code ?? "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`
     );
   }
 
@@ -131,7 +154,8 @@ async function sendPdf<TData>(
       "Le proxy PHP est inaccessible. Vérifiez que le site est servi par Apache/PHP et que l’URL de l’API est correcte.",
       true,
       0,
-      null
+      null,
+      `Diagnostic : ${getProxyDiagnosticUrl()}`
     );
   }
 

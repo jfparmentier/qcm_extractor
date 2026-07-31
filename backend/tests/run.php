@@ -41,31 +41,36 @@ function expectApiException(callable $callback, string $expectedCode): void
 putenv('OPENAI_API_KEY=test-secret-key-never-sent-to-client');
 putenv('QCM_OPENAI_MAPPING_MODEL=gpt-test-mapping');
 putenv('QCM_OPENAI_EXTRACTION_MODEL=gpt-test-extraction');
+putenv('QCM_MAPPING_REASONING_EFFORT=low');
+putenv('QCM_EXTRACTION_REASONING_EFFORT=medium');
+putenv('QCM_TEXT_VERBOSITY=low');
 putenv('QCM_RATE_LIMIT_BACKEND=disabled');
 putenv('QCM_ALLOWED_ORIGINS=http://localhost:5173');
 putenv('QCM_ALLOW_ORIGINLESS_REQUESTS=true');
-putenv('QCM_REQUEST_TIMEOUT_SECONDS=140');
-putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
+putenv('QCM_REQUEST_TIMEOUT_SECONDS=120');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=150');
 putenv('QCM_TRUSTED_PROXY_ADDRESSES=192.0.2.1');
 
 $backendRoot = dirname(__DIR__);
 $config = Config::fromEnvironment($backendRoot);
 expect($config->mappingModel === 'gpt-test-mapping', 'Modèle de cartographie incorrect.');
 expect($config->extractionModel === 'gpt-test-extraction', 'Modèle d’extraction incorrect.');
+expect($config->mappingReasoningEffort === 'low', 'Effort de cartographie incorrect.');
+expect($config->textVerbosity === 'low', 'Verbosité incorrecte.');
 expect($config->maxPdfBytes === 25 * 1024 * 1024, 'Limite PDF par défaut incorrecte.');
-expect($config->requestTimeoutSeconds === 140, 'Délai cURL incorrect.');
-expect($config->phpMaxExecutionSeconds === 155, 'Délai PHP incorrect.');
+expect($config->requestTimeoutSeconds === 120, 'Délai cURL incorrect.');
+expect($config->phpMaxExecutionSeconds === 150, 'Délai PHP incorrect.');
 expect($config->phpMaxExecutionSeconds > $config->requestTimeoutSeconds, 'Le délai PHP doit dépasser le délai cURL.');
 
 
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=155');
-putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=150');
 expectApiException(
     static fn () => Config::fromEnvironment($backendRoot),
     'SERVER_MISCONFIGURED',
 );
-putenv('QCM_REQUEST_TIMEOUT_SECONDS=140');
-putenv('QCM_PHP_MAX_EXECUTION_SECONDS=155');
+putenv('QCM_REQUEST_TIMEOUT_SECONDS=120');
+putenv('QCM_PHP_MAX_EXECUTION_SECONDS=150');
 
 expect(Filename::sanitize('../cours') === 'cours.pdf', 'Assainissement du nom incorrect.');
 expect(Filename::sanitize('chapitre%201.pdf') === 'chapitre 1.pdf', 'Décodage du nom incorrect.');
@@ -136,6 +141,8 @@ $mappingPayload = $factory->build(Operation::Mapping, new PdfRequest('test.pdf',
 expect($mappingPayload['model'] === 'gpt-test-mapping', 'Le modèle serveur n’est pas appliqué.');
 expect($mappingPayload['store'] === false, 'La conservation Responses doit être désactivée.');
 expect($mappingPayload['max_output_tokens'] === 12000, 'Limite de sortie incorrecte.');
+expect($mappingPayload['reasoning']['effort'] === 'low', 'Effort de raisonnement absent.');
+expect($mappingPayload['text']['verbosity'] === 'low', 'Verbosité de sortie absente.');
 expect($mappingPayload['text']['format']['strict'] === true, 'Sortie structurée non stricte.');
 expect($mappingPayload['text']['format']['type'] === 'json_schema', 'Format JSON Schema absent.');
 $fileData = $mappingPayload['input'][1]['content'][0]['file_data'];
@@ -188,4 +195,4 @@ expectApiException(
     'LLM_REFUSAL',
 );
 
-print("OK phase 3.0.2 PHP : délais cohérents, charge utile sécurisée et réponses JSON robustes\n");
+print("OK phase 3.0.3 PHP : délais cohérents, charge utile sécurisée et réponses JSON robustes\n");

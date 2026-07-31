@@ -12,6 +12,9 @@ final class Config
         public readonly string $apiKey,
         public readonly string $mappingModel,
         public readonly string $extractionModel,
+        public readonly string $mappingReasoningEffort,
+        public readonly string $extractionReasoningEffort,
+        public readonly string $textVerbosity,
         public readonly int $maxPdfBytes,
         public readonly int $maxContextHeaderBytes,
         public readonly int $mappingMaxOutputTokens,
@@ -29,14 +32,15 @@ final class Config
         public readonly array $trustedProxyAddresses,
         public readonly ?string $openAiProject,
         public readonly ?string $openAiOrganization,
+        public readonly string $diagnosticLogPath,
     ) {
     }
 
     public static function fromEnvironment(string $projectRoot): self
     {
         $apiKey = self::requiredString('OPENAI_API_KEY');
-        $requestTimeoutSeconds = self::integer('QCM_REQUEST_TIMEOUT_SECONDS', 240, 10, 600);
-        $phpMaxExecutionSeconds = self::integer('QCM_PHP_MAX_EXECUTION_SECONDS', 255, 30, 660);
+        $requestTimeoutSeconds = self::integer('QCM_REQUEST_TIMEOUT_SECONDS', 120, 10, 600);
+        $phpMaxExecutionSeconds = self::integer('QCM_PHP_MAX_EXECUTION_SECONDS', 150, 30, 660);
         if ($phpMaxExecutionSeconds <= $requestTimeoutSeconds) {
             throw new ApiException(
                 'SERVER_MISCONFIGURED',
@@ -48,8 +52,11 @@ final class Config
         return new self(
             projectRoot: rtrim($projectRoot, '/'),
             apiKey: $apiKey,
-            mappingModel: self::string('QCM_OPENAI_MAPPING_MODEL', 'gpt-5'),
+            mappingModel: self::string('QCM_OPENAI_MAPPING_MODEL', 'gpt-5-mini'),
             extractionModel: self::string('QCM_OPENAI_EXTRACTION_MODEL', 'gpt-5'),
+            mappingReasoningEffort: self::enum('QCM_MAPPING_REASONING_EFFORT', 'low', ['minimal', 'low', 'medium', 'high']),
+            extractionReasoningEffort: self::enum('QCM_EXTRACTION_REASONING_EFFORT', 'medium', ['minimal', 'low', 'medium', 'high']),
+            textVerbosity: self::enum('QCM_TEXT_VERBOSITY', 'low', ['low', 'medium', 'high']),
             maxPdfBytes: self::integer('QCM_MAX_PDF_BYTES', 25 * 1024 * 1024, 1_024, 50 * 1024 * 1024),
             maxContextHeaderBytes: self::integer('QCM_MAX_CONTEXT_HEADER_BYTES', 6_144, 256, 16_384),
             mappingMaxOutputTokens: self::integer('QCM_MAPPING_MAX_OUTPUT_TOKENS', 12_000, 512, 64_000),
@@ -67,6 +74,7 @@ final class Config
             trustedProxyAddresses: self::csv('QCM_TRUSTED_PROXY_ADDRESSES'),
             openAiProject: self::nullableString('OPENAI_PROJECT_ID'),
             openAiOrganization: self::nullableString('OPENAI_ORGANIZATION_ID'),
+            diagnosticLogPath: self::string('QCM_DIAGNOSTIC_LOG_PATH', rtrim($projectRoot, '/') . '/runtime/logs/qcm-proxy.log'),
         );
     }
 
@@ -152,12 +160,10 @@ final class Config
             return [];
         }
 
-        $values = array_values(array_unique(array_filter(array_map(
+        return array_values(array_unique(array_filter(array_map(
             static fn (string $value): string => rtrim(trim($value), '/'),
             explode(',', $raw),
         ))));
-
-        return $values;
     }
 
     /** @param list<string> $allowed */

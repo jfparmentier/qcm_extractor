@@ -11,7 +11,7 @@ final class OpenAiResponseParser
     public function parse(UpstreamResponse $response): ParsedLlmResult
     {
         if ($response->status < 200 || $response->status >= 300) {
-            $this->throwForStatus($response->status);
+            $this->throwForResponse($response);
         }
 
         try {
@@ -26,6 +26,13 @@ final class OpenAiResponseParser
         $status = $decoded['status'] ?? null;
         if ($status !== 'completed') {
             $retryable = in_array($status, ['failed', 'cancelled', 'incomplete'], true);
+            $reason = is_array($decoded['incomplete_details'] ?? null)
+                ? ($decoded['incomplete_details']['reason'] ?? null)
+                : null;
+            Diagnostics::write('upstream_incomplete', [
+                'response_status' => is_scalar($status) ? (string) $status : null,
+                'reason' => is_scalar($reason) ? (string) $reason : null,
+            ]);
             throw new ApiException('LLM_RESPONSE_INCOMPLETE', 'L’analyse du document n’a pas été menée à son terme.', 502, $retryable);
         }
 
@@ -74,8 +81,29 @@ final class OpenAiResponseParser
         ]);
     }
 
-    private function throwForStatus(int $status): never
+    private function throwForResponse(UpstreamResponse $response): never
     {
+        $status = $response->status;
+        $providerCode = null;
+        $providerMessage = null;
+        try {
+            $decoded = json_decode($response->body, true, 64, JSON_THROW_ON_ERROR);
+            if (is_array($decoded) && is_array($decoded['error'] ?? null)) {
+                $error = $decoded['error'];
+                $providerCode = is_scalar($error['code'] ?? null) ? (string) $error['code'] : null;
+                $providerMessage = is_scalar($error['message'] ?? null) ? (string) $error['message'] : null;
+            }
+        } catch (JsonException) {
+            // Le statut HTTP reste exploitable même si le corps fournisseur ne l’est pas.
+        }
+
+        Diagnostics::write('upstream_rejected', [
+            'http_status' => $status,
+            'provider_code' => $providerCode,
+            'provider_message' => $providerMessage !== null ? substr($providerMessage, 0, 500) : null,
+            'provider_request_id' => $response->headers['x-request-id'] ?? null,
+        ]);
+
         if ($status === 401 || $status === 403) {
             throw new ApiException('UPSTREAM_AUTHENTICATION_FAILED', 'Le proxy ne peut pas s’authentifier auprès du fournisseur LLM.', 502, false);
         }
@@ -89,6 +117,7 @@ final class OpenAiResponseParser
             throw new ApiException('UPSTREAM_UNAVAILABLE', 'Le fournisseur LLM est temporairement indisponible.', 503, true);
         }
 
-        throw new ApiException('UPSTREAM_REJECTED_REQUEST', 'Le fournisseur LLM a rejeté la requête.', 502, false);
+        $suffix = $providerCode !== null ? " (code fournisseur : {$providerCode})" : '';
+        throw new ApiException('UPSTREAM_REJECTED_REQUEST', 'Le fournisseur LLM a rejeté la requête' . $suffix . '.', 502, false);
     }
 }

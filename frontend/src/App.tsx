@@ -25,7 +25,7 @@ function toMappingError(error: unknown): MappingError {
       message: error.message,
       retryable: error.retryable,
       requestId: error.requestId,
-      technicalDetails: error.httpStatus > 0 ? `HTTP ${error.httpStatus} · ${error.code}` : error.code
+      technicalDetails: error.technicalDetails ?? (error.httpStatus > 0 ? `HTTP ${error.httpStatus} · ${error.code}` : error.code)
     };
   }
 

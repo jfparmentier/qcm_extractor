@@ -1,7 +1,7 @@
 {
   "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T10:35:00Z",
-  "application_version": "0.3.1",
+  "generated_at": "2026-07-31T11:10:00Z",
+  "application_version": "0.3.3",
   "dependencies": {
     "react": "19.2.8",
     "react_dom": "19.2.8",
@@ -13,6 +13,6 @@
     "https://cdn.jsdelivr.net"
   ],
   "artifact": "phase3-qcm-extractor-deployment",
-  "version": "3.0.2",
-  "notes": "Correctif Phase 3 : relèvement contrôlé du délai PHP, marge sur le délai cURL et réponses JSON garanties en cas d’erreur fatale."
+  "version": "3.0.3",
+  "notes": "Correctif MAMP : diagnostic détaillé, contrôle effectif du délai PHP, journal technique privé et cartographie accélérée avec gpt-5-mini."
 }

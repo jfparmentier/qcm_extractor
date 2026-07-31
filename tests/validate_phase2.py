@@ -14,7 +14,10 @@ REQUIRED_FILES = {
     "backend/public/analyze-map.php",
     "backend/public/extract-questions.php",
     "backend/public/index.php",
+    "backend/public/_entry.php",
+    "backend/public/diagnostic.php",
     "backend/src/Application.php",
+    "backend/src/Diagnostics.php",
     "backend/src/Config.php",
     "backend/src/ClientAddress.php",
     "backend/src/RequestValidator.php",
@@ -41,6 +44,10 @@ REQUIRED_FILES = {
     "deployment/qcm-extractor-site/public/index.html",
     "deployment/qcm-extractor-site/public/api/analyze-map.php",
     "deployment/qcm-extractor-site/public/api/extract-questions.php",
+    "deployment/qcm-extractor-site/public/api/_entry.php",
+    "deployment/qcm-extractor-site/public/api/diagnostic.php",
+    "deployment/qcm-extractor-site/public/.user.ini",
+    "deployment/qcm-extractor-site/public/api/.user.ini",
     "deployment/qcm-extractor-site/private/config/runtime.php",
     "deployment/qcm-extractor-site/private/config/bootstrap.php",
     "deployment/qcm-extractor-site/private/src/RateLimiter.php",
@@ -106,6 +113,10 @@ assert "flock(" in php_sources
 assert "QCM_TRUSTED_PROXY_ADDRESSES" in php_sources
 assert "Content-Security-Policy" in php_sources
 assert "error_log" in php_sources
+assert "QCM_DIAGNOSTIC_LOG_PATH" in php_sources
+assert "PHP_TIME_LIMIT_TOO_LOW" in php_sources
+assert "CURLOPT_HTTP_VERSION" in php_sources
+assert "Expect:" in php_sources
 
 # La clé d’exemple doit être manifestement fictive et aucune clé réelle ne doit être incluse.
 all_text = "\n".join(
@@ -126,16 +137,19 @@ assert 'credentials: "omit"' in client
 assert 'cache: "no-store"' in client
 assert 'redirect: "error"' in client
 assert "OPENAI_API_KEY" not in client
+assert "INVALID_PROXY_RESPONSE" in client
+assert "diagnostic.php" in client
+assert "response.text()" in client
 send_pdf_block = client.split("async function sendPdf", 1)[1].split("export function analyzeDocumentMap", 1)[0]
 assert "model:" not in send_pdf_block and "\"model\"" not in send_pdf_block, "Le client ne doit pas choisir le modèle."
 
 package = read_json(FRONTEND / "package.json")
-assert package["version"] == "0.3.1"
+assert package["version"] == "0.3.3"
 assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase3_qcm_extractor"
-assert manifest["version"] == "3.0.2"
+assert manifest["version"] == "3.0.3"
 assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:

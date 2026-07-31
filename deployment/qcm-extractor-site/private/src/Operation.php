@@ -49,6 +49,14 @@ enum Operation: string
         };
     }
 
+    public function reasoningEffort(Config $config): string
+    {
+        return match ($this) {
+            self::Mapping => $config->mappingReasoningEffort,
+            self::Extraction => $config->extractionReasoningEffort,
+        };
+    }
+
     public function maxOutputTokens(Config $config): int
     {
         return match ($this) {

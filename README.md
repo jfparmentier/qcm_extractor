@@ -1,17 +1,13 @@
 # Extracteur de QCM — Phases 0 à 3
 
-Cette archive contient les contrats JSON de la phase 0, le visualiseur React/TypeScript de
-la phase 1, le proxy PHP sécurisé de la phase 2 et la première passe de cartographie de la
-phase 3.
+Cette archive contient les contrats JSON de la phase 0, le visualiseur React/TypeScript de la phase 1, le proxy PHP sécurisé de la phase 2 et la première passe de cartographie de la phase 3.
 
-Le dossier directement exploitable sur OVH Hosting Perso ou MAMP se trouve sous
-`deployment/qcm-extractor-site`. Les sources React et PHP sont également fournies. Aucun
-compte, aucune base de données et aucun stockage persistant des PDF ne sont utilisés.
+Le dossier directement exploitable sur OVH Hosting Perso ou MAMP se trouve sous `deployment/qcm-extractor-site`. Les sources React et PHP sont également fournies. Aucun compte, aucune base de données et aucun stockage persistant des PDF ne sont utilisés.
 
 ## Contenu
 
 ```text
-phase3_qcm_extractor/
+phase3_qcm_extractor_3.0.3/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/ dossier prêt à téléverser sur OVH ou copier dans MAMP
@@ -23,25 +19,18 @@ phase3_qcm_extractor/
 └── manifest.json
 ```
 
-## Phase 3 réalisée
+## Correctif 3.0.3
 
-Après le chargement local du PDF, l’utilisateur peut lancer explicitement la cartographie.
-Le frontend :
+Cette version traite spécifiquement les erreurs HTTP 500 non JSON observées sous MAMP :
 
-- transmet le PDF brut à `api/analyze-map.php` ;
-- affiche un état d’analyse avec durée écoulée et annulation ;
-- valide la réponse avec AJV contre le schéma JSON 2020-12 ;
-- applique des contrôles déterministes sur les pages, identifiants et coordonnées ;
-- normalise les boîtes dépassant légèrement la page et signale les anomalies ;
-- détecte les segments fortement superposés ;
-- présente la liste des questions détectées, leurs pages, type indicatif et confiance ;
-- superpose les régions question, choix, réponse, feedback et illustration sur le PDF ;
-- permet de naviguer vers un segment depuis la liste ou depuis la page ;
-- affiche les métadonnées du modèle et l’usage de jetons ;
-- gère les erreurs du proxy, les réponses non conformes, l’annulation et la relance.
-
-La cartographie reste uniquement en mémoire. La phase 4 créera localement les sous-PDF à
-partir de cette cartographie.
+- contrôle de la limite PHP réellement appliquée ;
+- configuration locale par `.user.ini` et directives conditionnelles Apache ;
+- endpoint `api/diagnostic.php` sans donnée sensible ;
+- journal technique privé `private/runtime/logs/qcm-proxy.log` ;
+- conversion des échecs d’initialisation en réponses JSON ;
+- affichage du type MIME et d’un extrait de la réponse illisible dans l’interface ;
+- erreurs cURL différenciées ;
+- cartographie accélérée avec `gpt-5-mini`, effort `low` et verbosité `low`.
 
 ## Démarrage des sources
 
@@ -64,6 +53,7 @@ VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
 2. Renseigner `OPENAI_API_KEY`.
 3. Copier le dossier complet sur le serveur.
 4. Pointer la racine web vers `qcm-extractor-site/public`, ou ouvrir ce dossier sous MAMP.
+5. Ouvrir `public/api/diagnostic.php` et contrôler l’environnement PHP.
 
 Les instructions détaillées figurent dans `DEPLOIEMENT_OVH_MAMP.md`.
 
@@ -80,19 +70,3 @@ python tests/validate_deployment.py
 ```
 
 Aucun test fourni n’envoie de document au fournisseur LLM.
-
-## Correctif 3.0.2 — exécutions longues sous MAMP
-
-Le proxy applique désormais un plafond PHP explicite supérieur au délai cURL. La configuration
-de déploiement utilise 140 secondes pour l’appel fournisseur et 155 secondes pour PHP. Les
-avertissements et erreurs fatales ne peuvent plus corrompre la réponse JSON : un dépassement
-de durée est retourné avec le code `PHP_EXECUTION_TIMEOUT`.
-
-Les valeurs se règlent dans `deployment/qcm-extractor-site/private/config/runtime.php` :
-
-```php
-'QCM_REQUEST_TIMEOUT_SECONDS' => '140',
-'QCM_PHP_MAX_EXECUTION_SECONDS' => '155',
-```
-
-Le second nombre doit toujours être strictement supérieur au premier.

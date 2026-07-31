@@ -1,15 +1,21 @@
 # Journal des modifications
 
-## 3.0.2 — Correctif du délai PHP et des réponses 500
+## 3.0.3 — Diagnostic MAMP et robustesse du proxy
 
-- configuration automatique de `max_execution_time` et appel à `set_time_limit()` ;
-- ajout de `QCM_PHP_MAX_EXECUTION_SECONDS`, obligatoirement supérieur au délai cURL ;
-- valeurs de déploiement ramenées à 140 s pour cURL et 155 s pour PHP ;
-- désactivation de l’affichage HTML des erreurs PHP ;
-- ajout d’un tampon de sortie empêchant les avertissements de corrompre le JSON ;
-- ajout d’un gestionnaire d’arrêt pour les erreurs fatales et les délais PHP ;
-- ajout des codes `PHP_EXECUTION_TIMEOUT` et `PHP_FATAL_ERROR` ;
-- mise à jour des tests et de la documentation MAMP/OVH.
+- contrôle de la valeur **effective** de `max_execution_time` avant l’appel au LLM ;
+- ajout de `.user.ini` et de directives conditionnelles `mod_php` pour MAMP ;
+- ajout de l’endpoint non sensible `public/api/diagnostic.php` ;
+- ajout d’un journal technique privé dans `private/runtime/logs/qcm-proxy.log` ;
+- conservation des réponses JSON même en cas d’échec d’initialisation PHP ;
+- affichage dans l’interface du type MIME et d’un extrait de la réponse HTTP illisible ;
+- distinction des erreurs cURL : délai, TLS et connexion ;
+- journalisation du statut HTTP fournisseur et de son code d’erreur, sans PDF, prompt ni clé ;
+- utilisation de HTTP/1.1 pour l’appel cURL et suppression de l’attente `Expect: 100-continue` ;
+- modèle de cartographie par défaut remplacé par `gpt-5-mini` ;
+- effort de raisonnement de cartographie réglé sur `low` et verbosité sur `low` ;
+- délai fournisseur réglé à 120 s et plafond PHP à 150 s ;
+- ajout du code `PHP_TIME_LIMIT_TOO_LOW` lorsque MAMP refuse la modification du délai ;
+- mise à jour des tests et de la documentation.
 
 ## 3.0.1 — Correctif de transmission du PDF
 
