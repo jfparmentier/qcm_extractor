@@ -138,3 +138,20 @@ export function CheckIcon(props: IconProps): React.ReactElement {
     </BaseIcon>
   );
 }
+
+export function TrashIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="M5 7h14M9 7V4.5h6V7m-8.5 0 .8 13h9.4l.8-13M10 10.5v6M14 10.5v6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </BaseIcon>
+  );
+}
+
+export function SelectionIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="M4.5 9V4.5H9M15 4.5h4.5V9M19.5 15v4.5H15M9 19.5H4.5V15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <rect x="8" y="8" width="8" height="8" rx="1" stroke="currentColor" strokeDasharray="2 2" strokeWidth="1.5" />
+    </BaseIcon>
+  );
+}

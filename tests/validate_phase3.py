@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.4.1"
+assert package["version"] == "0.5.0"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -53,6 +53,8 @@ for status in ("idle", "running", "completed", "failed"):
 assert "selectedSegmentId" in state
 assert "progress" in state
 assert "MAPPING_PROGRESS" in state
+for marker in ("selectedRegionId", "UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
+    assert marker in state, f"Action d’édition géométrique absente : {marker}"
 
 mapping = (FRONTEND / "src/domain/documentMap.ts").read_text(encoding="utf-8")
 for marker in (
@@ -66,22 +68,28 @@ for marker in (
     assert marker in mapping, f"Validation de cartographie incomplète : {marker}"
 
 panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
-for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons", "tâche asynchrone", "Contrôles d’état"):
+for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons", "tâche asynchrone", "Contrôles d’état", "Éditeur de zones", "Tracer", "Rôle de la zone sélectionnée"):
     assert marker in panel
 
 canvas = (FRONTEND / "src/components/PdfPageCanvas.tsx").read_text(encoding="utf-8")
 assert "PdfOverlayRegion" in canvas
 assert "pdf-region-layer" in canvas
 assert "onOverlaySelect" in canvas
+for marker in ("onRegionChange", "onRegionAdd", "RESIZE_HANDLES", "pointermove", "pdf-region__handle"):
+    assert marker in canvas, f"Interaction géométrique absente : {marker}"
 
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
 assert "PdfThumbnail" not in viewer
 assert "thumbnail-sidebar" not in viewer
+for marker in ("drawingRole", "onAddRegion", "onDeleteRegion", "onUpdateRegionBbox", "Delete"):
+    assert marker in viewer, f"Commande de zone absente : {marker}"
 portable_viewer = (PUBLIC / "assets/components/PdfViewer.js").read_text(encoding="utf-8")
 assert "PdfThumbnail" not in portable_viewer
 assert "thumbnail-sidebar" not in portable_viewer
 portable_css = (PUBLIC / "assets/app.css").read_text(encoding="utf-8")
 assert "grid-template-columns: minmax(0, 1fr) minmax(300px, 356px);" in portable_css
+for marker in (".region-editor", ".pdf-region__handle", ".pdf-region-layer--drawing", ".button--danger"):
+    assert marker in portable_css, f"Style d’édition absent : {marker}"
 
 client = (FRONTEND / "src/api/proxyClient.ts").read_text(encoding="utf-8")
 assert "PROXY_UNREACHABLE" in client
@@ -131,8 +139,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "3.1.2"
-assert build_info["application_version"] == "0.4.1"
+assert build_info["version"] == "3.2.0"
+assert build_info["application_version"] == "0.5.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
-print("OK phase 3.1.2 : visualiseur sans colonne de miniatures")
+print("OK phase 3.2.0 : éditeur géométrique des zones")

@@ -1,4 +1,9 @@
 export class ProxyApiError extends Error {
+    code;
+    retryable;
+    httpStatus;
+    requestId;
+    technicalDetails;
     constructor(code, message, retryable, httpStatus, requestId, technicalDetails) {
         super(message);
         this.code = code;
@@ -9,7 +14,10 @@ export class ProxyApiError extends Error {
         this.name = "ProxyApiError";
     }
 }
-const API_BASE_URL = new URL("api", document.baseURI).toString().replace(/\/$/, "");
+const configuredApiBaseUrl = import.meta.env?.VITE_QCM_API_BASE_URL?.trim();
+const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length > 0
+    ? configuredApiBaseUrl
+    : new URL("api", document.baseURI).toString()).replace(/\/$/, "");
 export function getProxyDiagnosticUrl() {
     return `${API_BASE_URL}/diagnostic.php`;
 }
@@ -45,10 +53,11 @@ async function readResponse(response) {
             `Diagnostic : ${getProxyDiagnosticUrl()}`
         ].join("\n"));
     }
-    if ((!response.ok && response.status !== 202) || payload.ok === false) {
-        throw new ProxyApiError(payload.ok === false ? payload.error.code : "PROXY_REQUEST_FAILED", payload.ok === false ? payload.error.message : "La requête au proxy PHP a échoué.", payload.ok === false ? payload.error.retryable : response.status >= 500, response.status, payload.ok === false
-            ? payload.request_id ?? response.headers.get("X-QCM-Request-Id")
-            : response.headers.get("X-QCM-Request-Id"), `HTTP ${response.status} · ${payload.ok === false ? payload.error.code : "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`);
+    const failure = payload;
+    if ((!response.ok && response.status !== 202) || failure.ok === false) {
+        throw new ProxyApiError(failure.ok === false ? failure.error.code : "PROXY_REQUEST_FAILED", failure.ok === false ? failure.error.message : "La requête au proxy PHP a échoué.", failure.ok === false ? failure.error.retryable : response.status >= 500, response.status, failure.ok === false
+            ? failure.request_id ?? response.headers.get("X-QCM-Request-Id")
+            : response.headers.get("X-QCM-Request-Id"), `HTTP ${response.status} · ${failure.ok === false ? failure.error.code : "PROXY_REQUEST_FAILED"}\nDiagnostic : ${getProxyDiagnosticUrl()}`);
     }
     return payload;
 }
@@ -100,10 +109,16 @@ function wait(milliseconds, signal) {
     });
 }
 async function pollMappingJob(token, signal) {
-    return fetchProxy("mapping-status.php", { method: "POST", headers: { "X-QCM-Job": token } }, signal);
+    return fetchProxy("mapping-status.php", {
+        method: "POST",
+        headers: { "X-QCM-Job": token }
+    }, signal);
 }
 async function cancelMappingJob(token) {
-    await fetchProxy("mapping-cancel.php", { method: "POST", headers: { "X-QCM-Job": token } });
+    await fetchProxy("mapping-cancel.php", {
+        method: "POST",
+        headers: { "X-QCM-Job": token }
+    });
 }
 function isPending(response) {
     return response.status === "queued" || response.status === "in_progress";
@@ -118,7 +133,11 @@ export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress)
         }
         pending = start;
         let pollCount = 0;
-        onProgress?.({ providerStatus: start.status, pollCount, requestId: start.request_id });
+        onProgress?.({
+            providerStatus: start.status,
+            pollCount,
+            requestId: start.request_id
+        });
         while (true) {
             const remainingMilliseconds = pending.job.expires_at * 1000 - Date.now();
             if (remainingMilliseconds <= 0) {
@@ -131,7 +150,11 @@ export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress)
                 return polled;
             }
             pending = polled;
-            onProgress?.({ providerStatus: polled.status, pollCount, requestId: polled.request_id });
+            onProgress?.({
+                providerStatus: polled.status,
+                pollCount,
+                requestId: polled.request_id
+            });
         }
     }
     catch (error) {

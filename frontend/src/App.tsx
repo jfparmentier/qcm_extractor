@@ -7,7 +7,10 @@ import {
 } from "./domain/projectState";
 import {
   DocumentMapValidationError,
-  validateAndNormalizeDocumentMap
+  createUserRegionId,
+  validateAndNormalizeDocumentMap,
+  type NormalizedBoundingBox,
+  type PageRegionRole
 } from "./domain/documentMap";
 import { analyzeDocumentMap, ProxyApiError } from "./api/proxyClient";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
@@ -173,6 +176,49 @@ export default function App(): React.ReactElement {
     dispatch({ type: "SELECT_SEGMENT", segmentId });
   }, []);
 
+  const selectRegion = useCallback((segmentId: string, regionId: string): void => {
+    dispatch({ type: "SELECT_REGION", segmentId, regionId });
+  }, []);
+
+  const updateRegionBbox = useCallback((
+    segmentId: string,
+    regionId: string,
+    bbox: NormalizedBoundingBox
+  ): void => {
+    dispatch({ type: "UPDATE_REGION_BBOX", segmentId, regionId, bbox });
+  }, []);
+
+  const updateRegionRole = useCallback((
+    segmentId: string,
+    regionId: string,
+    role: PageRegionRole
+  ): void => {
+    dispatch({ type: "UPDATE_REGION_ROLE", segmentId, regionId, role });
+  }, []);
+
+  const addRegion = useCallback((
+    segmentId: string,
+    page: number,
+    role: PageRegionRole,
+    bbox: NormalizedBoundingBox
+  ): void => {
+    dispatch({
+      type: "ADD_REGION",
+      segmentId,
+      region: {
+        client_id: createUserRegionId(segmentId),
+        page,
+        role,
+        bbox,
+        origin: "user"
+      }
+    });
+  }, []);
+
+  const deleteRegion = useCallback((segmentId: string, regionId: string): void => {
+    dispatch({ type: "DELETE_REGION", segmentId, regionId });
+  }, []);
+
   const zoomIn = useCallback((): void => {
     dispatch({ type: "SET_ZOOM", zoom: state.zoom + ZOOM_STEP });
   }, [state.zoom]);
@@ -216,9 +262,14 @@ export default function App(): React.ReactElement {
           onAnalyze={() => void analyzeMapping()}
           onCancelMapping={cancelMapping}
           onClose={closeDocument}
+          onAddRegion={addRegion}
+          onDeleteRegion={deleteRegion}
           onPageChange={setPage}
           onResetZoom={resetZoom}
+          onSelectRegion={selectRegion}
           onSelectSegment={selectSegment}
+          onUpdateRegionBbox={updateRegionBbox}
+          onUpdateRegionRole={updateRegionRole}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           pdf={state.pdf}

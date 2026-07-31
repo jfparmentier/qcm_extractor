@@ -145,12 +145,12 @@ send_pdf_block = client.split("async function sendPdf", 1)[1].split("export func
 assert "model:" not in send_pdf_block and "\"model\"" not in send_pdf_block, "Le client ne doit pas choisir le modèle."
 
 package = read_json(FRONTEND / "package.json")
-assert package["version"] == "0.4.1"
+assert package["version"] == "0.5.0"
 assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase3_qcm_extractor"
-assert manifest["version"] == "3.1.2"
+assert manifest["version"] == "3.2.0"
 assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:

@@ -102,4 +102,14 @@ for schema_name in ("mapping.openai.schema.json", "extraction.openai.schema.json
 assert not any(path.name == "node_modules" for path in SITE.rglob("*"))
 assert not any(path.suffix == ".map" for path in PUBLIC.rglob("*")), "Les source maps ne doivent pas être déployées."
 
-print("OK déploiement 3.1.2 : visualiseur sans colonne de miniatures")
+canvas = (PUBLIC / "assets" / "components" / "PdfPageCanvas.js").read_text(encoding="utf-8")
+panel = (PUBLIC / "assets" / "components" / "MappingPanel.js").read_text(encoding="utf-8")
+state = (PUBLIC / "assets" / "domain" / "projectState.js").read_text(encoding="utf-8")
+for marker in ("onRegionChange", "onRegionAdd", "pdf-region__handle"):
+    assert marker in canvas
+for marker in ("region-editor", "Tracer", "Supprimer la zone"):
+    assert marker in panel
+for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
+    assert marker in state
+
+print("OK déploiement 3.2.0 : éditeur géométrique des zones")

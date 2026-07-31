@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js";
-import { DocumentMapValidationError, validateAndNormalizeDocumentMap } from "./domain/documentMap.js";
+import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js";
 import { analyzeDocumentMap, ProxyApiError } from "./api/proxyClient.js";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js";
 import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js";
@@ -138,6 +138,31 @@ export default function App() {
     const selectSegment = useCallback((segmentId) => {
         dispatch({ type: "SELECT_SEGMENT", segmentId });
     }, []);
+    const selectRegion = useCallback((segmentId, regionId) => {
+        dispatch({ type: "SELECT_REGION", segmentId, regionId });
+    }, []);
+    const updateRegionBbox = useCallback((segmentId, regionId, bbox) => {
+        dispatch({ type: "UPDATE_REGION_BBOX", segmentId, regionId, bbox });
+    }, []);
+    const updateRegionRole = useCallback((segmentId, regionId, role) => {
+        dispatch({ type: "UPDATE_REGION_ROLE", segmentId, regionId, role });
+    }, []);
+    const addRegion = useCallback((segmentId, page, role, bbox) => {
+        dispatch({
+            type: "ADD_REGION",
+            segmentId,
+            region: {
+                client_id: createUserRegionId(segmentId),
+                page,
+                role,
+                bbox,
+                origin: "user"
+            }
+        });
+    }, []);
+    const deleteRegion = useCallback((segmentId, regionId) => {
+        dispatch({ type: "DELETE_REGION", segmentId, regionId });
+    }, []);
     const zoomIn = useCallback(() => {
         dispatch({ type: "SET_ZOOM", zoom: state.zoom + ZOOM_STEP });
     }, [state.zoom]);
@@ -161,5 +186,5 @@ export default function App() {
         onZoomOut: zoomOut,
         onResetZoom: resetZoom
     });
-    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { currentPage: state.currentPage, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onClose: closeDocument, onPageChange: setPage, onResetZoom: resetZoom, onSelectSegment: selectSegment, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
+    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { currentPage: state.currentPage, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onClose: closeDocument, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
 }

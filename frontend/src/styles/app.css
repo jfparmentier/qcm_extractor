@@ -1149,3 +1149,374 @@ summary:focus-visible {
     border-left: 0;
   }
 }
+
+/* Phase 3.2 — éditeur géométrique minimal */
+select {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0.38rem 1.8rem 0.38rem 0.55rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  font: inherit;
+}
+
+select:focus-visible {
+  outline: 3px solid rgb(49 86 211 / 30%);
+  outline-offset: 2px;
+}
+
+.button--danger {
+  color: var(--danger);
+  border-color: #e5abb3;
+  background: var(--danger-soft);
+}
+
+.button--danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: #ffe3e7;
+}
+
+.button--icon {
+  display: inline-grid;
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  place-items: center;
+}
+
+.region-editor {
+  flex: 0 0 auto;
+  margin-bottom: 0.7rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+
+.region-editor__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.region-editor__heading > div {
+  min-width: 0;
+}
+
+.region-editor__heading strong {
+  display: block;
+  margin-top: 0.08rem;
+  font-size: 0.82rem;
+}
+
+.region-editor__heading > span {
+  flex: 0 0 auto;
+  padding: 0.24rem 0.42rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.mapping-panel .region-editor p,
+.region-editor__help {
+  margin: 0.5rem 0 0.65rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.region-editor__add-row,
+.region-editor__selection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.45rem;
+}
+
+.region-editor label {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.region-editor label > span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.region-editor select {
+  width: 100%;
+  font-size: 0.7rem;
+}
+
+.region-editor__draw-button {
+  min-height: 36px;
+  padding: 0.45rem 0.58rem;
+  font-size: 0.7rem;
+}
+
+.region-editor__drawing-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: 7px;
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.region-editor__drawing-notice svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.region-editor__list {
+  display: flex;
+  max-height: 88px;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  overflow: auto;
+}
+
+.region-editor__empty {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-style: italic;
+}
+
+.region-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 28px;
+  padding: 0.25rem 0.42rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.64rem;
+}
+
+.region-chip:hover,
+.region-chip--selected {
+  color: var(--primary-dark);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.region-chip > span {
+  display: grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 4px;
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+.region-chip--selected > span {
+  color: #fff;
+  background: var(--primary);
+}
+
+.region-chip small {
+  color: var(--success);
+  font-size: 0.54rem;
+  font-weight: 750;
+}
+
+.region-editor__selection {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line);
+}
+
+.pdf-region-layer {
+  touch-action: none;
+  user-select: none;
+}
+
+.pdf-region-layer--drawing {
+  pointer-events: auto;
+  cursor: crosshair;
+  background: rgb(49 86 211 / 2%);
+}
+
+.pdf-region-layer--drawing .pdf-region:not(.pdf-region--draft) {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.pdf-region {
+  touch-action: none;
+  cursor: move;
+}
+
+.pdf-region--segment-selected:not(.pdf-region--selected) {
+  border-width: 2px;
+  box-shadow: 0 0 0 1px #fff, 0 0 0 3px rgb(49 86 211 / 22%);
+}
+
+.pdf-region--selected {
+  z-index: 5;
+  cursor: move;
+}
+
+.pdf-region--draft {
+  z-index: 8;
+  pointer-events: none;
+  border-style: dashed;
+  background: rgb(49 86 211 / 18%);
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.pdf-region > .pdf-region__label {
+  position: absolute;
+  top: -22px;
+  left: -2px;
+  display: none;
+  padding: 0.18rem 0.35rem;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 4px 4px 4px 0;
+  font-size: 0.58rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.pdf-region:hover > .pdf-region__label,
+.pdf-region--selected > .pdf-region__label {
+  display: block;
+}
+
+.pdf-region > .pdf-region__handle {
+  position: absolute;
+  z-index: 6;
+  inset: auto;
+  display: block;
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  background: #fff;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(20 31 55 / 25%);
+}
+
+.pdf-region__handle--n {
+  top: -7px;
+  left: calc(50% - 5px);
+  cursor: ns-resize;
+}
+
+.pdf-region__handle--ne {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.pdf-region__handle--e {
+  top: calc(50% - 5px);
+  right: -7px;
+  cursor: ew-resize;
+}
+
+.pdf-region__handle--se {
+  right: -7px;
+  bottom: -7px;
+  cursor: nwse-resize;
+}
+
+.pdf-region__handle--s {
+  bottom: -7px;
+  left: calc(50% - 5px);
+  cursor: ns-resize;
+}
+
+.pdf-region__handle--sw {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.pdf-region__handle--w {
+  top: calc(50% - 5px);
+  left: -7px;
+  cursor: ew-resize;
+}
+
+.pdf-region__handle--nw {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.pdf-draw-hint {
+  position: absolute;
+  z-index: 9;
+  top: 12px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 0.45rem 0.65rem;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgb(21 35 59 / 88%);
+  border-radius: 7px;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.66rem;
+  font-weight: 650;
+  pointer-events: none;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .region-editor__add-row,
+  .region-editor__selection {
+    grid-template-columns: 1fr auto;
+  }
+
+  .pdf-region > .pdf-region__handle {
+    width: 15px;
+    height: 15px;
+  }
+
+  .pdf-region__handle--n,
+  .pdf-region__handle--ne,
+  .pdf-region__handle--nw {
+    top: -9px;
+  }
+
+  .pdf-region__handle--s,
+  .pdf-region__handle--se,
+  .pdf-region__handle--sw {
+    bottom: -9px;
+  }
+
+  .pdf-region__handle--e,
+  .pdf-region__handle--ne,
+  .pdf-region__handle--se {
+    right: -9px;
+  }
+
+  .pdf-region__handle--w,
+  .pdf-region__handle--nw,
+  .pdf-region__handle--sw {
+    left: -9px;
+  }
+}

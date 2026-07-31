@@ -1,17 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
 import type { MappingState } from "../domain/projectState";
 import {
+  PAGE_REGION_ROLES,
   getDocumentTypeLabel,
+  getPageRegionRoleLabel,
   getQuestionTypeLabel,
-  getSegmentDisplayName
+  getSegmentDisplayName,
+  type PageRegionRole
 } from "../domain/documentMap";
-import { CheckIcon, ImageIcon, SparklesIcon, StopIcon, WarningIcon } from "./Icons";
+import {
+  CheckIcon,
+  ImageIcon,
+  PlusIcon,
+  SelectionIcon,
+  SparklesIcon,
+  StopIcon,
+  TrashIcon,
+  WarningIcon
+} from "./Icons";
 
 interface MappingPanelProps {
   readonly mapping: MappingState;
+  readonly currentPage: number;
+  readonly drawingRole: PageRegionRole;
+  readonly isDrawing: boolean;
   readonly onAnalyze: () => void;
   readonly onCancel: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
+  readonly onSelectRegion: (segmentId: string, regionId: string) => void;
+  readonly onDrawingRoleChange: (role: PageRegionRole) => void;
+  readonly onToggleDrawing: () => void;
+  readonly onUpdateRegionRole: (
+    segmentId: string,
+    regionId: string,
+    role: PageRegionRole
+  ) => void;
+  readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
 }
 
 function formatElapsed(startedAt: number | null, now: number): string {
@@ -44,9 +68,17 @@ function getRunningStatusLabel(mapping: MappingState): string {
 
 export function MappingPanel({
   mapping,
+  currentPage,
+  drawingRole,
+  isDrawing,
   onAnalyze,
   onCancel,
-  onSelectSegment
+  onSelectSegment,
+  onSelectRegion,
+  onDrawingRoleChange,
+  onToggleDrawing,
+  onUpdateRegionRole,
+  onDeleteRegion
 }: MappingPanelProps): React.ReactElement {
   const [now, setNow] = useState(Date.now());
 
@@ -138,6 +170,13 @@ export function MappingPanel({
   }
 
   const { document, question_segments: segments } = mapping.data;
+  const selectedSegment = selectedIndex >= 0 ? segments[selectedIndex] ?? null : null;
+  const selectedRegion = selectedSegment?.page_regions.find(
+    (region) => region.client_id === mapping.selectedRegionId
+  ) ?? null;
+  const regionsOnCurrentPage = selectedSegment?.page_regions.filter(
+    (region) => region.page === currentPage
+  ) ?? [];
 
   return (
     <aside className="mapping-panel" aria-label="Cartographie du document">
@@ -163,6 +202,106 @@ export function MappingPanel({
           </ul>
         </details>
       )}
+
+      <section className="region-editor" aria-label="Éditeur géométrique des zones">
+        <div className="region-editor__heading">
+          <div>
+            <span className="eyebrow">Éditeur de zones</span>
+            <strong>Page {currentPage}</strong>
+          </div>
+          <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
+        </div>
+
+        {selectedSegment === null ? (
+          <p>Sélectionnez une question afin de corriger ses zones.</p>
+        ) : (
+          <>
+            <p className="region-editor__help">
+              Faites glisser une zone pour la déplacer. Utilisez ses poignées pour la redimensionner.
+            </p>
+
+            <div className="region-editor__add-row">
+              <label>
+                <span>Nouvelle zone</span>
+                <select
+                  disabled={isDrawing}
+                  onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onDrawingRoleChange(event.target.value as PageRegionRole)}
+                  value={drawingRole}
+                >
+                  {PAGE_REGION_ROLES.map((role) => (
+                    <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className={`button ${isDrawing ? "button--secondary" : "button--primary"} region-editor__draw-button`}
+                onClick={onToggleDrawing}
+                type="button"
+              >
+                {isDrawing ? <StopIcon /> : <PlusIcon />}
+                {isDrawing ? "Annuler" : "Tracer"}
+              </button>
+            </div>
+
+            {isDrawing && (
+              <div className="region-editor__drawing-notice" role="status">
+                <SelectionIcon /> Tracez la nouvelle zone directement sur le PDF.
+              </div>
+            )}
+
+            <div className="region-editor__list" aria-label="Zones de la question sur la page courante">
+              {regionsOnCurrentPage.length === 0 && (
+                <span className="region-editor__empty">Aucune zone de cette question sur la page.</span>
+              )}
+              {regionsOnCurrentPage.map((region, index) => (
+                <button
+                  key={region.client_id}
+                  aria-pressed={region.client_id === mapping.selectedRegionId}
+                  className={`region-chip${region.client_id === mapping.selectedRegionId ? " region-chip--selected" : ""}`}
+                  onClick={() => onSelectRegion(selectedSegment.temporary_id, region.client_id)}
+                  type="button"
+                >
+                  <span>{index + 1}</span>
+                  {getPageRegionRoleLabel(region.role)}
+                  {region.origin === "user" && <small>modifiée</small>}
+                </button>
+              ))}
+            </div>
+
+            {selectedRegion !== null && selectedRegion.page === currentPage && (
+              <div className="region-editor__selection">
+                <label>
+                  <span>Rôle de la zone sélectionnée</span>
+                  <select
+                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onUpdateRegionRole(
+                      selectedSegment.temporary_id,
+                      selectedRegion.client_id,
+                      event.target.value as PageRegionRole
+                    )}
+                    value={selectedRegion.role}
+                  >
+                    {PAGE_REGION_ROLES.map((role) => (
+                      <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  aria-label="Supprimer la zone sélectionnée"
+                  className="button button--danger button--icon"
+                  onClick={() => onDeleteRegion(
+                    selectedSegment.temporary_id,
+                    selectedRegion.client_id
+                  )}
+                  title="Supprimer la zone"
+                  type="button"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
       <div className="segment-list-heading">
         <span>Segments</span>

@@ -1,13 +1,13 @@
-# Extracteur de QCM — Phase 3.1
+# Extracteur de QCM — Phase 3.2
 
-Cette archive regroupe les phases 0 à 3 et le correctif d’architecture **3.1.2** destiné aux documents longs. La cartographie complète du PDF est désormais lancée en tâche asynchrone auprès du fournisseur, puis suivie par de courtes requêtes d’état. Cette organisation évite qu’une connexion PHP demeure ouverte pendant plusieurs minutes.
+Cette archive regroupe les phases 0 à 3 et la version **3.2.0**, qui ajoute l’édition géométrique locale des zones après la cartographie asynchrone. La cartographie complète du PDF est désormais lancée en tâche asynchrone auprès du fournisseur, puis suivie par de courtes requêtes d’état. Cette organisation évite qu’une connexion PHP demeure ouverte pendant plusieurs minutes.
 
 Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne sont utilisés. Le mode asynchrone implique toutefois une conservation temporaire de l’état de réponse par le fournisseur afin de permettre les interrogations de statut. Le dossier directement exploitable sous OVH Hosting Perso ou MAMP est `deployment/qcm-extractor-site`.
 
 ## Arborescence
 
 ```text
-phase3_qcm_extractor_3.1.2/
+phase3_qcm_extractor_3.2.0/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/ dossier prêt pour OVH ou MAMP
@@ -28,6 +28,11 @@ phase3_qcm_extractor_3.1.2/
 5. Contrôler `public/api/diagnostic.php`.
 
 La cartographie utilise trois opérations internes : démarrage, interrogation périodique et annulation. Le jeton de suivi est signé côté serveur, transmis par l’en-tête `X-QCM-Job` et n’est jamais placé dans l’URL.
+
+
+## Éditeur géométrique
+
+Après la cartographie, sélectionnez une question puis une zone. La zone peut être déplacée par glisser-déposer, redimensionnée avec ses huit poignées, supprimée ou requalifiée. Le bouton **Tracer** permet d’ajouter une zone sur la page courante. Les corrections restent uniquement en mémoire dans le navigateur.
 
 ## Limitation de débit en local et en production
 

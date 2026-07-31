@@ -1,5 +1,16 @@
 # Journal des modifications
 
+## 3.2.0 — Éditeur géométrique des zones
+
+- déplacement des zones par glisser-déposer directement sur le PDF ;
+- redimensionnement au moyen de huit poignées ;
+- ajout de zones par tracé à la souris ou au doigt ;
+- suppression des zones sélectionnées depuis le panneau ou avec la touche Suppr ;
+- modification du rôle d’une zone ;
+- identification locale stable des régions et indication des zones modifiées par l’utilisateur ;
+- conservation des corrections uniquement en mémoire, sans stockage serveur ;
+- mise à jour du dossier OVH/MAMP et des tests de non-régression.
+
 ## 3.1.2 — Visualiseur sans colonne de miniatures
 
 - suppression de la colonne gauche contenant les miniatures de toutes les pages ;

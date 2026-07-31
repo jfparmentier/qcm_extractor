@@ -1,4 +1,4 @@
-# Proxy PHP sécurisé — Phase 3.1
+# Proxy PHP sécurisé — Phase 3.2
 
 Le proxy expose des opérations métier contraintes :
 

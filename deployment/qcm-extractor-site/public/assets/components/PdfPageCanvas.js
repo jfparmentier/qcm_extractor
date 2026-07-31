@@ -1,27 +1,64 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useEffect, useRef, useState } from "react";
-function regionRoleLabel(role) {
-    switch (role) {
-        case "question":
-            return "Énoncé";
-        case "choices":
-            return "Propositions";
-        case "answer":
-            return "Réponse";
-        case "feedback":
-            return "Feedback";
-        case "essential_image":
-            return "Illustration essentielle";
-        case "decorative_image":
-            return "Illustration décorative";
-        case "context":
-            return "Contexte";
-    }
+import { useCallback, useEffect, useRef, useState } from "react";
+import { clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js";
+const MIN_REGION_SIZE = 0.015;
+const RESIZE_HANDLES = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
+function normalizedPointerPosition(clientX, clientY, layer) {
+    const rect = layer.getBoundingClientRect();
+    const width = Math.max(1, rect.width);
+    const height = Math.max(1, rect.height);
+    return {
+        x: Math.min(1, Math.max(0, (clientX - rect.left) / width)),
+        y: Math.min(1, Math.max(0, (clientY - rect.top) / height))
+    };
 }
-export function PdfPageCanvas({ document, pageNumber, scale, className, overlays = [], onOverlaySelect, onRenderError }) {
+function movedBbox(initial, deltaX, deltaY) {
+    return {
+        ...initial,
+        x: Math.min(1 - initial.width, Math.max(0, initial.x + deltaX)),
+        y: Math.min(1 - initial.height, Math.max(0, initial.y + deltaY))
+    };
+}
+function resizedBbox(initial, deltaX, deltaY, handle) {
+    let left = initial.x;
+    let top = initial.y;
+    let right = initial.x + initial.width;
+    let bottom = initial.y + initial.height;
+    if (handle.includes("w")) {
+        left = Math.min(right - MIN_REGION_SIZE, Math.max(0, left + deltaX));
+    }
+    if (handle.includes("e")) {
+        right = Math.max(left + MIN_REGION_SIZE, Math.min(1, right + deltaX));
+    }
+    if (handle.includes("n")) {
+        top = Math.min(bottom - MIN_REGION_SIZE, Math.max(0, top + deltaY));
+    }
+    if (handle.includes("s")) {
+        bottom = Math.max(top + MIN_REGION_SIZE, Math.min(1, bottom + deltaY));
+    }
+    return clampNormalizedBoundingBox({
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top
+    }, MIN_REGION_SIZE);
+}
+function drawnBbox(startX, startY, currentX, currentY) {
+    return {
+        x: Math.min(startX, currentX),
+        y: Math.min(startY, currentY),
+        width: Math.abs(currentX - startX),
+        height: Math.abs(currentY - startY)
+    };
+}
+export function PdfPageCanvas({ document, pageNumber, scale, className, overlays = [], drawRole = null, onOverlaySelect, onRegionChange, onRegionAdd, onRenderError }) {
     const canvasRef = useRef(null);
+    const layerRef = useRef(null);
     const renderTaskRef = useRef(null);
+    const interactionRef = useRef(null);
+    const draftBboxRef = useRef(null);
     const [isRendering, setIsRendering] = useState(true);
+    const [draftBbox, setDraftBbox] = useState(null);
     useEffect(() => {
         let isDisposed = false;
         setIsRendering(true);
@@ -74,10 +111,126 @@ export function PdfPageCanvas({ document, pageNumber, scale, className, overlays
             renderTaskRef.current = null;
         };
     }, [document, onRenderError, pageNumber, scale]);
-    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" }), !isRendering && overlays.length > 0 && (_jsx("div", { className: "pdf-region-layer", "aria-label": "R\u00E9gions d\u00E9tect\u00E9es sur cette page", children: overlays.map((overlay) => (_jsx("button", { "aria-label": `${overlay.label} — ${regionRoleLabel(overlay.role)}`, className: `pdf-region pdf-region--${overlay.role}${overlay.selected ? " pdf-region--selected" : ""}`, onClick: () => onOverlaySelect?.(overlay.segmentId), style: {
-                        left: `${overlay.bbox.x * 100}%`,
-                        top: `${overlay.bbox.y * 100}%`,
-                        width: `${overlay.bbox.width * 100}%`,
-                        height: `${overlay.bbox.height * 100}%`
-                    }, title: `${overlay.label} · ${regionRoleLabel(overlay.role)}`, type: "button", children: _jsx("span", { children: regionRoleLabel(overlay.role) }) }, overlay.id))) }))] }));
+    useEffect(() => {
+        interactionRef.current = null;
+        draftBboxRef.current = null;
+        setDraftBbox(null);
+    }, [drawRole, pageNumber, scale]);
+    const handlePointerMove = useCallback((event) => {
+        const interaction = interactionRef.current;
+        const layer = layerRef.current;
+        if (interaction === null || layer === null || event.pointerId !== interaction.pointerId) {
+            return;
+        }
+        event.preventDefault();
+        const position = normalizedPointerPosition(event.clientX, event.clientY, layer);
+        const deltaX = position.x - interaction.startX;
+        const deltaY = position.y - interaction.startY;
+        if (interaction.kind === "draw") {
+            const nextDraft = drawnBbox(interaction.startX, interaction.startY, position.x, position.y);
+            draftBboxRef.current = nextDraft;
+            setDraftBbox(nextDraft);
+            return;
+        }
+        const bbox = interaction.kind === "move"
+            ? movedBbox(interaction.initialBbox, deltaX, deltaY)
+            : resizedBbox(interaction.initialBbox, deltaX, deltaY, interaction.handle);
+        onRegionChange?.(interaction.segmentId, interaction.regionId, bbox);
+    }, [onRegionChange]);
+    const finishPointerInteraction = useCallback((event) => {
+        const interaction = interactionRef.current;
+        if (interaction === null || event.pointerId !== interaction.pointerId) {
+            return;
+        }
+        interactionRef.current = null;
+        if (interaction.kind === "draw") {
+            const bbox = draftBboxRef.current;
+            draftBboxRef.current = null;
+            setDraftBbox(null);
+            if (bbox !== null &&
+                bbox.width >= MIN_REGION_SIZE &&
+                bbox.height >= MIN_REGION_SIZE) {
+                onRegionAdd?.(bbox);
+            }
+        }
+    }, [onRegionAdd]);
+    useEffect(() => {
+        window.addEventListener("pointermove", handlePointerMove, { passive: false });
+        window.addEventListener("pointerup", finishPointerInteraction);
+        window.addEventListener("pointercancel", finishPointerInteraction);
+        return () => {
+            window.removeEventListener("pointermove", handlePointerMove);
+            window.removeEventListener("pointerup", finishPointerInteraction);
+            window.removeEventListener("pointercancel", finishPointerInteraction);
+        };
+    }, [finishPointerInteraction, handlePointerMove]);
+    const startDrawing = useCallback((event) => {
+        if (drawRole === null || layerRef.current === null || event.button !== 0) {
+            return;
+        }
+        event.preventDefault();
+        const position = normalizedPointerPosition(event.clientX, event.clientY, layerRef.current);
+        interactionRef.current = {
+            kind: "draw",
+            pointerId: event.pointerId,
+            startX: position.x,
+            startY: position.y
+        };
+        const initialDraft = { x: position.x, y: position.y, width: 0, height: 0 };
+        draftBboxRef.current = initialDraft;
+        setDraftBbox(initialDraft);
+    }, [drawRole]);
+    const startMoving = useCallback((event, overlay) => {
+        if (drawRole !== null || layerRef.current === null || event.button !== 0) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+        const position = normalizedPointerPosition(event.clientX, event.clientY, layerRef.current);
+        interactionRef.current = {
+            kind: "move",
+            pointerId: event.pointerId,
+            segmentId: overlay.segmentId,
+            regionId: overlay.regionId,
+            startX: position.x,
+            startY: position.y,
+            initialBbox: overlay.bbox
+        };
+    }, [drawRole, onOverlaySelect]);
+    const startResizing = useCallback((event, overlay, handle) => {
+        if (drawRole !== null || layerRef.current === null || event.button !== 0) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+        const position = normalizedPointerPosition(event.clientX, event.clientY, layerRef.current);
+        interactionRef.current = {
+            kind: "resize",
+            pointerId: event.pointerId,
+            segmentId: overlay.segmentId,
+            regionId: overlay.regionId,
+            handle,
+            startX: position.x,
+            startY: position.y,
+            initialBbox: overlay.bbox
+        };
+    }, [drawRole, onOverlaySelect]);
+    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" }), !isRendering && (overlays.length > 0 || drawRole !== null) && (_jsxs("div", { ref: layerRef, "aria-label": "R\u00E9gions d\u00E9tect\u00E9es et \u00E9ditables sur cette page", className: `pdf-region-layer${drawRole !== null ? " pdf-region-layer--drawing" : ""}`, onPointerDown: startDrawing, children: [overlays.map((overlay) => (_jsxs("button", { "aria-label": `${overlay.label} — ${getPageRegionRoleLabel(overlay.role)}`, className: [
+                            "pdf-region",
+                            `pdf-region--${overlay.role}`,
+                            overlay.segmentSelected ? "pdf-region--segment-selected" : "",
+                            overlay.selected ? "pdf-region--selected" : ""
+                        ].filter(Boolean).join(" "), onClick: () => onOverlaySelect?.(overlay.segmentId, overlay.regionId), onPointerDown: (event) => startMoving(event, overlay), style: {
+                            left: `${overlay.bbox.x * 100}%`,
+                            top: `${overlay.bbox.y * 100}%`,
+                            width: `${overlay.bbox.width * 100}%`,
+                            height: `${overlay.bbox.height * 100}%`
+                        }, title: `${overlay.label} · ${getPageRegionRoleLabel(overlay.role)}`, type: "button", children: [_jsx("span", { className: "pdf-region__label", children: getPageRegionRoleLabel(overlay.role) }), overlay.selected && RESIZE_HANDLES.map((handle) => (_jsx("span", { "aria-hidden": "true", className: `pdf-region__handle pdf-region__handle--${handle}`, onPointerDown: (event) => startResizing(event, overlay, handle) }, handle)))] }, overlay.id))), draftBbox !== null && (_jsx("div", { "aria-hidden": "true", className: `pdf-region pdf-region--${drawRole ?? "question"} pdf-region--draft`, style: {
+                            left: `${draftBbox.x * 100}%`,
+                            top: `${draftBbox.y * 100}%`,
+                            width: `${draftBbox.width * 100}%`,
+                            height: `${draftBbox.height * 100}%`
+                        } })), drawRole !== null && draftBbox === null && (_jsxs("span", { className: "pdf-draw-hint", children: ["Cliquez puis faites glisser pour tracer une zone \u00AB ", getPageRegionRoleLabel(drawRole), " \u00BB."] }))] }))] }));
 }

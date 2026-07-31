@@ -44,3 +44,9 @@ export function ImageIcon(props) {
 export function CheckIcon(props) {
     return (_jsx(BaseIcon, { ...props, children: _jsx("path", { d: "m5 12.5 4.2 4.2L19 7", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2" }) }));
 }
+export function TrashIcon(props) {
+    return (_jsx(BaseIcon, { ...props, children: _jsx("path", { d: "M5 7h14M9 7V4.5h6V7m-8.5 0 .8 13h9.4l.8-13M10 10.5v6M14 10.5v6", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" }) }));
+}
+export function SelectionIcon(props) {
+    return (_jsxs(BaseIcon, { ...props, children: [_jsx("path", { d: "M4.5 9V4.5H9M15 4.5h4.5V9M19.5 15v4.5H15M9 19.5H4.5V15", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" }), _jsx("rect", { x: "8", y: "8", width: "8", height: "8", rx: "1", stroke: "currentColor", strokeDasharray: "2 2", strokeWidth: "1.5" })] }));
+}

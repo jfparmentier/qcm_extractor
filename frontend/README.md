@@ -1,4 +1,4 @@
-# Frontend — Phase 3.1
+# Frontend — Phase 3.2
 
 L’application React/TypeScript charge et affiche localement un PDF, puis lance une cartographie LLM asynchrone.
 
@@ -27,3 +27,7 @@ Pour un proxy séparé :
 ```bash
 VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
 ```
+
+## Éditeur géométrique
+
+La cartographie validée est enrichie en mémoire avec un identifiant local par région. Le composant `PdfPageCanvas` gère les interactions Pointer Events pour déplacer, redimensionner et tracer les zones. Le reducer conserve les modifications sans persistance serveur.

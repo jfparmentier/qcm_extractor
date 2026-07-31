@@ -1,5 +1,14 @@
 import Ajv2020 from "ajv/dist/2020";
 import mappingSchema from "../schemas/mappingSchema.js";
+export const PAGE_REGION_ROLES = [
+    "question",
+    "choices",
+    "answer",
+    "feedback",
+    "essential_image",
+    "decorative_image",
+    "context"
+];
 export class DocumentMapValidationError extends Error {
     issues;
     constructor(message, issues) {
@@ -31,6 +40,13 @@ function assertPagesExist(pages, pageCount, label, segmentId) {
     if (invalid.length > 0) {
         throw new DocumentMapValidationError("La cartographie référence des pages inexistantes.", [`${segmentId}.${label} : ${invalid.join(", ")}`]);
     }
+}
+export function clampNormalizedBoundingBox(bbox, minimumSize = 0.01) {
+    const width = Math.min(1, Math.max(minimumSize, bbox.width));
+    const height = Math.min(1, Math.max(minimumSize, bbox.height));
+    const x = Math.min(1 - width, Math.max(0, bbox.x));
+    const y = Math.min(1 - height, Math.max(0, bbox.y));
+    return { x, y, width, height };
 }
 function normalizeBbox(bbox, segmentId, diagnostics) {
     const right = bbox.x + bbox.width;
@@ -82,6 +98,12 @@ function detectStrongOverlaps(segments) {
     }
     return warnings;
 }
+export function createUserRegionId(segmentId) {
+    const randomPart = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    return `${segmentId}-user-${randomPart}`;
+}
 export function validateAndNormalizeDocumentMap(value, actualPageCount) {
     if (!validateSchema(value)) {
         throw new DocumentMapValidationError("La réponse du LLM ne respecte pas le schéma de cartographie.", formatAjvErrors(validateSchema.errors));
@@ -99,11 +121,14 @@ export function validateAndNormalizeDocumentMap(value, actualPageCount) {
         assertPagesExist(questionPages, actualPageCount, "question_pages", segment.temporary_id);
         assertPagesExist(answerPages, actualPageCount, "answer_pages", segment.temporary_id);
         assertPagesExist(feedbackPages, actualPageCount, "feedback_pages", segment.temporary_id);
-        const pageRegions = segment.page_regions.map((region) => {
+        const pageRegions = segment.page_regions.map((region, regionIndex) => {
             assertPagesExist([region.page], actualPageCount, "page_regions", segment.temporary_id);
             return {
-                ...region,
-                bbox: normalizeBbox(region.bbox, segment.temporary_id, diagnostics)
+                client_id: `${segment.temporary_id}-region-${regionIndex + 1}`,
+                page: region.page,
+                role: region.role,
+                bbox: normalizeBbox(region.bbox, segment.temporary_id, diagnostics),
+                origin: "llm"
             };
         });
         if (!pageRegions.some((region) => region.role === "question" || region.role === "choices")) {
@@ -171,5 +196,23 @@ export function getDocumentTypeLabel(type) {
             return "Document mixte";
         case "unknown":
             return "Type indéterminé";
+    }
+}
+export function getPageRegionRoleLabel(role) {
+    switch (role) {
+        case "question":
+            return "Énoncé";
+        case "choices":
+            return "Propositions";
+        case "answer":
+            return "Réponse";
+        case "feedback":
+            return "Feedback";
+        case "essential_image":
+            return "Illustration essentielle";
+        case "decorative_image":
+            return "Illustration décorative";
+        case "context":
+            return "Contexte";
     }
 }

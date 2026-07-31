@@ -24,6 +24,18 @@ export type PageRegionRole =
   | "decorative_image"
   | "context";
 
+export type PageRegionOrigin = "llm" | "user";
+
+export const PAGE_REGION_ROLES: readonly PageRegionRole[] = [
+  "question",
+  "choices",
+  "answer",
+  "feedback",
+  "essential_image",
+  "decorative_image",
+  "context"
+];
+
 export interface NormalizedBoundingBox {
   readonly x: number;
   readonly y: number;
@@ -32,9 +44,11 @@ export interface NormalizedBoundingBox {
 }
 
 export interface PageRegion {
+  readonly client_id: string;
   readonly page: number;
   readonly role: PageRegionRole;
   readonly bbox: NormalizedBoundingBox;
+  readonly origin: PageRegionOrigin;
 }
 
 export interface QuestionSegment {
@@ -62,6 +76,20 @@ export interface DocumentMap {
   readonly question_segments: readonly QuestionSegment[];
 }
 
+interface RawPageRegion {
+  readonly page: number;
+  readonly role: PageRegionRole;
+  readonly bbox: NormalizedBoundingBox;
+}
+
+interface RawQuestionSegment extends Omit<QuestionSegment, "page_regions"> {
+  readonly page_regions: readonly RawPageRegion[];
+}
+
+interface RawDocumentMap extends Omit<DocumentMap, "question_segments"> {
+  readonly question_segments: readonly RawQuestionSegment[];
+}
+
 export interface MappingValidationResult {
   readonly documentMap: DocumentMap;
   readonly diagnostics: readonly string[];
@@ -82,7 +110,7 @@ const ajv = new Ajv2020({
   strict: true,
   validateFormats: false
 });
-const validateSchema = ajv.compile<DocumentMap>(mappingSchema as AnySchema);
+const validateSchema = ajv.compile<RawDocumentMap>(mappingSchema as AnySchema);
 
 function formatAjvErrors(errors: readonly ErrorObject[] | null | undefined): string[] {
   if (errors === null || errors === undefined) {
@@ -112,6 +140,17 @@ function assertPagesExist(
       [`${segmentId}.${label} : ${invalid.join(", ")}`]
     );
   }
+}
+
+export function clampNormalizedBoundingBox(
+  bbox: NormalizedBoundingBox,
+  minimumSize = 0.01
+): NormalizedBoundingBox {
+  const width = Math.min(1, Math.max(minimumSize, bbox.width));
+  const height = Math.min(1, Math.max(minimumSize, bbox.height));
+  const x = Math.min(1 - width, Math.max(0, bbox.x));
+  const y = Math.min(1 - height, Math.max(0, bbox.y));
+  return { x, y, width, height };
 }
 
 function normalizeBbox(
@@ -195,6 +234,13 @@ function detectStrongOverlaps(segments: readonly QuestionSegment[]): string[] {
   return warnings;
 }
 
+export function createUserRegionId(segmentId: string): string {
+  const randomPart = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `${segmentId}-user-${randomPart}`;
+}
+
 export function validateAndNormalizeDocumentMap(
   value: unknown,
   actualPageCount: number
@@ -224,12 +270,15 @@ export function validateAndNormalizeDocumentMap(
     assertPagesExist(answerPages, actualPageCount, "answer_pages", segment.temporary_id);
     assertPagesExist(feedbackPages, actualPageCount, "feedback_pages", segment.temporary_id);
 
-    const pageRegions = segment.page_regions.map((region) => {
+    const pageRegions = segment.page_regions.map((region, regionIndex) => {
       assertPagesExist([region.page], actualPageCount, "page_regions", segment.temporary_id);
       return {
-        ...region,
-        bbox: normalizeBbox(region.bbox, segment.temporary_id, diagnostics)
-      };
+        client_id: `${segment.temporary_id}-region-${regionIndex + 1}`,
+        page: region.page,
+        role: region.role,
+        bbox: normalizeBbox(region.bbox, segment.temporary_id, diagnostics),
+        origin: "llm"
+      } satisfies PageRegion;
     });
 
     if (!pageRegions.some((region) => region.role === "question" || region.role === "choices")) {
@@ -310,5 +359,24 @@ export function getDocumentTypeLabel(type: DocumentType): string {
       return "Document mixte";
     case "unknown":
       return "Type indéterminé";
+  }
+}
+
+export function getPageRegionRoleLabel(role: PageRegionRole): string {
+  switch (role) {
+    case "question":
+      return "Énoncé";
+    case "choices":
+      return "Propositions";
+    case "answer":
+      return "Réponse";
+    case "feedback":
+      return "Feedback";
+    case "essential_image":
+      return "Illustration essentielle";
+    case "decorative_image":
+      return "Illustration décorative";
+    case "context":
+      return "Contexte";
   }
 }
