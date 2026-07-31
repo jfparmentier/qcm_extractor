@@ -17,16 +17,20 @@ QCM_MAX_CONTEXT_HEADER_BYTES=6144
 QCM_MAPPING_MAX_OUTPUT_TOKENS=12000
 QCM_EXTRACTION_MAX_OUTPUT_TOKENS=16000
 QCM_CONNECT_TIMEOUT_SECONDS=10
-QCM_REQUEST_TIMEOUT_SECONDS=240
+QCM_REQUEST_TIMEOUT_SECONDS=150
 QCM_MAX_UPSTREAM_RESPONSE_BYTES=16777216
 
 # Origines supplémentaires autorisées, séparées par des virgules.
 # L’origine exacte du serveur est toujours acceptée automatiquement.
-QCM_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8083
+QCM_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 QCM_ALLOW_ORIGINLESS_REQUESTS=false
 
-# Limitation de débit en mémoire. APCu ne stocke aucun PDF.
-QCM_RATE_LIMIT_BACKEND=apcu
+# Limitation de débit :
+# - file : compatible avec un hébergement mutualisé et MAMP ;
+# - apcu : recommandé si APCu est disponible ;
+# - disabled : développement temporaire uniquement.
+QCM_RATE_LIMIT_BACKEND=file
+QCM_RATE_LIMIT_STORAGE_DIR=/chemin/prive/qcm-rate-limit
 QCM_RATE_LIMIT_REQUESTS=10
 QCM_RATE_LIMIT_WINDOW_SECONDS=3600
 

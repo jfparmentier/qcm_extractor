@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 2.1.0 — Préparation OVH et MAMP
+
+- ajout du dossier autonome `deployment/qcm-extractor-site` ;
+- ajout du frontend préconstruit et des endpoints PHP dans une arborescence public/privé ;
+- ajout d’une configuration PHP locale protégée pour la clé API ;
+- ajout d’un limiteur de débit par fichiers compatible avec l’hébergement mutualisé ;
+- ajout d’une résolution relative automatique de l’URL du proxy ;
+- ajout des instructions OVH Hosting Perso et MAMP ;
+- désactivation des source maps dans les constructions de production.
+
 ## 2.0.0 — Phase 2
 
 - ajout d’un proxy PHP 8.2 sans framework ni dépendance Composer ;

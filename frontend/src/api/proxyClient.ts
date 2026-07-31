@@ -45,7 +45,12 @@ export interface ExtractionContext {
   readonly segment_page_map?: Readonly<Record<string, readonly number[]>>;
 }
 
-const API_BASE_URL = (import.meta.env.VITE_QCM_API_BASE_URL ?? "/api").replace(/\/$/, "");
+const configuredApiBaseUrl = import.meta.env.VITE_QCM_API_BASE_URL?.trim();
+const API_BASE_URL = (
+  configuredApiBaseUrl && configuredApiBaseUrl.length > 0
+    ? configuredApiBaseUrl
+    : new URL("api", document.baseURI).toString()
+).replace(/\/$/, "");
 
 function encodeBase64Url(value: unknown): string {
   const json = JSON.stringify(value);

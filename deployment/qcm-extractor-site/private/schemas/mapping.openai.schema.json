@@ -1,0 +1,100 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document", "question_segments"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "language", "document_type", "page_count", "warnings"],
+      "properties": {
+        "title": {"type": "string"},
+        "language": {"type": "string"},
+        "document_type": {
+          "type": "string",
+          "enum": ["slides", "dense_question_bank", "scanned_document", "mixed", "unknown"]
+        },
+        "page_count": {"type": "integer"},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "question_segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "temporary_id",
+          "question_number",
+          "question_pages",
+          "answer_pages",
+          "feedback_pages",
+          "contains_essential_image",
+          "question_type_hint",
+          "page_regions",
+          "confidence",
+          "warnings"
+        ],
+        "properties": {
+          "temporary_id": {"type": "string"},
+          "question_number": {"type": ["string", "null"]},
+          "question_pages": {
+            "type": "array",
+            "items": {"type": "integer"}
+          },
+          "answer_pages": {
+            "type": "array",
+            "items": {"type": "integer"}
+          },
+          "feedback_pages": {
+            "type": "array",
+            "items": {"type": "integer"}
+          },
+          "contains_essential_image": {"type": "boolean"},
+          "question_type_hint": {
+            "type": "string",
+            "enum": ["single_choice", "multiple_choice", "true_false", "unknown"]
+          },
+          "page_regions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["page", "role", "bbox"],
+              "properties": {
+                "page": {"type": "integer"},
+                "role": {
+                  "type": "string",
+                  "enum": ["question", "choices", "answer", "feedback", "essential_image", "decorative_image", "context"]
+                },
+                "bbox": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["x", "y", "width", "height"],
+                  "properties": {
+                    "x": {"type": "number"},
+                    "y": {"type": "number"},
+                    "width": {"type": "number"},
+                    "height": {"type": "number"}
+                  }
+                }
+              }
+            }
+          },
+          "confidence": {"type": "number"},
+          "warnings": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

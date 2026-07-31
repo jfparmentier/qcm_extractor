@@ -22,11 +22,7 @@ extractQuestions(pdfBytes, filename, context, signal)
 ```
 
 Il envoie le PDF comme corps HTTP brut `application/pdf`, omet les cookies et n’accepte
-aucun modèle ni prompt venant du navigateur. L’URL de base est configurée par :
-
-```bash
-VITE_QCM_API_BASE_URL=/api
-```
+aucun modèle ni prompt venant du navigateur. Par défaut, l’URL du proxy est résolue vers le dossier `api` situé à côté de l’application. Cela fonctionne à la racine comme dans un sous-dossier. `VITE_QCM_API_BASE_URL` reste disponible pour un proxy séparé.
 
 Pour un développement séparé :
 
@@ -45,8 +41,7 @@ npm run typecheck
 npm run dev
 ```
 
-Une construction peut être produite ultérieurement avec `npm run build`, mais aucun dossier
-`dist` n’est inclus dans l’archive de phase 2.
+Une construction peut être produite avec `npm run build`. Un frontend préconstruit destiné au déploiement se trouve aussi sous `deployment/qcm-extractor-site/public`.
 
 ## Confidentialité
 

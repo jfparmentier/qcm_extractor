@@ -15,6 +15,7 @@ use QcmProxy\Operation;
 use QcmProxy\OriginPolicy;
 use QcmProxy\PdfPayload;
 use QcmProxy\PdfRequest;
+use QcmProxy\RateLimiter;
 use QcmProxy\RequestValidator;
 use QcmProxy\UpstreamResponse;
 
@@ -91,6 +92,29 @@ expect(ClientAddress::resolve($config) === '203.0.113.10', 'Un proxy non approuv
 $_SERVER['REMOTE_ADDR'] = '192.0.2.1';
 $_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.9, 192.0.2.2';
 expect(ClientAddress::resolve($config) === '198.51.100.9', 'Le proxy approuvé doit fournir la première adresse valide.');
+
+
+$rateLimitDirectory = sys_get_temp_dir() . '/qcm-proxy-test-' . bin2hex(random_bytes(8));
+putenv('QCM_RATE_LIMIT_BACKEND=file');
+putenv('QCM_RATE_LIMIT_STORAGE_DIR=' . $rateLimitDirectory);
+putenv('QCM_RATE_LIMIT_REQUESTS=2');
+putenv('QCM_RATE_LIMIT_WINDOW_SECONDS=60');
+$fileRateLimitConfig = Config::fromEnvironment($backendRoot);
+$fileRateLimiter = new RateLimiter($fileRateLimitConfig);
+$fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
+$fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
+expectApiException(
+    static fn () => $fileRateLimiter->consume('203.0.113.77', Operation::Mapping),
+    'RATE_LIMIT_EXCEEDED',
+);
+foreach (glob($rateLimitDirectory . '/*') ?: [] as $rateLimitFile) {
+    @unlink($rateLimitFile);
+}
+@rmdir($rateLimitDirectory);
+putenv('QCM_RATE_LIMIT_BACKEND=disabled');
+putenv('QCM_RATE_LIMIT_STORAGE_DIR');
+putenv('QCM_RATE_LIMIT_REQUESTS');
+putenv('QCM_RATE_LIMIT_WINDOW_SECONDS');
 
 $factory = new OpenAiPayloadFactory($config);
 $mappingPayload = $factory->build(Operation::Mapping, new PdfRequest('test.pdf', $pdf, []));

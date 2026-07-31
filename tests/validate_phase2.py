@@ -34,6 +34,16 @@ REQUIRED_FILES = {
     "frontend/src/api/proxyClient.ts",
     "frontend/.env.example",
     "tests/validate_phase2.py",
+    "tests/validate_deployment.py",
+    "DEPLOIEMENT_OVH_MAMP.md",
+    "deployment/qcm-extractor-site/README.md",
+    "deployment/qcm-extractor-site/.ovhconfig",
+    "deployment/qcm-extractor-site/public/index.html",
+    "deployment/qcm-extractor-site/public/api/analyze-map.php",
+    "deployment/qcm-extractor-site/public/api/extract-questions.php",
+    "deployment/qcm-extractor-site/private/config/runtime.php",
+    "deployment/qcm-extractor-site/private/config/bootstrap.php",
+    "deployment/qcm-extractor-site/private/src/RateLimiter.php",
 }
 
 
@@ -90,6 +100,8 @@ assert "QCM_OPENAI_MAPPING_MODEL" in php_sources
 assert "QCM_OPENAI_EXTRACTION_MODEL" in php_sources
 assert "X-QCM-Context" in php_sources or "HTTP_X_QCM_CONTEXT" in php_sources
 assert "apcu_" in php_sources
+assert "QCM_RATE_LIMIT_STORAGE_DIR" in php_sources
+assert "flock(" in php_sources
 assert "QCM_TRUSTED_PROXY_ADDRESSES" in php_sources
 assert "Content-Security-Policy" in php_sources
 assert "error_log" in php_sources
@@ -122,7 +134,7 @@ assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase2_qcm_extractor"
-assert manifest["version"] == "2.0.0"
+assert manifest["version"] == "2.1.0"
 assert manifest["phase"] == 2
 manifest_paths = set()
 for entry in manifest["generated_files"]:
@@ -137,4 +149,4 @@ for entry in manifest["generated_files"]:
 for required in REQUIRED_FILES:
     assert required in manifest_paths, f"Fichier requis absent du manifeste : {required}"
 
-print("OK phase 2 : proxy contraint, sécurité, schémas fournisseur et manifeste")
+print("OK phase 2.1 : proxy contraint, déploiement OVH/MAMP et manifeste")

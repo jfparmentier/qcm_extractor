@@ -13,10 +13,10 @@ l’API Responses avec `store: false` et ne crée aucun objet via `/v1/files`.
 
 - PHP 8.2 ou version ultérieure ;
 - extensions PHP `curl` et `json` ;
-- extension `apcu` en production pour la limitation de débit ;
+- extension `apcu` facultative ; un backend de compteurs fichiers est également fourni ;
 - accès HTTPS sortant vers `api.openai.com`.
 
-Aucune dépendance Composer, base de données ou écriture de fichier n’est utilisée.
+Aucune dépendance Composer ni base de données n’est utilisée. Le backend `file` écrit uniquement de petits compteurs anonymisés pour la limitation de débit ; les PDF ne sont jamais stockés.
 
 ## Configuration
 
@@ -31,7 +31,8 @@ Exemple pour le serveur PHP intégré :
 cd backend
 export OPENAI_API_KEY='sk-proj-...'
 export QCM_ALLOWED_ORIGINS='http://localhost:5173'
-export QCM_RATE_LIMIT_BACKEND='disabled' # développement local seulement
+export QCM_RATE_LIMIT_BACKEND='file'
+export QCM_RATE_LIMIT_STORAGE_DIR='/tmp/qcm-proxy-rate-limit'
 php -S 127.0.0.1:8081 -t public
 ```
 
@@ -41,7 +42,7 @@ Le frontend peut alors utiliser :
 VITE_QCM_API_BASE_URL=http://127.0.0.1:8081 npm run dev
 ```
 
-En production, activez APCu et conservez `QCM_RATE_LIMIT_BACKEND=apcu`. Si un répartiteur ou un CDN masque l’adresse cliente, renseignez ses adresses exactes dans `QCM_TRUSTED_PROXY_ADDRESSES` ; autrement, le proxy ignore `X-Forwarded-For`.
+En production, utilisez `QCM_RATE_LIMIT_BACKEND=file` sur un hébergement mutualisé, ou `apcu` lorsque l’extension est disponible. Si un répartiteur ou un CDN masque l’adresse cliente, renseignez ses adresses exactes dans `QCM_TRUSTED_PROXY_ADDRESSES` ; autrement, le proxy ignore `X-Forwarded-For`.
 
 ## Protocole HTTP
 
@@ -122,7 +123,7 @@ ni les prompts, ni la clé API, ni la sortie du modèle.
 - validation de la méthode, du type MIME, de la taille et de la signature `%PDF-` ;
 - lecture de `php://input`, sans stockage de fichier ;
 - politique d’origine exacte et prérequêtes CORS contrôlées ;
-- limitation de débit APCu par adresse et opération ;
+- limitation de débit APCu ou fichiers verrouillés par adresse et opération ;
 - prise en charge facultative de `X-Forwarded-For` uniquement pour des reverse proxies explicitement approuvés ;
 - vérification TLS, absence de redirection et délais cURL ;
 - plafond sur la taille de la réponse du fournisseur ;

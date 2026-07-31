@@ -3,8 +3,7 @@
 Cette archive contient les contrats JSON de la phase 0, le socle React/TypeScript de la
 phase 1 et le proxy PHP sécurisé de la phase 2.
 
-Aucune version déployable `frontend/dist` n’est incluse dans cette livraison, conformément
-au périmètre demandé.
+Un dossier prêt à téléverser est inclus sous `deployment/qcm-extractor-site`. Les sources React restent séparées et aucun `node_modules` n’est fourni.
 
 ## Contenu
 
@@ -17,7 +16,8 @@ phase2_qcm_extractor/
 │   ├── schemas/                 schémas stricts destinés au fournisseur
 │   ├── config/                  exemples PHP, Apache, Nginx et environnement
 │   └── tests/                   tests PHP sans appel réseau
-├── frontend/                    source React/TypeScript, sans dossier dist
+├── frontend/                    source React/TypeScript
+├── deployment/qcm-extractor-site/ dossier prêt pour OVH et MAMP
 ├── schemas/                     contrats JSON complets du projet
 ├── examples/                    exemples conformes
 ├── golden/                      corpus manuel de 20 cas
@@ -47,7 +47,7 @@ Les protections mises en œuvre comprennent :
 - `store: false` ;
 - contrôle de la signature PDF, du type et de la taille ;
 - politique d’origine et CORS exacts ;
-- limitation de débit APCu sans stockage de documents ;
+- limitation de débit par APCu ou petits compteurs fichiers, sans stockage de documents ;
 - vérification TLS, délais et plafond de réponse ;
 - erreurs normalisées sans exposition de la réponse brute du fournisseur ;
 - journaux minimaux ne contenant ni PDF, ni prompt, ni clé, ni résultat LLM.
@@ -73,10 +73,9 @@ export QCM_RATE_LIMIT_BACKEND='disabled'
 php -S 127.0.0.1:8081 -t public
 ```
 
-La désactivation de la limitation de débit est réservée au développement local. En
-production, installez APCu et utilisez `QCM_RATE_LIMIT_BACKEND=apcu`.
+La désactivation de la limitation de débit est réservée au développement local. Le backend `file` fonctionne sans extension supplémentaire sur MAMP et les hébergements mutualisés ; APCu reste disponible lorsqu’il est installé.
 
-La configuration complète et le protocole HTTP sont décrits dans `backend/README.md`.
+La configuration complète et le protocole HTTP sont décrits dans `backend/README.md`. Le déploiement simplifié est décrit dans `DEPLOIEMENT_OVH_MAMP.md`.
 
 ## Vérifications
 
@@ -86,6 +85,7 @@ python tests/validate_phase1.py
 find backend -name '*.php' -print0 | xargs -0 -n1 php -l
 php backend/tests/run.php
 python tests/validate_phase2.py
+python tests/validate_deployment.py
 ```
 
 Aucun de ces tests n’envoie de document à OpenAI.
