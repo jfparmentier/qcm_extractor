@@ -7,7 +7,7 @@ declare(strict_types=1);
  * Il est protégé par private/.htaccess et doit rester hors de la racine publique.
  */
 return [
-    'OPENAI_API_KEY' => '', // Renseigner la clé avant utilisation.
+    'OPENAI_API_KEY' => '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', // Renseigner la clé avant utilisation.
 
     // Le même domaine est autorisé automatiquement. Ces valeurs servent au mode Vite local.
     'QCM_ALLOWED_ORIGINS' => 'http://localhost:5173,http://127.0.0.1:5173',
