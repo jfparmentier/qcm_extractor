@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.4.0"
+assert package["version"] == "0.4.1"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -73,6 +73,15 @@ canvas = (FRONTEND / "src/components/PdfPageCanvas.tsx").read_text(encoding="utf
 assert "PdfOverlayRegion" in canvas
 assert "pdf-region-layer" in canvas
 assert "onOverlaySelect" in canvas
+
+viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
+assert "PdfThumbnail" not in viewer
+assert "thumbnail-sidebar" not in viewer
+portable_viewer = (PUBLIC / "assets/components/PdfViewer.js").read_text(encoding="utf-8")
+assert "PdfThumbnail" not in portable_viewer
+assert "thumbnail-sidebar" not in portable_viewer
+portable_css = (PUBLIC / "assets/app.css").read_text(encoding="utf-8")
+assert "grid-template-columns: minmax(0, 1fr) minmax(300px, 356px);" in portable_css
 
 client = (FRONTEND / "src/api/proxyClient.ts").read_text(encoding="utf-8")
 assert "PROXY_UNREACHABLE" in client
@@ -122,8 +131,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "3.1.1"
-assert build_info["application_version"] == "0.4.0"
+assert build_info["version"] == "3.1.2"
+assert build_info["application_version"] == "0.4.1"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
-print("OK phase 3.1.1 : cartographie asynchrone et quota local distinct")
+print("OK phase 3.1.2 : visualiseur sans colonne de miniatures")

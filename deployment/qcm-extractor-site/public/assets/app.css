@@ -462,7 +462,7 @@ summary:focus-visible {
 .viewer-layout {
   display: grid;
   min-height: 0;
-  grid-template-columns: 176px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .thumbnail-sidebar {
@@ -703,7 +703,7 @@ summary:focus-visible {
 }
 
 .viewer-layout--with-mapping {
-  grid-template-columns: 176px minmax(0, 1fr) minmax(300px, 356px);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 356px);
 }
 
 .mapping-panel {
@@ -1099,7 +1099,7 @@ summary:focus-visible {
 
 @media (max-width: 1120px) {
   .viewer-layout--with-mapping {
-    grid-template-columns: 150px minmax(0, 1fr) minmax(280px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   }
 
   .thumbnail__page {

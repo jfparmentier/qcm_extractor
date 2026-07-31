@@ -102,4 +102,4 @@ for schema_name in ("mapping.openai.schema.json", "extraction.openai.schema.json
 assert not any(path.name == "node_modules" for path in SITE.rglob("*"))
 assert not any(path.suffix == ".map" for path in PUBLIC.rglob("*")), "Les source maps ne doivent pas être déployées."
 
-print("OK déploiement 3.1.1 : quota MAMP distinct et limite publique conservée")
+print("OK déploiement 3.1.2 : visualiseur sans colonne de miniatures")

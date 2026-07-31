@@ -1,7 +1,7 @@
 {
   "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T14:40:00Z",
-  "application_version": "0.4.0",
+  "generated_at": "2026-07-31T13:05:00Z",
+  "application_version": "0.4.1",
   "dependencies": {
     "react": "19.2.8",
     "react_dom": "19.2.8",
@@ -13,6 +13,6 @@
     "https://cdn.jsdelivr.net"
   ],
   "artifact": "phase3-qcm-extractor-deployment",
-  "version": "3.1.1",
-  "notes": "Cartographie asynchrone avec quota MAMP distinct, suivi périodique, annulation et jeton signé."
+  "version": "3.1.2",
+  "notes": "Colonne de miniatures supprimée afin de consacrer toute la largeur au document et au panneau de cartographie."
 }

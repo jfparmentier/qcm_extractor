@@ -1,4 +1,4 @@
-# Dossier prêt pour OVH Hosting Perso et MAMP — Phase 3.1.1
+# Dossier prêt pour OVH Hosting Perso et MAMP — Phase 3.1.2
 
 ## Installation
 

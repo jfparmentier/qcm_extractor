@@ -5,7 +5,6 @@ import { formatFileSize } from "../pdf/formatFileSize";
 import { CloseIcon, FileIcon, SparklesIcon } from "./Icons";
 import { MappingPanel } from "./MappingPanel";
 import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
-import { PdfThumbnail } from "./PdfThumbnail";
 import { PdfToolbar } from "./PdfToolbar";
 
 interface PdfViewerProps {
@@ -38,7 +37,6 @@ export function PdfViewer({
   onClose
 }: PdfViewerProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
-  const pageNumbers = Array.from({ length: pdf.pageCount }, (_, index) => index + 1);
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
   const showMappingPanel = mapping.status !== "idle";
 
@@ -120,24 +118,6 @@ export function PdfViewer({
       />
 
       <div className={`viewer-layout${showMappingPanel ? " viewer-layout--with-mapping" : ""}`}>
-        <aside className="thumbnail-sidebar" aria-label="Miniatures des pages">
-          <div className="thumbnail-sidebar__heading">
-            <span>Pages</span>
-            <span>{pdf.pageCount}</span>
-          </div>
-          <nav className="thumbnail-list" aria-label="Navigation par page">
-            {pageNumbers.map((pageNumber) => (
-              <PdfThumbnail
-                key={pageNumber}
-                document={pdf.document}
-                onSelect={onPageChange}
-                pageNumber={pageNumber}
-                selected={pageNumber === currentPage}
-              />
-            ))}
-          </nav>
-        </aside>
-
         <main className="page-workspace">
           {renderError !== null && (
             <div className="inline-error" role="alert">

@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 3.1.2 — Visualiseur sans colonne de miniatures
+
+- suppression de la colonne gauche contenant les miniatures de toutes les pages ;
+- conservation de la navigation par numéro de page et boutons précédent/suivant dans la barre d’outils ;
+- agrandissement de l’espace disponible pour la page PDF ;
+- adaptation du mode cartographie à une disposition en deux colonnes : document et résultats.
+
 ## 3.1.1 — Quota local distinct pour MAMP
 
 - identification stricte des requêtes locales par l’adresse de boucle locale et le nom d’hôte ;

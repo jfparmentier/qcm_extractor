@@ -1,2 +1,3 @@
 deployment/qcm-extractor-site/private/runtime/logs/
 deployment/qcm-extractor-site/private/runtime/rate-limit
+*.pdf
