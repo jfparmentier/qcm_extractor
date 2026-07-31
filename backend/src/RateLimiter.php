@@ -21,9 +21,12 @@ final class RateLimiter
         $bucket = intdiv($now, $window);
         $resetAt = ($bucket + 1) * $window;
         $isLocalDevelopment = $this->isLocalDevelopmentRequest($clientAddress);
-        $limit = $isLocalDevelopment
-            ? $this->config->rateLimitLocalRequests
-            : $this->config->rateLimitRequests;
+        $limit = match ([$operation, $isLocalDevelopment]) {
+            [Operation::Extraction, true] => $this->config->rateLimitLocalExtractionRequests,
+            [Operation::Extraction, false] => $this->config->rateLimitExtractionRequests,
+            [Operation::Mapping, true] => $this->config->rateLimitLocalRequests,
+            default => $this->config->rateLimitRequests,
+        };
         $scope = $isLocalDevelopment ? 'local' : 'standard';
         $key = hash('sha256', $clientAddress . '|' . $operation->value . '|' . $scope . '|' . $bucket);
         $ttl = max(1, $resetAt - $now + 2);

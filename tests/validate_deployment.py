@@ -21,6 +21,8 @@ required = [
     PUBLIC / "api" / "diagnostic.php",
     PUBLIC / "api" / "mapping-status.php",
     PUBLIC / "api" / "mapping-cancel.php",
+    PUBLIC / "api" / "extraction-status.php",
+    PUBLIC / "api" / "extraction-cancel.php",
     PUBLIC / ".user.ini",
     PUBLIC / "api" / ".user.ini",
     PRIVATE / ".htaccess",
@@ -39,16 +41,16 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
-assert "Phase 3" in index
+assert "Phase 5" in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
-assert "_entry.php" in source and "qcmRunMappingJobEndpoint('start')" in source
+assert "_entry.php" in source and "qcmRunBackgroundJobEndpoint('mapping', 'start')" in source
 for endpoint, action in (("mapping-status.php", "status"), ("mapping-cancel.php", "cancel")):
     source = (PUBLIC / "api" / endpoint).read_text(encoding="utf-8")
-    assert "_entry.php" in source and f"qcmRunMappingJobEndpoint('{action}')" in source
+    assert "_entry.php" in source and f"qcmRunBackgroundJobEndpoint('mapping', '{action}')" in source
 source = (PUBLIC / "api" / "extract-questions.php").read_text(encoding="utf-8")
-assert "_entry.php" in source and "qcmRunEndpoint('extraction')" in source
+assert "_entry.php" in source and "qcmRunBackgroundJobEndpoint('extraction', 'start')" in source
 
 entrypoint = (PUBLIC / "api" / "_entry.php").read_text(encoding="utf-8")
 assert "dirname(__DIR__, 2) . '/private'" in entrypoint
@@ -74,7 +76,7 @@ for marker in ("QCM_BACKGROUND_START_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_TIME
     assert marker in runtime
 
 application = (PRIVATE / "src" / "Application.php").read_text(encoding="utf-8")
-assert "runBackgroundMapping" in application
+assert "runBackgroundOperation" in application
 assert "HTTP_X_QCM_JOB" in application
 assert "$_GET['job']" not in application
 client = (PUBLIC / "assets" / "api" / "proxyClient.js").read_text(encoding="utf-8")
@@ -112,4 +114,4 @@ for marker in ("region-editor", "Tracer", "Supprimer la zone"):
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
     assert marker in state
 
-print("OK déploiement 3.2.0 : éditeur géométrique des zones")
+print("OK déploiement 5.0.1 : cartographie, zones, lots et extraction")

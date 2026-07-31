@@ -1,5 +1,38 @@
 # Journal des modifications
 
+## 5.0.1 — Correctif de compatibilité AJV strictTypes
+
+- ajout des types explicites dans les sous-schémas conditionnels utilisant `maxItems`, `minItems`, `maxLength` et `properties` ;
+- correction du schéma d’extraction chargé au démarrage de l’interface ;
+- correction préventive des schémas d’export et du corpus de référence ;
+- ajout d’un test de non-régression vérifiant la compatibilité avec le mode strict d’AJV ;
+- mise à jour du dossier portable OVH/MAMP sans création de `frontend/dist`.
+
+## 5.0.0 — Seconde passe d’extraction
+
+- extraction asynchrone de chaque sous-PDF par l’endpoint métier `extract-questions.php` ;
+- ajout des endpoints de suivi et d’annulation de l’extraction ;
+- transmission d’un contexte de lot compact, validé côté serveur et dépourvu d’instructions libres ;
+- file d’exécution frontend avec un à trois lots simultanés ;
+- reprises automatiques configurables pour les erreurs temporaires ;
+- validation AJV, normalisation des pages et contrôle des réponses correctes ;
+- détection des segments manquants, dupliqués ou inattendus ;
+- fusion ordonnée des questions et réécriture des identifiants globaux ;
+- aperçu des résultats et navigation vers les segments sources ;
+- quotas distincts pour la cartographie et les multiples appels d’extraction ;
+- mise à jour du dossier portable OVH/MAMP, sans création de `frontend/dist`.
+
+## 4.0.0 — Découpage local et gestion des lots
+
+- ajout de `pdf-lib` pour copier localement des pages du PDF sans passage par le serveur ;
+- planification configurable par nombre de questions, nombre de pages, taille estimée, pages de contexte et écart maximal ;
+- regroupement des segments voisins et détection des lots hors limites ;
+- conservation de la correspondance entre pages locales et pages originales ;
+- génération séquentielle d’un lot ou de tous les sous-PDF ;
+- téléchargement individuel des sous-PDF générés ;
+- conservation des fichiers uniquement en mémoire dans le navigateur ;
+- ajout d’un onglet « Lots » et des tests de non-régression de phase 4.
+
 ## 3.2.0 — Éditeur géométrique des zones
 
 - déplacement des zones par glisser-déposer directement sur le PDF ;

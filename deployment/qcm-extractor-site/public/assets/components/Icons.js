@@ -50,3 +50,9 @@ export function TrashIcon(props) {
 export function SelectionIcon(props) {
     return (_jsxs(BaseIcon, { ...props, children: [_jsx("path", { d: "M4.5 9V4.5H9M15 4.5h4.5V9M19.5 15v4.5H15M9 19.5H4.5V15", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" }), _jsx("rect", { x: "8", y: "8", width: "8", height: "8", rx: "1", stroke: "currentColor", strokeDasharray: "2 2", strokeWidth: "1.5" })] }));
 }
+export function LayersIcon(props) {
+    return (_jsx(BaseIcon, { ...props, children: _jsx("path", { d: "m12 3 8 4-8 4-8-4zM4 11l8 4 8-4M4 15l8 4 8-4", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" }) }));
+}
+export function DownloadIcon(props) {
+    return (_jsxs(BaseIcon, { ...props, children: [_jsx("path", { d: "M12 4v10m0 0 4-4m-4 4-4-4", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" }), _jsx("path", { d: "M5 17.5v2h14v-2", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.8" })] }));
+}

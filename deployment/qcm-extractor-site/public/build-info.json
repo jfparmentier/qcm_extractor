@@ -1,18 +1,24 @@
 {
-  "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T14:35:00Z",
-  "application_version": "0.5.0",
+  "artifact": "qcm-extractor-portable",
+  "generated_at": "2026-07-31T18:35:00Z",
+  "application_version": "0.7.1",
+  "phase": 5,
+  "version": "5.0.1",
+  "features": [
+    "pdf-local",
+    "mapping-background",
+    "geometry-editor",
+    "local-batches",
+    "background-extraction",
+    "batch-retries",
+    "result-validation",
+    "merged-preview"
+  ],
+  "persistent_pdf_storage": false,
   "dependencies": {
     "react": "19.2.8",
-    "react_dom": "19.2.8",
-    "pdfjs_dist": "6.1.200",
-    "ajv": "8.17.1"
-  },
-  "external_runtime_origins": [
-    "https://esm.sh",
-    "https://cdn.jsdelivr.net"
-  ],
-  "artifact": "phase3-qcm-extractor-deployment",
-  "version": "3.2.0",
-  "notes": "Ajout d’un éditeur géométrique local : déplacement, redimensionnement, ajout, suppression et changement de rôle des zones."
+    "pdfjs": "6.1.200",
+    "ajv": "8.17.1",
+    "pdf_lib": "1.17.1"
+  }
 }

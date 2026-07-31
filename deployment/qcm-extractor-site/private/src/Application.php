@@ -55,9 +55,8 @@ final class Application
         }
     }
 
-    public static function runBackgroundMapping(string $action, string $backendRoot): void
+    public static function runBackgroundOperation(Operation $operation, string $action, string $backendRoot): void
     {
-        $operation = Operation::Mapping;
         $requestId = self::requestId();
         $bufferLevel = ob_get_level();
         ob_start();
@@ -68,15 +67,13 @@ final class Application
             $config = self::loadConfig($backendRoot, $requestId, $operation);
             $networkTimeout = max($config->backgroundStartTimeoutSeconds, $config->backgroundPollTimeoutSeconds);
             self::configureExecutionLimit($config->phpMaxExecutionSeconds, $networkTimeout);
-
-            $allowedMethods = ['POST'];
-            self::enforceOriginAndMethod($config, $allowedMethods, $bufferLevel);
+            self::enforceOriginAndMethod($config, ['POST'], $bufferLevel);
 
             match ($action) {
-                'start' => self::startBackgroundMapping($config, $requestId, $bufferLevel),
-                'status' => self::pollBackgroundMapping($config, $requestId, $bufferLevel),
-                'cancel' => self::cancelBackgroundMapping($config, $requestId, $bufferLevel),
-                default => throw new ApiException('METHOD_NOT_ALLOWED', 'Action de cartographie inconnue.', 404, false),
+                'start' => self::startBackgroundOperation($operation, $config, $requestId, $bufferLevel),
+                'status' => self::pollBackgroundOperation($operation, $config, $requestId, $bufferLevel),
+                'cancel' => self::cancelBackgroundOperation($operation, $config, $requestId, $bufferLevel),
+                default => throw new ApiException('METHOD_NOT_ALLOWED', 'Action asynchrone inconnue.', 404, false),
             };
         } catch (ApiException $exception) {
             self::sendApiException($requestId, $operation, $exception, $bufferLevel);
@@ -85,19 +82,23 @@ final class Application
         }
     }
 
-    private static function startBackgroundMapping(Config $config, string $requestId, int $bufferLevel): void
-    {
+    private static function startBackgroundOperation(
+        Operation $operation,
+        Config $config,
+        string $requestId,
+        int $bufferLevel,
+    ): void {
         $clientAddress = ClientAddress::resolve($config);
-        (new RateLimiter($config))->consume($clientAddress, Operation::Mapping);
+        (new RateLimiter($config))->consume($clientAddress, $operation);
 
-        $pdfRequest = (new RequestValidator($config))->read(Operation::Mapping);
+        $pdfRequest = (new RequestValidator($config))->read($operation);
         Diagnostics::write('pdf_validated', [
             'request_id' => $requestId,
-            'operation' => Operation::Mapping->value,
+            'operation' => $operation->value,
             'pdf_bytes' => strlen($pdfRequest->bytes),
         ]);
 
-        $payload = (new OpenAiPayloadFactory($config))->build(Operation::Mapping, $pdfRequest);
+        $payload = (new OpenAiPayloadFactory($config))->build($operation, $pdfRequest);
         $payload['background'] = true;
         $upstream = (new OpenAiResponsesClient($config))->create(
             $payload,
@@ -113,7 +114,7 @@ final class Application
             ApiResponse::send(200, [
                 'ok' => true,
                 'request_id' => $requestId,
-                'operation' => Operation::Mapping->publicName(),
+                'operation' => $operation->publicName(),
                 'status' => 'completed',
                 'data' => $result->data,
                 'meta' => $result->meta,
@@ -125,22 +126,27 @@ final class Application
             $parser->parse($upstream);
         }
 
-        $job = BackgroundJobToken::issue($state->id, Operation::Mapping, $config);
+        $job = BackgroundJobToken::issue($state->id, $operation, $config);
         Diagnostics::write('background_job_started', [
             'request_id' => $requestId,
+            'operation' => $operation->value,
             'provider_response_id' => $state->id,
             'provider_status' => $state->status,
             'expires_at' => $job['expires_at'],
         ]);
         self::discardBufferedOutput($bufferLevel);
-        ApiResponse::send(202, self::pendingPayload($requestId, $state, $job, $config));
+        ApiResponse::send(202, self::pendingPayload($operation, $requestId, $state, $job, $config));
     }
 
-    private static function pollBackgroundMapping(Config $config, string $requestId, int $bufferLevel): void
-    {
+    private static function pollBackgroundOperation(
+        Operation $operation,
+        Config $config,
+        string $requestId,
+        int $bufferLevel,
+    ): void {
         $job = self::readJobToken($config);
-        if ($job['operation'] !== Operation::Mapping) {
-            throw new ApiException('INVALID_JOB_TOKEN', 'Le jeton ne correspond pas à une cartographie.', 400, false);
+        if ($job['operation'] !== $operation) {
+            throw new ApiException('INVALID_JOB_TOKEN', 'Le jeton ne correspond pas à cette opération.', 400, false);
         }
 
         $upstream = (new OpenAiResponsesClient($config))->retrieve($job['response_id'], $requestId);
@@ -150,6 +156,7 @@ final class Application
         if (in_array($state->status, ['queued', 'in_progress'], true)) {
             self::discardBufferedOutput($bufferLevel);
             ApiResponse::send(202, self::pendingPayload(
+                $operation,
                 $requestId,
                 $state,
                 [
@@ -164,30 +171,36 @@ final class Application
         $result = $parser->parse($upstream);
         Diagnostics::write('background_job_completed', [
             'request_id' => $requestId,
+            'operation' => $operation->value,
             'provider_response_id' => $state->id,
         ]);
         self::discardBufferedOutput($bufferLevel);
         ApiResponse::send(200, [
             'ok' => true,
             'request_id' => $requestId,
-            'operation' => Operation::Mapping->publicName(),
+            'operation' => $operation->publicName(),
             'status' => 'completed',
             'data' => $result->data,
             'meta' => $result->meta,
         ]);
     }
 
-    private static function cancelBackgroundMapping(Config $config, string $requestId, int $bufferLevel): void
-    {
+    private static function cancelBackgroundOperation(
+        Operation $operation,
+        Config $config,
+        string $requestId,
+        int $bufferLevel,
+    ): void {
         $job = self::readJobToken($config);
-        if ($job['operation'] !== Operation::Mapping) {
-            throw new ApiException('INVALID_JOB_TOKEN', 'Le jeton ne correspond pas à une cartographie.', 400, false);
+        if ($job['operation'] !== $operation) {
+            throw new ApiException('INVALID_JOB_TOKEN', 'Le jeton ne correspond pas à cette opération.', 400, false);
         }
 
         $upstream = (new OpenAiResponsesClient($config))->cancel($job['response_id'], $requestId);
         $state = (new OpenAiResponseParser())->inspect($upstream);
         Diagnostics::write('background_job_cancelled', [
             'request_id' => $requestId,
+            'operation' => $operation->value,
             'provider_response_id' => $state->id,
             'provider_status' => $state->status,
         ]);
@@ -195,7 +208,7 @@ final class Application
         ApiResponse::send(200, [
             'ok' => true,
             'request_id' => $requestId,
-            'operation' => Operation::Mapping->publicName(),
+            'operation' => $operation->publicName(),
             'status' => $state->status,
         ]);
     }
@@ -216,6 +229,7 @@ final class Application
      * @return array<string, mixed>
      */
     private static function pendingPayload(
+        Operation $operation,
         string $requestId,
         BackgroundResponseState $state,
         array $job,
@@ -224,7 +238,7 @@ final class Application
         return [
             'ok' => true,
             'request_id' => $requestId,
-            'operation' => Operation::Mapping->publicName(),
+            'operation' => $operation->publicName(),
             'status' => $state->status,
             'job' => [
                 'token' => $job['token'],

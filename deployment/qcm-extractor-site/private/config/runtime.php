@@ -13,9 +13,9 @@ return [
     'QCM_ALLOWED_ORIGINS' => 'http://localhost:5173,http://127.0.0.1:5173',
     'QCM_ALLOW_ORIGINLESS_REQUESTS' => 'false',
 
-    'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5',
+    'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5-mini',
     'QCM_OPENAI_EXTRACTION_MODEL' => 'gpt-5',
-    'QCM_MAPPING_REASONING_EFFORT' => 'medium',
+    'QCM_MAPPING_REASONING_EFFORT' => 'low',
     'QCM_EXTRACTION_REASONING_EFFORT' => 'medium',
     'QCM_TEXT_VERBOSITY' => 'low',
 
@@ -27,7 +27,7 @@ return [
     'QCM_REQUEST_TIMEOUT_SECONDS' => '120',
     'QCM_PHP_MAX_EXECUTION_SECONDS' => '150',
 
-    // Première passe asynchrone : les requêtes PHP restent courtes, même pour un PDF long.
+    // Les deux passes LLM sont asynchrones : les requêtes PHP restent courtes, même pour une analyse longue.
     'QCM_BACKGROUND_START_TIMEOUT_SECONDS' => '25',
     'QCM_BACKGROUND_POLL_TIMEOUT_SECONDS' => '20',
     'QCM_BACKGROUND_POLL_INTERVAL_MS' => '2000',
@@ -41,6 +41,9 @@ return [
     'QCM_RATE_LIMIT_REQUESTS' => '10',
     // Limite distincte pour MAMP, uniquement si le client ET le nom d’hôte sont locaux.
     'QCM_RATE_LIMIT_LOCAL_REQUESTS' => '100',
+    // La seconde passe peut démarrer plusieurs lots et effectuer des reprises contrôlées.
+    'QCM_RATE_LIMIT_EXTRACTION_REQUESTS' => '40',
+    'QCM_RATE_LIMIT_LOCAL_EXTRACTION_REQUESTS' => '200',
     'QCM_RATE_LIMIT_WINDOW_SECONDS' => '3600',
 
     // Journal technique sans PDF, prompt ni clé API. Utile pour diagnostiquer MAMP/OVH.

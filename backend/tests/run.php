@@ -47,6 +47,8 @@ putenv('QCM_EXTRACTION_REASONING_EFFORT=medium');
 putenv('QCM_TEXT_VERBOSITY=low');
 putenv('QCM_RATE_LIMIT_BACKEND=disabled');
 putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS=100');
+putenv('QCM_RATE_LIMIT_EXTRACTION_REQUESTS=40');
+putenv('QCM_RATE_LIMIT_LOCAL_EXTRACTION_REQUESTS=200');
 putenv('QCM_ALLOWED_ORIGINS=http://localhost:5173');
 putenv('QCM_ALLOW_ORIGINLESS_REQUESTS=true');
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=120');
@@ -72,6 +74,8 @@ expect($config->backgroundPollTimeoutSeconds === 20, 'Délai d’interrogation a
 expect($config->backgroundPollIntervalMilliseconds === 2000, 'Intervalle d’interrogation incorrect.');
 expect($config->backgroundJobTtlSeconds === 900, 'Durée du jeton de suivi incorrecte.');
 expect($config->rateLimitLocalRequests === 100, 'Limite locale incorrecte.');
+expect($config->rateLimitExtractionRequests === 40, 'Limite d’extraction publique incorrecte.');
+expect($config->rateLimitLocalExtractionRequests === 200, 'Limite d’extraction locale incorrecte.');
 
 
 putenv('QCM_REQUEST_TIMEOUT_SECONDS=155');
@@ -96,7 +100,38 @@ $context = [
     'batch_id' => 'batch-001',
     'segment_ids' => ['segment-001', 'segment-002'],
     'original_page_numbers' => [3, 4],
+    'local_to_original_page_map' => [3, 4],
     'segment_page_map' => ['segment-001' => [3], 'segment-002' => [4]],
+    'segments' => [
+        [
+            'id' => 'segment-001',
+            'question_number' => '1',
+            'question_type_hint' => 'single_choice',
+            'source_pages' => [3],
+            'local_pages' => [1],
+            'contains_essential_image' => true,
+            'regions' => [[
+                'source_page' => 3,
+                'local_page' => 1,
+                'role' => 'question',
+                'bbox' => [0.05, 0.10, 0.90, 0.40],
+            ]],
+        ],
+        [
+            'id' => 'segment-002',
+            'question_number' => '2',
+            'question_type_hint' => 'multiple_choice',
+            'source_pages' => [4],
+            'local_pages' => [2],
+            'contains_essential_image' => false,
+            'regions' => [[
+                'source_page' => 4,
+                'local_page' => 2,
+                'role' => 'choices',
+                'bbox' => [0.05, 0.45, 0.75, 0.45],
+            ]],
+        ],
+    ],
 ];
 $encoded = Base64Url::encodeJsonObject($context);
 expect(Base64Url::decodeJsonObject($encoded, 6144) === $context, 'Base64 URL-safe non réversible.');
@@ -131,6 +166,8 @@ putenv('QCM_RATE_LIMIT_STORAGE_DIR=' . $rateLimitDirectory);
 putenv('QCM_RATE_LIMIT_REQUESTS=2');
 putenv('QCM_RATE_LIMIT_WINDOW_SECONDS=60');
 putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS=4');
+putenv('QCM_RATE_LIMIT_EXTRACTION_REQUESTS=3');
+putenv('QCM_RATE_LIMIT_LOCAL_EXTRACTION_REQUESTS=5');
 $fileRateLimitConfig = Config::fromEnvironment($backendRoot);
 $fileRateLimiter = new RateLimiter($fileRateLimitConfig);
 $_SERVER['HTTP_HOST'] = 'example.test';
@@ -138,6 +175,15 @@ $fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
 $fileRateLimiter->consume('203.0.113.77', Operation::Mapping);
 expectApiException(
     static fn () => $fileRateLimiter->consume('203.0.113.77', Operation::Mapping),
+    'RATE_LIMIT_EXCEEDED',
+);
+
+$_SERVER['HTTP_HOST'] = 'example.test';
+$fileRateLimiter->consume('203.0.113.78', Operation::Extraction);
+$fileRateLimiter->consume('203.0.113.78', Operation::Extraction);
+$fileRateLimiter->consume('203.0.113.78', Operation::Extraction);
+expectApiException(
+    static fn () => $fileRateLimiter->consume('203.0.113.78', Operation::Extraction),
     'RATE_LIMIT_EXCEEDED',
 );
 
@@ -158,6 +204,8 @@ putenv('QCM_RATE_LIMIT_BACKEND=disabled');
 putenv('QCM_RATE_LIMIT_STORAGE_DIR');
 putenv('QCM_RATE_LIMIT_REQUESTS');
 putenv('QCM_RATE_LIMIT_LOCAL_REQUESTS');
+putenv('QCM_RATE_LIMIT_EXTRACTION_REQUESTS');
+putenv('QCM_RATE_LIMIT_LOCAL_EXTRACTION_REQUESTS');
 putenv('QCM_RATE_LIMIT_WINDOW_SECONDS');
 
 $factory = new OpenAiPayloadFactory($config);
@@ -178,7 +226,7 @@ expect(!str_contains($serializedPayload, $config->apiKey), 'La clé API apparaî
 expect(!str_contains($serializedPayload, '/v1/files'), 'Un endpoint de stockage de fichiers est référencé.');
 $backgroundPayload = $mappingPayload;
 $backgroundPayload['background'] = true;
-expect($backgroundPayload['background'] === true, 'Le mode asynchrone doit être activé pour la cartographie longue.');
+expect($backgroundPayload['background'] === true, 'Le mode asynchrone doit être activé pour les traitements longs.');
 expect($backgroundPayload['store'] === false, 'Le mode asynchrone ne doit pas activer la conservation persistante.');
 
 $job = BackgroundJobToken::issue('resp_test_background_12345678', Operation::Mapping, $config);
@@ -246,4 +294,8 @@ expectApiException(
     'LLM_REFUSAL',
 );
 
-print("OK phase 3.1.1 PHP : cartographie asynchrone et limitation locale distincte\n");
+$extractionJob = BackgroundJobToken::issue('resp_test_extraction_12345678', Operation::Extraction, $config);
+$verifiedExtractionJob = BackgroundJobToken::verify($extractionJob['token'], $config);
+expect($verifiedExtractionJob['operation'] === Operation::Extraction, 'Opération d’extraction du jeton incorrecte.');
+
+print("OK phase 5.0.1 PHP : cartographie et extraction asynchrones, contexte de lot validé\n");

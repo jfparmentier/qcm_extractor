@@ -60,5 +60,7 @@
       ],
       "status": "draft"
     }
-  ]
+  ],
+  "missing_segment_ids": [],
+  "warnings": []
 }

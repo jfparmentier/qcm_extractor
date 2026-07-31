@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { LoadedPdf, MappingState } from "../domain/projectState";
+import type { BatchSettings } from "../domain/batchPlan";
+import type {
+  BatchPreparationState,
+  ExtractionSettings,
+  ExtractionState,
+  LoadedPdf,
+  MappingState
+} from "../domain/projectState";
 import {
   getSegmentDisplayName,
   type NormalizedBoundingBox,
   type PageRegionRole
 } from "../domain/documentMap";
 import { formatFileSize } from "../pdf/formatFileSize";
-import { CloseIcon, FileIcon, SparklesIcon } from "./Icons";
+import { CloseIcon, FileIcon, LayersIcon, SelectionIcon, SparklesIcon } from "./Icons";
+import { ExtractionPanel } from "./ExtractionPanel";
+import { BatchPanel } from "./BatchPanel";
 import { MappingPanel } from "./MappingPanel";
 import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
 import { PdfToolbar } from "./PdfToolbar";
@@ -16,6 +25,8 @@ interface PdfViewerProps {
   readonly currentPage: number;
   readonly zoom: number;
   readonly mapping: MappingState;
+  readonly batching: BatchPreparationState;
+  readonly extraction: ExtractionState;
   readonly onAnalyze: () => void;
   readonly onCancelMapping: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
@@ -37,6 +48,17 @@ interface PdfViewerProps {
     bbox: NormalizedBoundingBox
   ) => void;
   readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
+  readonly onUpdateBatchSettings: (settings: BatchSettings) => void;
+  readonly onPlanBatches: () => void;
+  readonly onGenerateBatch: (batchId: string) => void;
+  readonly onGenerateAllBatches: () => void;
+  readonly onDownloadBatch: (batchId: string) => void;
+  readonly onClearBatches: () => void;
+  readonly onUpdateExtractionSettings: (settings: ExtractionSettings) => void;
+  readonly onExtractAll: () => void;
+  readonly onExtractBatch: (batchId: string) => void;
+  readonly onCancelExtraction: () => void;
+  readonly onClearExtraction: () => void;
   readonly onPageChange: (page: number) => void;
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
@@ -56,6 +78,8 @@ export function PdfViewer({
   currentPage,
   zoom,
   mapping,
+  batching,
+  extraction,
   onAnalyze,
   onCancelMapping,
   onSelectSegment,
@@ -64,6 +88,17 @@ export function PdfViewer({
   onUpdateRegionRole,
   onAddRegion,
   onDeleteRegion,
+  onUpdateBatchSettings,
+  onPlanBatches,
+  onGenerateBatch,
+  onGenerateAllBatches,
+  onDownloadBatch,
+  onClearBatches,
+  onUpdateExtractionSettings,
+  onExtractAll,
+  onExtractBatch,
+  onCancelExtraction,
+  onClearExtraction,
   onPageChange,
   onZoomIn,
   onZoomOut,
@@ -73,8 +108,9 @@ export function PdfViewer({
   const [renderError, setRenderError] = useState<string | null>(null);
   const [drawingRole, setDrawingRole] = useState<PageRegionRole>("question");
   const [isDrawing, setIsDrawing] = useState(false);
+  const [activePanel, setActivePanel] = useState<"mapping" | "batches" | "extraction">("mapping");
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
-  const showMappingPanel = mapping.status !== "idle";
+  const showSidePanel = mapping.status !== "idle";
 
   const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
     if (mapping.data === null) {
@@ -126,8 +162,16 @@ export function PdfViewer({
   useEffect(() => {
     if (mapping.status !== "completed") {
       setIsDrawing(false);
+      setActivePanel("mapping");
     }
   }, [mapping.status]);
+
+  useEffect(() => {
+    if (extraction.runStatus === "running") {
+      setIsDrawing(false);
+      setActivePanel("extraction");
+    }
+  }, [extraction.runStatus]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -135,7 +179,8 @@ export function PdfViewer({
         (event.key !== "Delete" && event.key !== "Backspace") ||
         isEditableElement(event.target) ||
         mapping.selectedRegionId === null ||
-        selectedRegionOwner === null
+        selectedRegionOwner === null ||
+        activePanel !== "mapping"
       ) {
         return;
       }
@@ -146,7 +191,7 @@ export function PdfViewer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mapping.selectedRegionId, onDeleteRegion, selectedRegionOwner]);
+  }, [activePanel, mapping.selectedRegionId, onDeleteRegion, selectedRegionOwner]);
 
   const handleRegionAdd = useCallback((bbox: NormalizedBoundingBox): void => {
     if (mapping.selectedSegmentId === null) {
@@ -157,8 +202,11 @@ export function PdfViewer({
     setIsDrawing(false);
   }, [currentPage, drawingRole, mapping.selectedSegmentId, onAddRegion]);
 
+  const completedMap = mapping.status === "completed" ? mapping.data : null;
+  const mappingCompleted = completedMap !== null;
+
   return (
-    <section className={`viewer-shell${showMappingPanel ? " viewer-shell--with-mapping" : ""}`} aria-label="Visualiseur PDF">
+    <section className={`viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`} aria-label="Visualiseur PDF">
       <header className="document-header">
         <div className="document-header__identity">
           <span className="document-header__icon"><FileIcon /></span>
@@ -175,7 +223,7 @@ export function PdfViewer({
           <span className="local-badge">PDF en mémoire</span>
           <button
             className="button button--primary analysis-header-button"
-            disabled={mapping.status === "running"}
+            disabled={mapping.status === "running" || batching.activeBatchId !== null || extraction.runStatus === "running"}
             onClick={onAnalyze}
             type="button"
           >
@@ -204,7 +252,7 @@ export function PdfViewer({
         zoom={zoom}
       />
 
-      <div className={`viewer-layout${showMappingPanel ? " viewer-layout--with-mapping" : ""}`}>
+      <div className={`viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`}>
         <main className="page-workspace">
           {renderError !== null && (
             <div className="inline-error" role="alert">
@@ -214,10 +262,10 @@ export function PdfViewer({
           <div className="page-stage">
             <PdfPageCanvas
               document={pdf.document}
-              drawRole={isDrawing ? drawingRole : null}
-              onOverlaySelect={onSelectRegion}
-              onRegionAdd={handleRegionAdd}
-              onRegionChange={onUpdateRegionBbox}
+              drawRole={isDrawing && activePanel === "mapping" ? drawingRole : null}
+              onOverlaySelect={extraction.runStatus === "running" ? undefined : onSelectRegion}
+              onRegionAdd={extraction.runStatus === "running" ? undefined : handleRegionAdd}
+              onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" ? onUpdateRegionBbox : undefined}
               onRenderError={handleRenderError}
               overlays={overlays}
               pageNumber={currentPage}
@@ -226,21 +274,91 @@ export function PdfViewer({
           </div>
         </main>
 
-        {showMappingPanel && (
-          <MappingPanel
-            currentPage={currentPage}
-            drawingRole={drawingRole}
-            isDrawing={isDrawing}
-            mapping={mapping}
-            onAnalyze={onAnalyze}
-            onCancel={onCancelMapping}
-            onDeleteRegion={onDeleteRegion}
-            onDrawingRoleChange={setDrawingRole}
-            onSelectRegion={onSelectRegion}
-            onSelectSegment={onSelectSegment}
-            onToggleDrawing={() => setIsDrawing((active) => !active)}
-            onUpdateRegionRole={onUpdateRegionRole}
-          />
+        {showSidePanel && (
+          <div className="side-panel-shell">
+            {mappingCompleted && (
+              <nav className="side-panel-tabs" aria-label="Étapes du traitement">
+                <button
+                  aria-current={activePanel === "mapping" ? "page" : undefined}
+                  className={activePanel === "mapping" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                  disabled={extraction.runStatus === "running"}
+                  onClick={() => setActivePanel("mapping")}
+                  type="button"
+                >
+                  <SelectionIcon /> Zones
+                </button>
+                <button
+                  aria-current={activePanel === "batches" ? "page" : undefined}
+                  className={activePanel === "batches" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                  disabled={extraction.runStatus === "running"}
+                  onClick={() => {
+                    setIsDrawing(false);
+                    setActivePanel("batches");
+                  }}
+                  type="button"
+                >
+                  <LayersIcon /> Lots
+                  {batching.plan !== null && <span>{batching.plan.batches.length}</span>}
+                </button>
+                <button
+                  aria-current={activePanel === "extraction" ? "page" : undefined}
+                  className={activePanel === "extraction" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                  disabled={batching.plan === null}
+                  onClick={() => {
+                    setIsDrawing(false);
+                    setActivePanel("extraction");
+                  }}
+                  type="button"
+                >
+                  <SparklesIcon /> Extraction
+                  {Object.values(extraction.batches).some((batch) => batch.status === "completed") && (
+                    <span>{Object.values(extraction.batches).filter((batch) => batch.status === "completed").length}</span>
+                  )}
+                </button>
+              </nav>
+            )}
+
+            {activePanel === "batches" && mappingCompleted ? (
+              <BatchPanel
+                batching={batching}
+                documentMap={completedMap}
+                onClear={onClearBatches}
+                onDownloadBatch={onDownloadBatch}
+                onGenerateAll={onGenerateAllBatches}
+                onGenerateBatch={onGenerateBatch}
+                onPlan={onPlanBatches}
+                onSelectSegment={onSelectSegment}
+                onSettingsChange={onUpdateBatchSettings}
+              />
+            ) : activePanel === "extraction" && mappingCompleted ? (
+              <ExtractionPanel
+                documentMap={completedMap}
+                extraction={extraction}
+                onCancel={onCancelExtraction}
+                onClear={onClearExtraction}
+                onExtractAll={onExtractAll}
+                onExtractBatch={onExtractBatch}
+                onSelectSegment={onSelectSegment}
+                onSettingsChange={onUpdateExtractionSettings}
+                plan={batching.plan}
+              />
+            ) : (
+              <MappingPanel
+                currentPage={currentPage}
+                drawingRole={drawingRole}
+                isDrawing={isDrawing}
+                mapping={mapping}
+                onAnalyze={onAnalyze}
+                onCancel={onCancelMapping}
+                onDeleteRegion={onDeleteRegion}
+                onDrawingRoleChange={setDrawingRole}
+                onSelectRegion={onSelectRegion}
+                onSelectSegment={onSelectSegment}
+                onToggleDrawing={() => setIsDrawing((active) => !active)}
+                onUpdateRegionRole={onUpdateRegionRole}
+              />
+            )}
+          </div>
         )}
       </div>
     </section>

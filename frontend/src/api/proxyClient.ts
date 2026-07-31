@@ -9,10 +9,12 @@ export interface ProxyResponseMeta {
   };
 }
 
+export type ProxyOperation = "analyze-map" | "extract-questions";
+
 export interface ProxySuccess<TData> {
   readonly ok: true;
   readonly request_id: string;
-  readonly operation: "analyze-map" | "extract-questions";
+  readonly operation: ProxyOperation;
   readonly status?: "completed";
   readonly data: TData;
   readonly meta: ProxyResponseMeta;
@@ -21,7 +23,7 @@ export interface ProxySuccess<TData> {
 export interface ProxyJobPending {
   readonly ok: true;
   readonly request_id: string;
-  readonly operation: "analyze-map";
+  readonly operation: ProxyOperation;
   readonly status: "queued" | "in_progress";
   readonly job: {
     readonly token: string;
@@ -41,11 +43,14 @@ export interface ProxyFailure {
   };
 }
 
-export interface MappingProgress {
+export interface JobProgress {
   readonly providerStatus: "uploading" | "queued" | "in_progress";
   readonly pollCount: number;
   readonly requestId: string | null;
 }
+
+export type MappingProgress = JobProgress;
+export type ExtractionProgress = JobProgress;
 
 export class ProxyApiError extends Error {
   public constructor(
@@ -61,11 +66,37 @@ export class ProxyApiError extends Error {
   }
 }
 
+export interface ExtractionContextRegion {
+  readonly source_page: number;
+  readonly local_page: number;
+  readonly role:
+    | "question"
+    | "choices"
+    | "answer"
+    | "feedback"
+    | "essential_image"
+    | "decorative_image"
+    | "context";
+  readonly bbox: readonly [number, number, number, number];
+}
+
+export interface ExtractionContextSegment {
+  readonly id: string;
+  readonly question_number: string | null;
+  readonly question_type_hint: "single_choice" | "multiple_choice" | "true_false" | "unknown";
+  readonly source_pages: readonly number[];
+  readonly local_pages: readonly number[];
+  readonly contains_essential_image: boolean;
+  readonly regions: readonly ExtractionContextRegion[];
+}
+
 export interface ExtractionContext {
-  readonly batch_id?: string;
-  readonly segment_ids?: readonly string[];
-  readonly original_page_numbers?: readonly number[];
-  readonly segment_page_map?: Readonly<Record<string, readonly number[]>>;
+  readonly batch_id: string;
+  readonly segment_ids: readonly string[];
+  readonly original_page_numbers: readonly number[];
+  readonly local_to_original_page_map: readonly number[];
+  readonly segment_page_map: Readonly<Record<string, readonly number[]>>;
+  readonly segments: readonly ExtractionContextSegment[];
 }
 
 const configuredApiBaseUrl = import.meta.env?.VITE_QCM_API_BASE_URL?.trim();
@@ -217,12 +248,25 @@ function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-async function pollMappingJob<TData>(
+function isPending<TData>(
+  response: ProxySuccess<TData> | ProxyJobPending
+): response is ProxyJobPending {
+  return response.status === "queued" || response.status === "in_progress";
+}
+
+interface BackgroundEndpoints {
+  readonly start: "analyze-map.php" | "extract-questions.php";
+  readonly status: "mapping-status.php" | "extraction-status.php";
+  readonly cancel: "mapping-cancel.php" | "extraction-cancel.php";
+}
+
+async function pollJob<TData>(
+  endpoint: BackgroundEndpoints["status"],
   token: string,
   signal?: AbortSignal
 ): Promise<ProxySuccess<TData> | ProxyJobPending> {
   return fetchProxy<ProxySuccess<TData> | ProxyJobPending>(
-    "mapping-status.php",
+    endpoint,
     {
       method: "POST",
       headers: { "X-QCM-Job": token }
@@ -231,9 +275,12 @@ async function pollMappingJob<TData>(
   );
 }
 
-async function cancelMappingJob(token: string): Promise<void> {
+async function cancelJob(
+  endpoint: BackgroundEndpoints["cancel"],
+  token: string
+): Promise<void> {
   await fetchProxy<{ readonly ok: true }>(
-    "mapping-cancel.php",
+    endpoint,
     {
       method: "POST",
       headers: { "X-QCM-Job": token }
@@ -241,27 +288,23 @@ async function cancelMappingJob(token: string): Promise<void> {
   );
 }
 
-function isPending<TData>(
-  response: ProxySuccess<TData> | ProxyJobPending
-): response is ProxyJobPending {
-  return response.status === "queued" || response.status === "in_progress";
-}
-
-export async function analyzeDocumentMap<TData>(
+async function runBackgroundPdfJob<TData>(
+  endpoints: BackgroundEndpoints,
   pdfBytes: ArrayBuffer,
   filename: string,
+  context: ExtractionContext | null,
   signal?: AbortSignal,
-  onProgress?: (progress: MappingProgress) => void
+  onProgress?: (progress: JobProgress) => void
 ): Promise<ProxySuccess<TData>> {
   onProgress?.({ providerStatus: "uploading", pollCount: 0, requestId: null });
   let pending: ProxyJobPending | null = null;
 
   try {
     const start = await sendPdf<ProxySuccess<TData> | ProxyJobPending>(
-      "analyze-map.php",
+      endpoints.start,
       pdfBytes,
       filename,
-      null,
+      context,
       signal
     );
 
@@ -282,7 +325,7 @@ export async function analyzeDocumentMap<TData>(
       if (remainingMilliseconds <= 0) {
         throw new ProxyApiError(
           "BACKGROUND_JOB_EXPIRED",
-          "Le résultat temporaire de la cartographie a expiré avant sa récupération.",
+          "Le résultat temporaire de l’analyse a expiré avant sa récupération.",
           true,
           410,
           pending.request_id
@@ -291,7 +334,8 @@ export async function analyzeDocumentMap<TData>(
 
       await wait(Math.min(pending.job.poll_after_ms, remainingMilliseconds), signal);
       pollCount += 1;
-      const polled: ProxySuccess<TData> | ProxyJobPending = await pollMappingJob<TData>(
+      const polled: ProxySuccess<TData> | ProxyJobPending = await pollJob<TData>(
+        endpoints.status,
         pending.job.token,
         signal
       );
@@ -308,23 +352,49 @@ export async function analyzeDocumentMap<TData>(
     }
   } catch (error: unknown) {
     if (error instanceof DOMException && error.name === "AbortError" && pending !== null) {
-      void cancelMappingJob(pending.job.token).catch(() => undefined);
+      void cancelJob(endpoints.cancel, pending.job.token).catch(() => undefined);
     }
     throw error;
   }
+}
+
+export function analyzeDocumentMap<TData>(
+  pdfBytes: ArrayBuffer,
+  filename: string,
+  signal?: AbortSignal,
+  onProgress?: (progress: MappingProgress) => void
+): Promise<ProxySuccess<TData>> {
+  return runBackgroundPdfJob<TData>(
+    {
+      start: "analyze-map.php",
+      status: "mapping-status.php",
+      cancel: "mapping-cancel.php"
+    },
+    pdfBytes,
+    filename,
+    null,
+    signal,
+    onProgress
+  );
 }
 
 export function extractQuestions<TData>(
   pdfBytes: ArrayBuffer,
   filename: string,
   context: ExtractionContext,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onProgress?: (progress: ExtractionProgress) => void
 ): Promise<ProxySuccess<TData>> {
-  return sendPdf<ProxySuccess<TData>>(
-    "extract-questions.php",
+  return runBackgroundPdfJob<TData>(
+    {
+      start: "extract-questions.php",
+      status: "extraction-status.php",
+      cancel: "extraction-cancel.php"
+    },
     pdfBytes,
     filename,
     context,
-    signal
+    signal,
+    onProgress
   );
 }

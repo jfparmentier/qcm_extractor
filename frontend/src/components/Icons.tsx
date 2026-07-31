@@ -155,3 +155,20 @@ export function SelectionIcon(props: IconProps): React.ReactElement {
     </BaseIcon>
   );
 }
+
+export function LayersIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="m12 3 8 4-8 4-8-4zM4 11l8 4 8-4M4 15l8 4 8-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </BaseIcon>
+  );
+}
+
+export function DownloadIcon(props: IconProps): React.ReactElement {
+  return (
+    <BaseIcon {...props}>
+      <path d="M12 4v10m0 0 4-4m-4 4-4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <path d="M5 17.5v2h14v-2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </BaseIcon>
+  );
+}

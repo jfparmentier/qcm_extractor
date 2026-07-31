@@ -59,7 +59,7 @@ function qcmRunEndpoint(string $operationName): void
     }
 }
 
-function qcmRunMappingJobEndpoint(string $action): void
+function qcmRunBackgroundJobEndpoint(string $operationName, string $action): void
 {
     $initialBufferLevel = ob_get_level();
     ob_start();
@@ -70,10 +70,16 @@ function qcmRunMappingJobEndpoint(string $action): void
         $projectRoot = dirname(__DIR__);
         require $projectRoot . '/src/Autoload.php';
 
+        $operation = match ($operationName) {
+            'mapping' => Operation::Mapping,
+            'extraction' => Operation::Extraction,
+            default => throw new RuntimeException('Opération inconnue.'),
+        };
+
         while (ob_get_level() > $initialBufferLevel) {
             @ob_end_clean();
         }
-        Application::runBackgroundMapping($action, $projectRoot);
+        Application::runBackgroundOperation($operation, $action, $projectRoot);
     } catch (Throwable $exception) {
         while (ob_get_level() > $initialBufferLevel) {
             @ob_end_clean();

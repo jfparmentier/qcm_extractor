@@ -1,14 +1,5 @@
-# Racine publique — Phase 3.2
+# Déploiement du dossier public — Phase 5
 
-Ce dossier doit être la racine web. Le code serveur et la clé API se trouvent dans `../private`.
+Le contenu de ce dossier constitue la racine HTTP. Il comprend le frontend portable et les endpoints PHP de cartographie et d’extraction.
 
-Endpoints utilisés :
-
-- `api/analyze-map.php` ;
-- `api/mapping-status.php` ;
-- `api/mapping-cancel.php` ;
-- `api/diagnostic.php`.
-
-Sous MAMP, redémarrer Apache après le remplacement du dossier ou toute modification de `.user.ini`.
-
-La version 3.2 permet de corriger localement les zones détectées : déplacement, redimensionnement, ajout, suppression et changement de rôle.
+Les ressources utilisent des chemins relatifs. Les bibliothèques JavaScript sont chargées depuis les CDN versionnés déclarés dans `index.html`.

@@ -1,13 +1,13 @@
-# Extracteur de QCM — Phase 3.2
+# Extracteur de QCM — Phase 5.0.1
 
-Cette archive regroupe les phases 0 à 3 et la version **3.2.0**, qui ajoute l’édition géométrique locale des zones après la cartographie asynchrone. La cartographie complète du PDF est désormais lancée en tâche asynchrone auprès du fournisseur, puis suivie par de courtes requêtes d’état. Cette organisation évite qu’une connexion PHP demeure ouverte pendant plusieurs minutes.
+Cette archive regroupe les phases 0 à 5. La version **5.0.1** corrige le chargement initial du schéma AJV en mode strict et conserve la seconde passe d’extraction : les sous-PDF préparés localement sont transmis par lots au proxy PHP, analysés de manière asynchrone, validés puis fusionnés dans l’ordre du document.
 
-Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne sont utilisés. Le mode asynchrone implique toutefois une conservation temporaire de l’état de réponse par le fournisseur afin de permettre les interrogations de statut. Le dossier directement exploitable sous OVH Hosting Perso ou MAMP est `deployment/qcm-extractor-site`.
+Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne sont utilisés. Le PDF original et les sous-PDF restent en mémoire dans le navigateur. Le dossier directement exploitable sous OVH Hosting Perso ou MAMP est `deployment/qcm-extractor-site`.
 
 ## Arborescence
 
 ```text
-phase3_qcm_extractor_3.2.0/
+phase5_qcm_extractor_5.0.1/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/ dossier prêt pour OVH ou MAMP
@@ -22,23 +22,26 @@ phase3_qcm_extractor_3.2.0/
 ## Déploiement direct
 
 1. Renseigner la clé dans `deployment/qcm-extractor-site/private/config/runtime.php`.
-2. Copier le dossier complet sur le serveur.
+2. Copier le dossier `qcm-extractor-site` complet sur le serveur.
 3. Définir la racine web sur `qcm-extractor-site/public`.
 4. Redémarrer Apache sous MAMP après remplacement des fichiers.
 5. Contrôler `public/api/diagnostic.php`.
 
-La cartographie utilise trois opérations internes : démarrage, interrogation périodique et annulation. Le jeton de suivi est signé côté serveur, transmis par l’en-tête `X-QCM-Job` et n’est jamais placé dans l’URL.
+Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN versionnés. Une connexion internet est nécessaire au chargement initial.
 
+## Phase 5 : extraction détaillée
 
-## Éditeur géométrique
+Après la cartographie et la planification des lots :
 
-Après la cartographie, sélectionnez une question puis une zone. La zone peut être déplacée par glisser-déposer, redimensionnée avec ses huit poignées, supprimée ou requalifiée. Le bouton **Tracer** permet d’ajouter une zone sur la page courante. Les corrections restent uniquement en mémoire dans le navigateur.
+1. ouvrir l’onglet **Extraction** ;
+2. choisir le nombre de lots simultanés et le nombre maximal de reprises ;
+3. lancer tous les lots ou un lot isolé ;
+4. suivre les états de transmission, file d’attente et analyse ;
+5. contrôler les questions fusionnées et les segments manquants.
 
-## Limitation de débit en local et en production
+Pour chaque lot, le navigateur transmet le sous-PDF ainsi qu’un contexte strictement structuré : identifiants des segments, correspondance des pages locales et originales, types indicatifs et zones corrigées. Le prompt et le schéma de sortie restent imposés par le serveur. Les tâches longues utilisent le mode asynchrone du fournisseur et peuvent être annulées.
 
-La limite de production reste fixée à 10 démarrages d’analyse par heure et par adresse IP. Sous MAMP, une limite distincte de 100 démarrages par heure est appliquée uniquement lorsque l’adresse cliente est une adresse de boucle locale et que le nom d’hôte est `localhost`, `127.0.0.1` ou `::1`. Les interrogations d’état et les annulations ne consomment pas ce quota.
-
-Les compteurs antérieurs à la version 3.1.2 utilisent une clé différente et ne bloquent donc pas les nouveaux essais.
+La sortie est contrôlée par JSON Schema puis normalisée : pages originales, identifiants de réponses, provenance des réponses, régions d’images, segments absents et doublons. Les identifiants globaux des questions sont réécrits lors de la fusion.
 
 ## Vérifications
 
@@ -49,6 +52,8 @@ find backend -name '*.php' -print0 | xargs -0 -n1 php -l
 php backend/tests/run.php
 python tests/validate_phase2.py
 python tests/validate_phase3.py
+python tests/validate_phase4.py
+python tests/validate_phase5.py
 python tests/validate_deployment.py
 ```
 

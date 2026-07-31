@@ -7,10 +7,28 @@ import {
   type PageRegionRole,
   type QuestionSegment
 } from "./documentMap";
-import type { MappingProgress, ProxyResponseMeta } from "../api/proxyClient";
+import type { ExtractionProgress, MappingProgress, ProxyResponseMeta } from "../api/proxyClient";
+import type { ExtractionBatchResult } from "./extraction";
+import {
+  DEFAULT_BATCH_SETTINGS,
+  normalizeBatchSettings,
+  type BatchPlan,
+  type BatchSettings,
+  type GeneratedBatchArtifact
+} from "./batchPlan";
 
 export type ProjectStatus = "empty" | "loading" | "pdf_loaded" | "error";
 export type MappingStatus = "idle" | "running" | "completed" | "failed";
+export type ExtractionRunStatus = "idle" | "running" | "completed" | "cancelled";
+export type ExtractionBatchStatus =
+  | "idle"
+  | "preparing"
+  | "uploading"
+  | "queued"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | "cancelled";
 
 export interface LoadedPdf {
   readonly fileName: string;
@@ -53,6 +71,45 @@ export interface MappingState {
   readonly progress: MappingProgress | null;
 }
 
+export interface BatchPreparationState {
+  readonly settings: BatchSettings;
+  readonly plan: BatchPlan | null;
+  readonly artifacts: Readonly<Record<string, GeneratedBatchArtifact>>;
+  readonly activeBatchId: string | null;
+  readonly errors: Readonly<Record<string, string>>;
+}
+
+export interface ExtractionSettings {
+  readonly maxConcurrentBatches: number;
+  readonly maxRetries: number;
+}
+
+export interface ExtractionBatchError {
+  readonly code: string;
+  readonly message: string;
+  readonly retryable: boolean;
+  readonly requestId: string | null;
+  readonly technicalDetails?: string;
+}
+
+export interface ExtractionBatchState {
+  readonly status: ExtractionBatchStatus;
+  readonly attempts: number;
+  readonly progress: ExtractionProgress | null;
+  readonly result: ExtractionBatchResult | null;
+  readonly meta: ProxyResponseMeta | null;
+  readonly error: ExtractionBatchError | null;
+  readonly startedAt: number | null;
+  readonly completedAt: number | null;
+}
+
+export interface ExtractionState {
+  readonly settings: ExtractionSettings;
+  readonly runStatus: ExtractionRunStatus;
+  readonly batches: Readonly<Record<string, ExtractionBatchState>>;
+  readonly startedAt: number | null;
+}
+
 export interface ProjectState {
   readonly status: ProjectStatus;
   readonly pdf: LoadedPdf | null;
@@ -60,6 +117,8 @@ export interface ProjectState {
   readonly zoom: number;
   readonly error: ProjectError | null;
   readonly mapping: MappingState;
+  readonly batching: BatchPreparationState;
+  readonly extraction: ExtractionState;
 }
 
 export const INITIAL_MAPPING_STATE: MappingState = {
@@ -73,13 +132,35 @@ export const INITIAL_MAPPING_STATE: MappingState = {
   progress: null
 };
 
+export const INITIAL_BATCH_PREPARATION_STATE: BatchPreparationState = {
+  settings: DEFAULT_BATCH_SETTINGS,
+  plan: null,
+  artifacts: {},
+  activeBatchId: null,
+  errors: {}
+};
+
+export const DEFAULT_EXTRACTION_SETTINGS: ExtractionSettings = {
+  maxConcurrentBatches: 2,
+  maxRetries: 1
+};
+
+export const INITIAL_EXTRACTION_STATE: ExtractionState = {
+  settings: DEFAULT_EXTRACTION_SETTINGS,
+  runStatus: "idle",
+  batches: {},
+  startedAt: null
+};
+
 export const INITIAL_PROJECT_STATE: ProjectState = {
   status: "empty",
   pdf: null,
   currentPage: 1,
   zoom: 1,
   error: null,
-  mapping: INITIAL_MAPPING_STATE
+  mapping: INITIAL_MAPPING_STATE,
+  batching: INITIAL_BATCH_PREPARATION_STATE,
+  extraction: INITIAL_EXTRACTION_STATE
 };
 
 export type ProjectAction =
@@ -125,6 +206,33 @@ export type ProjectAction =
       readonly segmentId: string;
       readonly regionId: string;
     }
+  | { readonly type: "BATCH_SETTINGS_UPDATED"; readonly settings: BatchSettings }
+  | { readonly type: "BATCHES_PLANNED"; readonly plan: BatchPlan }
+  | { readonly type: "BATCH_GENERATION_STARTED"; readonly batchId: string }
+  | { readonly type: "BATCH_GENERATED"; readonly artifact: GeneratedBatchArtifact }
+  | { readonly type: "BATCH_GENERATION_FAILED"; readonly batchId: string; readonly error: string }
+  | { readonly type: "BATCHES_CLEARED" }
+  | { readonly type: "EXTRACTION_SETTINGS_UPDATED"; readonly settings: ExtractionSettings }
+  | { readonly type: "EXTRACTION_RUN_STARTED"; readonly startedAt: number }
+  | { readonly type: "EXTRACTION_BATCH_PREPARING"; readonly batchId: string; readonly attempt: number }
+  | { readonly type: "EXTRACTION_BATCH_PROGRESS"; readonly batchId: string; readonly progress: ExtractionProgress }
+  | {
+      readonly type: "EXTRACTION_BATCH_SUCCEEDED";
+      readonly batchId: string;
+      readonly result: ExtractionBatchResult;
+      readonly meta: ProxyResponseMeta;
+      readonly completedAt: number;
+    }
+  | {
+      readonly type: "EXTRACTION_BATCH_FAILED";
+      readonly batchId: string;
+      readonly attempt: number;
+      readonly error: ExtractionBatchError;
+    }
+  | { readonly type: "EXTRACTION_BATCH_CANCELLED"; readonly batchId: string }
+  | { readonly type: "EXTRACTION_RUN_FINISHED" }
+  | { readonly type: "EXTRACTION_RUN_CANCELLED" }
+  | { readonly type: "EXTRACTION_CLEARED" }
   | { readonly type: "RESET" };
 
 export const MIN_ZOOM = 0.5;
@@ -207,7 +315,9 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         currentPage: 1,
         zoom: 1,
         error: null,
-        mapping: INITIAL_MAPPING_STATE
+        mapping: INITIAL_MAPPING_STATE,
+        batching: INITIAL_BATCH_PREPARATION_STATE,
+        extraction: INITIAL_EXTRACTION_STATE
       };
 
     case "LOAD_FAILED":
@@ -251,6 +361,14 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           selectedSegmentId: null,
           selectedRegionId: null,
           progress: { providerStatus: "uploading", pollCount: 0, requestId: null }
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
 
@@ -281,6 +399,14 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           selectedSegmentId: firstSegment?.temporary_id ?? null,
           selectedRegionId: firstRegion?.client_id ?? null,
           progress: null
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }
@@ -297,13 +423,29 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           selectedSegmentId: null,
           selectedRegionId: null,
           progress: null
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
 
     case "MAPPING_CANCELLED":
       return {
         ...state,
-        mapping: INITIAL_MAPPING_STATE
+        mapping: INITIAL_MAPPING_STATE,
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
       };
 
     case "SELECT_SEGMENT": {
@@ -377,6 +519,14 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           data,
           selectedSegmentId: action.segmentId,
           selectedRegionId: action.regionId
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }
@@ -411,6 +561,14 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           data,
           selectedSegmentId: action.segmentId,
           selectedRegionId: action.regionId
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }
@@ -443,6 +601,14 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           data,
           selectedSegmentId: action.segmentId,
           selectedRegionId: normalizedRegion.client_id
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }
@@ -475,9 +641,249 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
             state.mapping.selectedRegionId === action.regionId
               ? null
               : state.mapping.selectedRegionId
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }
+
+    case "BATCH_SETTINGS_UPDATED":
+      return {
+        ...state,
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: normalizeBatchSettings(action.settings)
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
+      };
+
+    case "BATCHES_PLANNED":
+      return {
+        ...state,
+        batching: {
+          settings: action.plan.settings,
+          plan: action.plan,
+          artifacts: {},
+          activeBatchId: null,
+          errors: {}
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
+      };
+
+    case "BATCH_GENERATION_STARTED": {
+      const errors = { ...state.batching.errors };
+      delete errors[action.batchId];
+      return {
+        ...state,
+        batching: {
+          ...state.batching,
+          activeBatchId: action.batchId,
+          errors
+        }
+      };
+    }
+
+    case "BATCH_GENERATED":
+      return {
+        ...state,
+        batching: {
+          ...state.batching,
+          artifacts: {
+            ...state.batching.artifacts,
+            [action.artifact.batchId]: action.artifact
+          },
+          activeBatchId:
+            state.batching.activeBatchId === action.artifact.batchId
+              ? null
+              : state.batching.activeBatchId
+        },
+        extraction: {
+          ...state.extraction,
+          batches: Object.fromEntries(
+            Object.entries(state.extraction.batches).filter(([batchId]) => batchId !== action.artifact.batchId)
+          )
+        }
+      };
+
+    case "BATCH_GENERATION_FAILED":
+      return {
+        ...state,
+        batching: {
+          ...state.batching,
+          activeBatchId:
+            state.batching.activeBatchId === action.batchId
+              ? null
+              : state.batching.activeBatchId,
+          errors: {
+            ...state.batching.errors,
+            [action.batchId]: action.error
+          }
+        }
+      };
+
+    case "BATCHES_CLEARED":
+      return {
+        ...state,
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
+      };
+
+    case "EXTRACTION_SETTINGS_UPDATED":
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          settings: {
+            maxConcurrentBatches: clamp(Math.round(action.settings.maxConcurrentBatches), 1, 3),
+            maxRetries: clamp(Math.round(action.settings.maxRetries), 0, 2)
+          }
+        }
+      };
+
+    case "EXTRACTION_RUN_STARTED":
+      return {
+        ...state,
+        extraction: { ...state.extraction, runStatus: "running", startedAt: action.startedAt }
+      };
+
+    case "EXTRACTION_BATCH_PREPARING": {
+      const previous = state.extraction.batches[action.batchId];
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          batches: {
+            ...state.extraction.batches,
+            [action.batchId]: {
+              status: "preparing",
+              attempts: action.attempt,
+              progress: null,
+              result: previous?.result ?? null,
+              meta: previous?.meta ?? null,
+              error: null,
+              startedAt: previous?.startedAt ?? Date.now(),
+              completedAt: null
+            }
+          }
+        }
+      };
+    }
+
+    case "EXTRACTION_BATCH_PROGRESS": {
+      const previous = state.extraction.batches[action.batchId];
+      if (previous === undefined) return state;
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          batches: {
+            ...state.extraction.batches,
+            [action.batchId]: {
+              ...previous,
+              status: action.progress.providerStatus,
+              progress: action.progress
+            }
+          }
+        }
+      };
+    }
+
+    case "EXTRACTION_BATCH_SUCCEEDED": {
+      const previous = state.extraction.batches[action.batchId];
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          batches: {
+            ...state.extraction.batches,
+            [action.batchId]: {
+              status: "completed",
+              attempts: previous?.attempts ?? 1,
+              progress: null,
+              result: action.result,
+              meta: action.meta,
+              error: null,
+              startedAt: previous?.startedAt ?? null,
+              completedAt: action.completedAt
+            }
+          }
+        }
+      };
+    }
+
+    case "EXTRACTION_BATCH_FAILED": {
+      const previous = state.extraction.batches[action.batchId];
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          batches: {
+            ...state.extraction.batches,
+            [action.batchId]: {
+              status: "failed",
+              attempts: action.attempt,
+              progress: null,
+              result: previous?.result ?? null,
+              meta: previous?.meta ?? null,
+              error: action.error,
+              startedAt: previous?.startedAt ?? null,
+              completedAt: null
+            }
+          }
+        }
+      };
+    }
+
+    case "EXTRACTION_BATCH_CANCELLED": {
+      const previous = state.extraction.batches[action.batchId];
+      if (previous === undefined) return state;
+      return {
+        ...state,
+        extraction: {
+          ...state.extraction,
+          batches: {
+            ...state.extraction.batches,
+            [action.batchId]: { ...previous, status: "cancelled", progress: null }
+          }
+        }
+      };
+    }
+
+    case "EXTRACTION_RUN_FINISHED":
+      return {
+        ...state,
+        extraction: { ...state.extraction, runStatus: "completed", startedAt: null }
+      };
+
+    case "EXTRACTION_RUN_CANCELLED":
+      return {
+        ...state,
+        extraction: { ...state.extraction, runStatus: "cancelled", startedAt: null }
+      };
+
+    case "EXTRACTION_CLEARED":
+      return {
+        ...state,
+        extraction: { ...INITIAL_EXTRACTION_STATE, settings: state.extraction.settings }
+      };
 
     case "RESET":
       return INITIAL_PROJECT_STATE;

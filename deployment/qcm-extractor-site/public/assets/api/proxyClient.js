@@ -108,26 +108,26 @@ function wait(milliseconds, signal) {
         }, { once: true });
     });
 }
-async function pollMappingJob(token, signal) {
-    return fetchProxy("mapping-status.php", {
+function isPending(response) {
+    return response.status === "queued" || response.status === "in_progress";
+}
+async function pollJob(endpoint, token, signal) {
+    return fetchProxy(endpoint, {
         method: "POST",
         headers: { "X-QCM-Job": token }
     }, signal);
 }
-async function cancelMappingJob(token) {
-    await fetchProxy("mapping-cancel.php", {
+async function cancelJob(endpoint, token) {
+    await fetchProxy(endpoint, {
         method: "POST",
         headers: { "X-QCM-Job": token }
     });
 }
-function isPending(response) {
-    return response.status === "queued" || response.status === "in_progress";
-}
-export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress) {
+async function runBackgroundPdfJob(endpoints, pdfBytes, filename, context, signal, onProgress) {
     onProgress?.({ providerStatus: "uploading", pollCount: 0, requestId: null });
     let pending = null;
     try {
-        const start = await sendPdf("analyze-map.php", pdfBytes, filename, null, signal);
+        const start = await sendPdf(endpoints.start, pdfBytes, filename, context, signal);
         if (!isPending(start)) {
             return start;
         }
@@ -141,11 +141,11 @@ export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress)
         while (true) {
             const remainingMilliseconds = pending.job.expires_at * 1000 - Date.now();
             if (remainingMilliseconds <= 0) {
-                throw new ProxyApiError("BACKGROUND_JOB_EXPIRED", "Le résultat temporaire de la cartographie a expiré avant sa récupération.", true, 410, pending.request_id);
+                throw new ProxyApiError("BACKGROUND_JOB_EXPIRED", "Le résultat temporaire de l’analyse a expiré avant sa récupération.", true, 410, pending.request_id);
             }
             await wait(Math.min(pending.job.poll_after_ms, remainingMilliseconds), signal);
             pollCount += 1;
-            const polled = await pollMappingJob(pending.job.token, signal);
+            const polled = await pollJob(endpoints.status, pending.job.token, signal);
             if (!isPending(polled)) {
                 return polled;
             }
@@ -159,11 +159,22 @@ export async function analyzeDocumentMap(pdfBytes, filename, signal, onProgress)
     }
     catch (error) {
         if (error instanceof DOMException && error.name === "AbortError" && pending !== null) {
-            void cancelMappingJob(pending.job.token).catch(() => undefined);
+            void cancelJob(endpoints.cancel, pending.job.token).catch(() => undefined);
         }
         throw error;
     }
 }
-export function extractQuestions(pdfBytes, filename, context, signal) {
-    return sendPdf("extract-questions.php", pdfBytes, filename, context, signal);
+export function analyzeDocumentMap(pdfBytes, filename, signal, onProgress) {
+    return runBackgroundPdfJob({
+        start: "analyze-map.php",
+        status: "mapping-status.php",
+        cancel: "mapping-cancel.php"
+    }, pdfBytes, filename, null, signal, onProgress);
+}
+export function extractQuestions(pdfBytes, filename, context, signal, onProgress) {
+    return runBackgroundPdfJob({
+        start: "extract-questions.php",
+        status: "extraction-status.php",
+        cancel: "extraction-cancel.php"
+    }, pdfBytes, filename, context, signal, onProgress);
 }

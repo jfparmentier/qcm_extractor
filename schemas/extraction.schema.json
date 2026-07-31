@@ -8,7 +8,9 @@
     "schema_version",
     "batch_id",
     "source_document",
-    "questions"
+    "questions",
+    "missing_segment_ids",
+    "warnings"
   ],
   "properties": {
     "schema_version": {
@@ -40,6 +42,21 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/question"
+      }
+    },
+    "missing_segment_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^segment-[A-Za-z0-9._-]+$"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
       }
     }
   },
@@ -104,14 +121,17 @@
               "origin": {
                 "const": "not_available"
               }
-            }
+            },
+            "type": "object"
           },
           "then": {
             "properties": {
               "content": {
-                "maxLength": 0
+                "maxLength": 0,
+                "type": "string"
               }
-            }
+            },
+            "type": "object"
           }
         }
       ]
@@ -282,21 +302,26 @@
               "correct_answer_origin": {
                 "const": "not_available"
               }
-            }
+            },
+            "type": "object"
           },
           "then": {
             "properties": {
               "correct_choice_ids": {
-                "maxItems": 0
+                "maxItems": 0,
+                "type": "array"
               }
-            }
+            },
+            "type": "object"
           },
           "else": {
             "properties": {
               "correct_choice_ids": {
-                "minItems": 1
+                "minItems": 1,
+                "type": "array"
               }
-            }
+            },
+            "type": "object"
           }
         },
         {
@@ -305,14 +330,17 @@
               "type": {
                 "const": "single_choice"
               }
-            }
+            },
+            "type": "object"
           },
           "then": {
             "properties": {
               "correct_choice_ids": {
-                "maxItems": 1
+                "maxItems": 1,
+                "type": "array"
               }
-            }
+            },
+            "type": "object"
           }
         },
         {
@@ -321,18 +349,22 @@
               "type": {
                 "const": "true_false"
               }
-            }
+            },
+            "type": "object"
           },
           "then": {
             "properties": {
               "choices": {
                 "minItems": 2,
-                "maxItems": 2
+                "maxItems": 2,
+                "type": "array"
               },
               "correct_choice_ids": {
-                "maxItems": 1
+                "maxItems": 1,
+                "type": "array"
               }
-            }
+            },
+            "type": "object"
           }
         }
       ]
