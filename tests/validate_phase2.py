@@ -90,6 +90,7 @@ assert "https://api.openai.com/v1/responses" in php_sources
 assert "/v1/files" not in php_sources, "Le proxy ne doit pas créer de fichier persistant chez le fournisseur."
 assert "'store' => false" in php_sources
 assert "php://input" in php_sources
+assert "data:application/pdf;base64," in php_sources, "Le PDF doit être envoyé comme data URL Base64 à Responses API."
 assert "move_uploaded_file" not in php_sources
 assert "$_FILES" not in php_sources
 assert "CURLOPT_SSL_VERIFYPEER" in php_sources
@@ -129,12 +130,12 @@ send_pdf_block = client.split("async function sendPdf", 1)[1].split("export func
 assert "model:" not in send_pdf_block and "\"model\"" not in send_pdf_block, "Le client ne doit pas choisir le modèle."
 
 package = read_json(FRONTEND / "package.json")
-assert package["version"] == "0.3.0"
+assert package["version"] == "0.3.1"
 assert "build:portable" not in package["scripts"]
 
 manifest = read_json(ROOT / "manifest.json")
 assert manifest["artifact"] == "phase3_qcm_extractor"
-assert manifest["version"] == "3.0.0"
+assert manifest["version"] == "3.0.1"
 assert manifest["phase"] == 3
 manifest_paths = set()
 for entry in manifest["generated_files"]:

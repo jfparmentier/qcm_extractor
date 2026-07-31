@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 3.0.1 — Correctif de transmission des PDF
+
+- correction de `input_file.file_data` pour utiliser une data URL `data:application/pdf;base64,...` conforme aux exemples de la Responses API ;
+- ajout d’un test de non-régression sur le préfixe MIME et le décodage Base64 ;
+- mise à jour des numéros de version et du manifeste.
+
 ## 3.0.0 — Phase 3 : première passe de cartographie
 
 - connexion du bouton de cartographie à l’endpoint PHP `analyze-map.php` ;

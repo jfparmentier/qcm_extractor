@@ -80,3 +80,7 @@ python tests/validate_deployment.py
 ```
 
 Aucun test fourni n’envoie de document au fournisseur LLM.
+
+## Correctif 3.0.1
+
+La charge utile `input_file.file_data` est maintenant envoyée sous la forme d’une data URL PDF Base64. Cette correction évite le rejet HTTP de la requête par la Responses API, précédemment remonté au navigateur sous la forme d’une erreur 502.

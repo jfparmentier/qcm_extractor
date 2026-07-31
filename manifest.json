@@ -1,12 +1,12 @@
 {
   "artifact": "phase3_qcm_extractor",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "phase": 3,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "f303e2702bb1f95064ab5d6d8b45ee09d38aaa73817a07d1b06ac64a92c73201",
-      "bytes": 3204
+      "sha256": "f736f59a072113078abccc3563fd93e3a1d556a28d7a5f99b42dbce743ed85b7",
+      "bytes": 3538
     },
     {
       "path": "DEPLOIEMENT_OVH_MAMP.md",
@@ -15,8 +15,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "1a13b1443b95168cccd5625497edf5e6b37a3ed1cefd189275cc5c3c96572125",
-      "bytes": 3043
+      "sha256": "27427556cb39c207ed197c3089d5d1e993bd75257e396101d4ded344639f2718",
+      "bytes": 3317
     },
     {
       "path": "backend/README.md",
@@ -125,8 +125,8 @@
     },
     {
       "path": "backend/src/OpenAiPayloadFactory.php",
-      "sha256": "318175777bbf5162b5f466c50beb1a400ef131c64dd8e73fd86650eb39cfa00d",
-      "bytes": 3581
+      "sha256": "75a3ecedf1be2eb4683885cbb6279ea22451d28166a3c4f36c3ce9c9c3b6ef51",
+      "bytes": 3614
     },
     {
       "path": "backend/src/OpenAiResponseParser.php",
@@ -185,8 +185,8 @@
     },
     {
       "path": "backend/tests/run.php",
-      "sha256": "b72b2492c88d0b7042515d0ddf1ec704e2c8efdd4da8e396a3f14ff58108e0fb",
-      "bytes": 8128
+      "sha256": "40dd9dc44fdf5a9a3d259b35c3a5d137d66d421bad9c85ffc74813791adbeade",
+      "bytes": 8324
     },
     {
       "path": "deployment/qcm-extractor-site/.ovhconfig",
@@ -195,8 +195,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/README.md",
-      "sha256": "13a9ca0c6688fd16c28181d95be445fbf3eb4f5902bd6df8e8cf091a87a27fac",
-      "bytes": 1669
+      "sha256": "60055544ad748a7a43f205335bd197b643b2473f87703c81a2440a717a1a8624",
+      "bytes": 1857
     },
     {
       "path": "deployment/qcm-extractor-site/TEST_MAMP.command",
@@ -290,8 +290,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/OpenAiPayloadFactory.php",
-      "sha256": "318175777bbf5162b5f466c50beb1a400ef131c64dd8e73fd86650eb39cfa00d",
-      "bytes": 3581
+      "sha256": "75a3ecedf1be2eb4683885cbb6279ea22451d28166a3c4f36c3ce9c9c3b6ef51",
+      "bytes": 3614
     },
     {
       "path": "deployment/qcm-extractor-site/private/src/OpenAiResponseParser.php",
@@ -485,8 +485,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/build-info.json",
-      "sha256": "6ac879f4677d70fc916e66bcd6db919cedd67b5b3c7af7051f4eb17721f1132b",
-      "bytes": 540
+      "sha256": "6805c1e34cb41ce516525f8bde79e7092548552b90edde9b1a7b4e471ccac05b",
+      "bytes": 579
     },
     {
       "path": "deployment/qcm-extractor-site/public/index.html",
@@ -535,7 +535,7 @@
     },
     {
       "path": "frontend/package.json",
-      "sha256": "5420ecfdf80d9fb4b44ff7516102b7fe280b3a2d4dcad32ec93f30244e04810b",
+      "sha256": "99a944fea75ea2abd6b35f904179399fdd6d4bedc4b15ee554629242453bdd92",
       "bytes": 570
     },
     {
@@ -690,7 +690,7 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "503fd522add4c9da99d8e87015563c9e0e99e0ab7f067dc1ef2d316d797a1a83",
+      "sha256": "f8e87f5dee94854fc89afe5e5fe97074a973bdc6383e0ee5414f0de36aca699f",
       "bytes": 1304
     },
     {
@@ -710,12 +710,12 @@
     },
     {
       "path": "tests/validate_phase2.py",
-      "sha256": "c4f64bb4c47e47549df1da00ce56ac30b4cde287d008ef6fec70b1440254df6e",
-      "bytes": 6480
+      "sha256": "ed4377928d23a508cfa4903c016cd9f10384ecec8fae9f3e83767c056c4dbafd",
+      "bytes": 6602
     },
     {
       "path": "tests/validate_phase3.py",
-      "sha256": "8f6fa9a6327669e04fdb2e649e5e50b8a615f642c8ba77db3d7eb30e6f51b01f",
+      "sha256": "926c8d4785c2e3f3ff36edca29d9274659b2fe4ad5aaf3ab75d80afc66f556a5",
       "bytes": 3712
     }
   ]

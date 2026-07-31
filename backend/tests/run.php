@@ -124,7 +124,9 @@ expect($mappingPayload['max_output_tokens'] === 12000, 'Limite de sortie incorre
 expect($mappingPayload['text']['format']['strict'] === true, 'Sortie structurée non stricte.');
 expect($mappingPayload['text']['format']['type'] === 'json_schema', 'Format JSON Schema absent.');
 $fileData = $mappingPayload['input'][1]['content'][0]['file_data'];
-expect(is_string($fileData) && base64_decode($fileData, true) === $pdf, 'PDF non transmis comme données Base64.');
+expect(is_string($fileData) && str_starts_with($fileData, 'data:application/pdf;base64,'), 'Le PDF doit être transmis comme data URL Base64.');
+$encodedPdf = substr($fileData, strlen('data:application/pdf;base64,'));
+expect(base64_decode($encodedPdf, true) === $pdf, 'Le contenu Base64 du PDF est incorrect.');
 $serializedPayload = json_encode($mappingPayload, JSON_THROW_ON_ERROR);
 expect(!str_contains($serializedPayload, $config->apiKey), 'La clé API apparaît dans la charge utile.');
 expect(!str_contains($serializedPayload, '/v1/files'), 'Un endpoint de stockage de fichiers est référencé.');

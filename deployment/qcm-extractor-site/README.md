@@ -51,3 +51,7 @@ la liste des segments et leurs zones sur les pages du PDF.
 
 Le frontend charge React et AJV depuis `esm.sh`, ainsi que PDF.js et son worker depuis
 `cdn.jsdelivr.net`. Le serveur et le navigateur doivent donc pouvoir joindre ces domaines.
+
+## Correctif 3.0.1
+
+Le proxy transmet désormais le PDF à la Responses API sous la forme `data:application/pdf;base64,...`. Aucun changement de configuration MAMP ou OVH n’est requis.

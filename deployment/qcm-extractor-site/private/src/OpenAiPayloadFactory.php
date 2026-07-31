@@ -50,7 +50,7 @@ final class OpenAiPayloadFactory
                         [
                             'type' => 'input_file',
                             'filename' => $request->filename,
-                            'file_data' => base64_encode($request->bytes),
+                            'file_data' => 'data:application/pdf;base64,' . base64_encode($request->bytes),
                         ],
                         ['type' => 'input_text', 'text' => $userInstruction],
                     ],

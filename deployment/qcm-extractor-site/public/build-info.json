@@ -1,7 +1,7 @@
 {
   "build_format": "portable-es-modules",
-  "generated_at": "2026-07-31T09:57:47.763814Z",
-  "application_version": "0.3.0",
+  "generated_at": "2026-07-31T10:16:07.447568Z",
+  "application_version": "0.3.1",
   "dependencies": {
     "react": "19.2.8",
     "react_dom": "19.2.8",
@@ -13,6 +13,6 @@
     "https://cdn.jsdelivr.net"
   ],
   "artifact": "phase3-qcm-extractor-deployment",
-  "version": "3.0.0",
-  "notes": "Frontend portable avec cartographie LLM, validation AJV et superposition des segments; proxy PHP sous public/api."
+  "version": "3.0.1",
+  "notes": "Correctif Phase 3 : transmission des PDF à Responses API sous forme de data URL Base64; cartographie LLM, validation AJV et superposition des segments."
 }
