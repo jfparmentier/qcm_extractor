@@ -14,9 +14,9 @@ return [
     'QCM_ALLOW_ORIGINLESS_REQUESTS' => 'false',
 
     'QCM_OPENAI_MAPPING_MODEL' => 'gpt-5-mini',
-    'QCM_OPENAI_EXTRACTION_MODEL' => 'gpt-5-mini',
+    'QCM_OPENAI_EXTRACTION_MODEL' => 'gpt-5',
     'QCM_MAPPING_REASONING_EFFORT' => 'low',
-    'QCM_EXTRACTION_REASONING_EFFORT' => 'low',
+    'QCM_EXTRACTION_REASONING_EFFORT' => 'medium',
     'QCM_TEXT_VERBOSITY' => 'low',
 
     'QCM_MAX_PDF_BYTES' => '26214400',
@@ -45,6 +45,17 @@ return [
     'QCM_RATE_LIMIT_EXTRACTION_REQUESTS' => '40',
     'QCM_RATE_LIMIT_LOCAL_EXTRACTION_REQUESTS' => '200',
     'QCM_RATE_LIMIT_WINDOW_SECONDS' => '3600',
+
+
+    // Paramètres du workflow exposés au navigateur par api/workflow-config.php.
+    // L'utilisateur ne peut pas les modifier depuis l'interface.
+    'QCM_BATCH_MAX_QUESTIONS' => '8',
+    'QCM_BATCH_MAX_PAGES' => '14',
+    'QCM_BATCH_MAX_ESTIMATED_BYTES' => '12582912',
+    'QCM_BATCH_CONTEXT_PADDING_PAGES' => '1',
+    'QCM_BATCH_MAX_GAP_PAGES' => '2',
+    'QCM_EXTRACTION_MAX_CONCURRENT_BATCHES' => '2',
+    'QCM_EXTRACTION_MAX_RETRIES' => '1',
 
     // Journal technique sans PDF, prompt ni clé API. Utile pour diagnostiquer MAMP/OVH.
     'QCM_DIAGNOSTIC_LOG_PATH' => dirname(__DIR__) . '/runtime/logs/qcm-proxy.log',

@@ -1,0 +1,11 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { LayersIcon, ResetIcon, WarningIcon } from "./Icons.js";
+export function PreparationPanel({ batching, error, onRetry }) {
+    const total = batching.plan?.batches.length ?? 0;
+    const generated = Object.keys(batching.artifacts).length;
+    const activeSequence = batching.plan?.batches.find((batch) => batch.id === batching.activeBatchId)?.sequence ?? null;
+    if (error !== null) {
+        return (_jsxs("aside", { className: "mapping-panel mapping-panel--status", role: "alert", children: [_jsx("div", { className: "mapping-status-icon mapping-status-icon--error", children: _jsx(WarningIcon, {}) }), _jsx("span", { className: "eyebrow", children: "Pr\u00E9paration interrompue" }), _jsx("h2", { children: "Les sous-PDF n\u2019ont pas tous \u00E9t\u00E9 g\u00E9n\u00E9r\u00E9s" }), _jsx("p", { children: error }), _jsxs("button", { className: "button button--primary", onClick: onRetry, type: "button", children: [_jsx(ResetIcon, {}), " R\u00E9essayer"] })] }));
+    }
+    return (_jsxs("aside", { className: "mapping-panel mapping-panel--status", "aria-busy": "true", "aria-live": "polite", children: [_jsx("div", { className: "mapping-status-icon mapping-status-icon--running", children: _jsx("span", { className: "loading-spinner loading-spinner--small", "aria-hidden": "true" }) }), _jsx("span", { className: "eyebrow", children: "Phase 4" }), _jsx("h2", { children: "Pr\u00E9paration automatique des lots" }), _jsx("p", { children: "Les pages utiles sont regroup\u00E9es et les sous-PDF sont g\u00E9n\u00E9r\u00E9s localement." }), _jsx("div", { className: "mapping-progress", "aria-hidden": "true", children: _jsx("span", {}) }), _jsxs("dl", { className: "mapping-facts", children: [_jsxs("div", { children: [_jsx("dt", { children: "Lots planifi\u00E9s" }), _jsx("dd", { children: total || "…" })] }), _jsxs("div", { children: [_jsx("dt", { children: "Lots g\u00E9n\u00E9r\u00E9s" }), _jsxs("dd", { children: [generated, "/", total || "…"] })] }), _jsxs("div", { children: [_jsx("dt", { children: "Lot en cours" }), _jsx("dd", { children: activeSequence === null ? "Préparation" : activeSequence })] })] }), _jsxs("div", { className: "preparation-note", children: [_jsx(LayersIcon, {}), " Aucun fichier n\u2019est envoy\u00E9 au serveur pendant cette \u00E9tape."] })] }));
+}

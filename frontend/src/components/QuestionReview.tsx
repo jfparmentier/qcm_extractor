@@ -17,7 +17,6 @@ import {
   ImageIcon,
   MinusIcon,
   PlusIcon,
-  ResetIcon,
   TrashIcon,
   WarningIcon
 } from "./Icons";
@@ -40,7 +39,6 @@ interface QuestionReviewProps {
   readonly onZoomOut: () => void;
   readonly onResetZoom: () => void;
   readonly onExport: () => void;
-  readonly onExit: () => void;
 }
 
 function isSingleAnswer(type: ReviewQuestion["type"]): boolean {
@@ -77,8 +75,7 @@ export function QuestionReview({
   onZoomIn,
   onZoomOut,
   onResetZoom,
-  onExport,
-  onExit
+  onExport
 }: QuestionReviewProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
   const question = questions[currentIndex];
@@ -114,7 +111,7 @@ export function QuestionReview({
   const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
     if (segmentInfo === null) return [];
     return segmentInfo.segment.page_regions
-      .filter((region) => region.page === currentPage && region.role !== "ignore")
+      .filter((region) => region.page === currentPage)
       .map((region) => ({
         id: region.client_id,
         regionId: region.client_id,
@@ -192,7 +189,6 @@ export function QuestionReview({
     return (
       <div className="review-empty-state">
         <strong>Aucune question extraite</strong>
-        <button className="button button--secondary" onClick={onExit} type="button">Retour aux étapes</button>
       </div>
     );
   }
@@ -206,9 +202,6 @@ export function QuestionReview({
           <p>{validatedCount} question{validatedCount > 1 ? "s" : ""} validée{validatedCount > 1 ? "s" : ""}</p>
         </div>
         <div className="question-review__header-actions">
-          <button className="button button--secondary" onClick={onExit} type="button">
-            <ResetIcon /> Étapes précédentes
-          </button>
           <label className={`review-validation-toggle${question.validated ? " review-validation-toggle--checked" : ""}`}>
             <input
               checked={question.validated}

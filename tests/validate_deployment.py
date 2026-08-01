@@ -23,6 +23,7 @@ required = [
     PUBLIC / "api" / "mapping-cancel.php",
     PUBLIC / "api" / "extraction-status.php",
     PUBLIC / "api" / "extraction-cancel.php",
+    PUBLIC / "api" / "workflow-config.php",
     PUBLIC / ".user.ini",
     PUBLIC / "api" / ".user.ini",
     PRIVATE / ".htaccess",
@@ -114,4 +115,4 @@ for marker in ("region-editor", "Tracer", "Supprimer la zone"):
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
     assert marker in state
 
-print("OK déploiement 7.1.1 : révision question par question et export ZIP avec images")
+print("OK déploiement 7.2.0 : workflow séquentiel et configuration serveur")

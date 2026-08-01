@@ -1,4 +1,10 @@
-# Dossier de déploiement OVH / MAMP — Phase 7.1.1
+# Déploiement QCM Extractor 7.2.0
+
+Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit désormais une seule étape visible à la fois.
+
+## Paramètres du workflow
+
+Modifiez dans `private/config/runtime.php` les clés `QCM_BATCH_*` et `QCM_EXTRACTION_MAX_*`. Ces valeurs sont exposées au navigateur par `public/api/workflow-config.php` sans divulguer la clé API.
 
 Ce dossier peut être copié tel quel sur le serveur. La racine web doit pointer vers `public`, tandis que `private` contient le proxy, les prompts, les schémas et la configuration secrète.
 

@@ -72,6 +72,11 @@ function localHeader(entry) {
     bytes.set(entry.nameBytes, 30);
     return bytes;
 }
+function blobPart(bytes) {
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    return copy.buffer;
+}
 function centralHeader(entry) {
     const bytes = new Uint8Array(46 + entry.nameBytes.length);
     const view = new DataView(bytes.buffer);
@@ -146,12 +151,12 @@ export async function createZipBlob(entries) {
     const centralParts = [];
     let centralSize = 0;
     prepared.forEach((entry) => {
-        localParts.push(localHeader(entry), entry.data);
+        localParts.push(blobPart(localHeader(entry)), blobPart(entry.data));
         const header = centralHeader(entry);
-        centralParts.push(header);
+        centralParts.push(blobPart(header));
         centralSize += header.byteLength;
     });
     if (centralOffset + centralSize > MAX_UINT32)
         throw new Error("L’archive dépasse la limite de 4 Gio.");
-    return new Blob([...localParts, ...centralParts, endOfCentralDirectory(prepared.length, centralSize, centralOffset)], { type: "application/zip" });
+    return new Blob([...localParts, ...centralParts, blobPart(endOfCentralDirectory(prepared.length, centralSize, centralOffset))], { type: "application/zip" });
 }

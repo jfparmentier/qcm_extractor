@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { BatchSettings } from "../domain/batchPlan";
 import type {
   BatchPreparationState,
-  ExtractionSettings,
   ExtractionState,
   LoadedPdf,
   MappingState
@@ -31,18 +29,14 @@ import {
 } from "../domain/review";
 import { formatFileSize } from "../pdf/formatFileSize";
 import {
-  CheckIcon,
   CloseIcon,
   FileIcon,
-  ImageIcon,
-  LayersIcon,
-  SelectionIcon,
   SparklesIcon
 } from "./Icons";
 import { ExtractionPanel } from "./ExtractionPanel";
 import { IllustrationPanel } from "./IllustrationPanel";
-import { BatchPanel } from "./BatchPanel";
 import { MappingPanel } from "./MappingPanel";
+import { PreparationPanel } from "./PreparationPanel";
 import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
 import { PdfToolbar } from "./PdfToolbar";
 import { QuestionReview } from "./QuestionReview";
@@ -58,6 +52,7 @@ interface PdfViewerProps {
   readonly illustrationGeneration: IllustrationGenerationState;
   readonly onAnalyze: () => void;
   readonly onCancelMapping: () => void;
+  readonly onValidateMapping: () => Promise<void>;
   readonly onSelectSegment: (segmentId: string) => void;
   readonly onSelectRegion: (segmentId: string, regionId: string) => void;
   readonly onUpdateRegionBbox: (
@@ -77,13 +72,6 @@ interface PdfViewerProps {
     bbox: NormalizedBoundingBox
   ) => void;
   readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
-  readonly onUpdateBatchSettings: (settings: BatchSettings) => void;
-  readonly onPlanBatches: () => void;
-  readonly onGenerateBatch: (batchId: string) => void;
-  readonly onGenerateAllBatches: () => void;
-  readonly onDownloadBatch: (batchId: string) => void;
-  readonly onClearBatches: () => void;
-  readonly onUpdateExtractionSettings: (settings: ExtractionSettings) => void;
   readonly onExtractAll: () => void;
   readonly onExtractBatch: (batchId: string) => void;
   readonly onCancelExtraction: () => void;
@@ -100,7 +88,7 @@ interface PdfViewerProps {
   readonly onClose: () => void;
 }
 
-type ActivePanel = "mapping" | "batches" | "extraction" | "illustrations" | "review";
+type ActivePanel = "mapping" | "preparing" | "extraction" | "illustrations" | "review";
 
 function isEditableElement(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement ||
@@ -120,19 +108,13 @@ export function PdfViewer({
   illustrationGeneration,
   onAnalyze,
   onCancelMapping,
+  onValidateMapping,
   onSelectSegment,
   onSelectRegion,
   onUpdateRegionBbox,
   onUpdateRegionRole,
   onAddRegion,
   onDeleteRegion,
-  onUpdateBatchSettings,
-  onPlanBatches,
-  onGenerateBatch,
-  onGenerateAllBatches,
-  onDownloadBatch,
-  onClearBatches,
-  onUpdateExtractionSettings,
   onExtractAll,
   onExtractBatch,
   onCancelExtraction,
@@ -155,6 +137,7 @@ export function PdfViewer({
   const [reviewQuestions, setReviewQuestions] = useState<readonly ReviewQuestion[]>([]);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [preparationError, setPreparationError] = useState<string | null>(null);
   const reviewFingerprintRef = useRef("");
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
   const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
@@ -183,23 +166,24 @@ export function PdfViewer({
     ),
     [illustrationGeneration.assets, illustrationPlan.candidates]
   );
-  const missingIllustrationCount = useMemo(
-    () => illustrationPlan.candidates.filter(
-      (candidate) => illustrationGeneration.assets[candidate.id] === undefined
-    ).length,
-    [illustrationGeneration.assets, illustrationPlan.candidates]
-  );
+  const extractionAllCompleted = useMemo(() => {
+    const plannedBatches = batching.plan?.batches ?? [];
+    return plannedBatches.length > 0 && plannedBatches.every(
+      (batch) => extraction.batches[batch.id]?.status === "completed"
+    );
+  }, [batching.plan, extraction.batches]);
+  const automaticIllustrationFingerprintRef = useRef("");
 
   useEffect(() => {
     if (extractedQuestions.length === 0) {
       reviewFingerprintRef.current = "";
+      automaticIllustrationFingerprintRef.current = "";
       setReviewQuestions([]);
       setReviewIndex(0);
-      if (activePanel === "review") setActivePanel("extraction");
       return;
     }
 
-    if (extraction.runStatus !== "completed" || reviewFingerprintRef.current === extractedFingerprint) {
+    if (!extractionAllCompleted || reviewFingerprintRef.current === extractedFingerprint) {
       return;
     }
 
@@ -210,13 +194,31 @@ export function PdfViewer({
     const firstPage = nextQuestions[0]?.sourcePages[0];
     if (firstPage !== undefined) onPageChange(firstPage);
     setIsDrawing(false);
-    setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "review");
-  }, [activePanel, extractedFingerprint, extractedQuestions, extraction.runStatus, illustrationPlan.candidates.length, onPageChange]);
+
+    if (illustrationPlan.candidates.length === 0) {
+      setActivePanel("review");
+      return;
+    }
+
+    setActivePanel("illustrations");
+    if (automaticIllustrationFingerprintRef.current !== illustrationPlan.fingerprint) {
+      automaticIllustrationFingerprintRef.current = illustrationPlan.fingerprint;
+      window.setTimeout(onGenerateAllIllustrations, 0);
+    }
+  }, [
+    extractedFingerprint,
+    extractedQuestions,
+    extractionAllCompleted,
+    illustrationPlan.candidates.length,
+    illustrationPlan.fingerprint,
+    onGenerateAllIllustrations,
+    onPageChange
+  ]);
 
   useEffect(() => {
     if (
       reviewQuestions.length === 0 ||
-      extraction.runStatus !== "completed" ||
+      !extractionAllCompleted ||
       illustrationPlan.candidates.length === 0 ||
       !illustrationsReady ||
       illustrationGeneration.status === "running"
@@ -229,14 +231,15 @@ export function PdfViewer({
     setIsDrawing(false);
     setActivePanel("review");
   }, [
-    extraction.runStatus,
+    extractedQuestions,
+    extractionAllCompleted,
     illustrationGeneration.status,
     illustrationPlan.candidates.length,
     illustrationsReady,
     onPageChange,
-    reviewQuestions.length,
-    extractedQuestions
+    reviewQuestions.length
   ]);
+
 
   const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
     if (mapping.data === null) return [];
@@ -318,6 +321,19 @@ export function PdfViewer({
     setIsDrawing(false);
   }, [currentPage, drawingRole, mapping.selectedSegmentId, onAddRegion]);
 
+  const handleValidateMapping = useCallback(async (): Promise<void> => {
+    setIsDrawing(false);
+    setPreparationError(null);
+    setActivePanel("preparing");
+    try {
+      await onValidateMapping();
+      setActivePanel("extraction");
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setPreparationError(error instanceof Error ? error.message : String(error));
+    }
+  }, [onValidateMapping]);
+
   const handleReviewIndexChange = useCallback((index: number): void => {
     const nextIndex = Math.min(Math.max(0, index), Math.max(0, reviewQuestions.length - 1));
     setReviewIndex(nextIndex);
@@ -375,15 +391,17 @@ export function PdfViewer({
 
         <div className="document-header__actions">
           <span className="local-badge">PDF en mémoire</span>
-          <button
-            className="button button--primary analysis-header-button"
-            disabled={mapping.status === "running" || batching.activeBatchId !== null || extraction.runStatus === "running" || illustrationGeneration.status === "running"}
-            onClick={onAnalyze}
-            type="button"
-          >
-            <SparklesIcon />
-            {mapping.status === "completed" ? "Recartographier" : "Cartographier"}
-          </button>
+          {activePanel === "mapping" && (
+            <button
+              className="button button--primary analysis-header-button"
+              disabled={mapping.status === "running"}
+              onClick={onAnalyze}
+              type="button"
+            >
+              <SparklesIcon />
+              {mapping.status === "completed" ? "Recartographier" : "Cartographier"}
+            </button>
+          )}
           <button
             aria-label="Fermer le document"
             className="icon-button icon-button--quiet"
@@ -406,7 +424,6 @@ export function PdfViewer({
           illustrationPlan={illustrationPlan}
           onCurrentIndexChange={handleReviewIndexChange}
           onCurrentPageChange={onPageChange}
-          onExit={() => setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "extraction")}
           onExport={() => void handleReviewExport()}
           onQuestionChange={handleReviewQuestionChange}
           onResetZoom={onResetZoom}
@@ -452,87 +469,11 @@ export function PdfViewer({
 
             {showSidePanel && (
               <div className="side-panel-shell">
-                {mappingCompleted && (
-                  <nav className="side-panel-tabs" aria-label="Étapes du traitement">
-                    <button
-                      aria-current={activePanel === "mapping" ? "page" : undefined}
-                      className={activePanel === "mapping" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
-                      onClick={() => setActivePanel("mapping")}
-                      type="button"
-                    >
-                      <SelectionIcon /> Zones
-                    </button>
-                    <button
-                      aria-current={activePanel === "batches" ? "page" : undefined}
-                      className={activePanel === "batches" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
-                      onClick={() => { setIsDrawing(false); setActivePanel("batches"); }}
-                      type="button"
-                    >
-                      <LayersIcon /> Lots
-                      {batching.plan !== null && <span>{batching.plan.batches.length}</span>}
-                    </button>
-                    <button
-                      aria-current={activePanel === "extraction" ? "page" : undefined}
-                      className={activePanel === "extraction" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={batching.plan === null}
-                      onClick={() => { setIsDrawing(false); setActivePanel("extraction"); }}
-                      type="button"
-                    >
-                      <SparklesIcon /> Extraction
-                      {Object.values(extraction.batches).some((batch) => batch.status === "completed") && (
-                        <span>{Object.values(extraction.batches).filter((batch) => batch.status === "completed").length}</span>
-                      )}
-                    </button>
-                    <button
-                      aria-current={activePanel === "illustrations" ? "page" : undefined}
-                      className={activePanel === "illustrations" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={illustrationPlan.candidates.length === 0 || extraction.runStatus === "running"}
-                      onClick={() => { setIsDrawing(false); setActivePanel("illustrations"); }}
-                      type="button"
-                    >
-                      <ImageIcon /> Images
-                      {illustrationPlan.candidates.length > 0 && <span>{illustrationPlan.candidates.length}</span>}
-                    </button>
-                    <button
-                      aria-current={activePanel === "review" ? "page" : undefined}
-                      className={activePanel === "review" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={
-                        reviewQuestions.length === 0 ||
-                        extraction.runStatus === "running" ||
-                        !illustrationsReady
-                      }
-                      onClick={() => {
-                        if (!illustrationsReady) return;
-                        setIsDrawing(false);
-                        setActivePanel("review");
-                        handleReviewIndexChange(reviewIndex);
-                      }}
-                      title={
-                        !illustrationsReady
-                          ? `La révision sera disponible après l’extraction de ${missingIllustrationCount} illustration${missingIllustrationCount > 1 ? "s" : ""}.`
-                          : "Réviser les questions extraites"
-                      }
-                      type="button"
-                    >
-                      <CheckIcon /> Révision
-                      {reviewQuestions.length > 0 && <span>{reviewQuestions.filter((question) => question.validated).length}/{reviewQuestions.length}</span>}
-                    </button>
-                  </nav>
-                )}
-
-                {activePanel === "batches" && mappingCompleted ? (
-                  <BatchPanel
+                {activePanel === "preparing" ? (
+                  <PreparationPanel
                     batching={batching}
-                    documentMap={completedMap}
-                    onClear={onClearBatches}
-                    onDownloadBatch={onDownloadBatch}
-                    onGenerateAll={onGenerateAllBatches}
-                    onGenerateBatch={onGenerateBatch}
-                    onPlan={onPlanBatches}
-                    onSelectSegment={onSelectSegment}
-                    onSettingsChange={onUpdateBatchSettings}
+                    error={preparationError}
+                    onRetry={() => void handleValidateMapping()}
                   />
                 ) : activePanel === "extraction" && mappingCompleted ? (
                   <ExtractionPanel
@@ -543,7 +484,6 @@ export function PdfViewer({
                     onExtractAll={onExtractAll}
                     onExtractBatch={onExtractBatch}
                     onSelectSegment={onSelectSegment}
-                    onSettingsChange={onUpdateExtractionSettings}
                     plan={batching.plan}
                   />
                 ) : activePanel === "illustrations" && mappingCompleted ? (
@@ -572,9 +512,10 @@ export function PdfViewer({
                     onSelectSegment={onSelectSegment}
                     onToggleDrawing={() => setIsDrawing((active) => !active)}
                     onUpdateRegionRole={onUpdateRegionRole}
+                    onValidate={() => void handleValidateMapping()}
                   />
                 )}
-              </div>
+             </div>
             )}
           </div>
         </>

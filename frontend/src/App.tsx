@@ -4,7 +4,6 @@ import {
   ZOOM_STEP,
   projectReducer,
   type ExtractionBatchError,
-  type ExtractionSettings,
   type MappingError
 } from "./domain/projectState";
 import {
@@ -14,11 +13,14 @@ import {
   type NormalizedBoundingBox,
   type PageRegionRole
 } from "./domain/documentMap";
-import { analyzeDocumentMap, extractQuestions, ProxyApiError } from "./api/proxyClient";
 import {
-  createBatchPlan,
-  type BatchSettings
-} from "./domain/batchPlan";
+  analyzeDocumentMap,
+  extractQuestions,
+  loadWorkflowConfig,
+  ProxyApiError,
+  type WorkflowConfig
+} from "./api/proxyClient";
+import { createBatchPlan } from "./domain/batchPlan";
 import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf";
 import { createExtractionContext } from "./domain/extractionContext";
 import {
@@ -142,9 +144,21 @@ export default function App(): React.ReactElement {
   const illustrationAbortRef = useRef<AbortController | null>(null);
   const illustrationAssetsRef = useRef<Readonly<Record<string, GeneratedIllustrationAsset>>>({});
   const illustrationFingerprintRef = useRef("");
+  const workflowConfigPromiseRef = useRef<Promise<WorkflowConfig> | null>(null);
   const [illustrationGeneration, setIllustrationGeneration] = useState<IllustrationGenerationState>(
     INITIAL_ILLUSTRATION_GENERATION_STATE
   );
+
+
+  const ensureWorkflowConfig = useCallback(async (): Promise<WorkflowConfig> => {
+    if (workflowConfigPromiseRef.current === null) {
+      workflowConfigPromiseRef.current = loadWorkflowConfig().catch((error: unknown) => {
+        workflowConfigPromiseRef.current = null;
+        throw error;
+      });
+    }
+    return workflowConfigPromiseRef.current;
+  }, []);
 
   const completedExtractions = useMemo<CompletedBatchExtraction[]>(() =>
     Object.entries(state.extraction.batches).flatMap(([batchId, batchState]) =>
@@ -361,120 +375,54 @@ export default function App(): React.ReactElement {
   }, []);
 
 
-  const updateBatchSettings = useCallback((settings: BatchSettings): void => {
-    batchGenerationSequenceRef.current += 1;
-    dispatch({ type: "BATCH_SETTINGS_UPDATED", settings });
-  }, []);
-
-  const planBatches = useCallback((): void => {
-    if (state.pdf === null || state.mapping.data === null) {
-      return;
+  const prepareValidatedMapping = useCallback(async (): Promise<void> => {
+    const pdf = state.pdf;
+    const documentMap = state.mapping.data;
+    if (pdf === null || documentMap === null) {
+      throw new Error("La cartographie du document n’est pas disponible.");
     }
 
-    batchGenerationSequenceRef.current += 1;
+    const configuration = await ensureWorkflowConfig();
+    dispatch({ type: "BATCH_SETTINGS_UPDATED", settings: configuration.batch });
+    dispatch({ type: "EXTRACTION_SETTINGS_UPDATED", settings: configuration.extraction });
+
     const plan = createBatchPlan(
-      state.mapping.data,
-      state.pdf.fileSize,
-      state.pdf.pageCount,
-      state.batching.settings
+      documentMap,
+      pdf.fileSize,
+      pdf.pageCount,
+      configuration.batch
     );
+    if (plan.batches.length === 0) {
+      throw new Error("Aucun lot n’a pu être constitué à partir des zones validées.");
+    }
+
     dispatch({ type: "BATCHES_PLANNED", plan });
-  }, [state.batching.settings, state.mapping.data, state.pdf]);
-
-  const generatePlannedBatch = useCallback(async (batchId: string): Promise<void> => {
-    const pdf = state.pdf;
-    const batch = state.batching.plan?.batches.find((candidate) => candidate.id === batchId);
-    if (pdf === null || batch === undefined || state.batching.activeBatchId !== null) {
-      return;
-    }
-
     const sequence = batchGenerationSequenceRef.current + 1;
     batchGenerationSequenceRef.current = sequence;
-    dispatch({ type: "BATCH_GENERATION_STARTED", batchId });
-    try {
-      const artifact = await createSubPdf(pdf.bytes, pdf.fileName, batch);
-      if (batchGenerationSequenceRef.current !== sequence) {
-        return;
-      }
-      dispatch({ type: "BATCH_GENERATED", artifact });
-    } catch (error: unknown) {
-      if (batchGenerationSequenceRef.current !== sequence) {
-        return;
-      }
-      dispatch({
-        type: "BATCH_GENERATION_FAILED",
-        batchId,
-        error: error instanceof SubPdfGenerationError
-          ? error.message
-          : error instanceof Error
-            ? error.message
-            : "La génération locale du sous-PDF a échoué."
-      });
-    }
-  }, [state.batching.activeBatchId, state.batching.plan, state.pdf]);
 
-  const generateAllPlannedBatches = useCallback(async (): Promise<void> => {
-    const pdf = state.pdf;
-    const plan = state.batching.plan;
-    if (pdf === null || plan === null || state.batching.activeBatchId !== null) {
-      return;
-    }
-
-    const sequence = batchGenerationSequenceRef.current + 1;
-    batchGenerationSequenceRef.current = sequence;
     for (const batch of plan.batches) {
       if (batchGenerationSequenceRef.current !== sequence) {
-        return;
+        throw new DOMException("Préparation annulée", "AbortError");
       }
+
       dispatch({ type: "BATCH_GENERATION_STARTED", batchId: batch.id });
       try {
         const artifact = await createSubPdf(pdf.bytes, pdf.fileName, batch);
         if (batchGenerationSequenceRef.current !== sequence) {
-          return;
+          throw new DOMException("Préparation annulée", "AbortError");
         }
         dispatch({ type: "BATCH_GENERATED", artifact });
       } catch (error: unknown) {
-        if (batchGenerationSequenceRef.current !== sequence) {
-          return;
-        }
-        dispatch({
-          type: "BATCH_GENERATION_FAILED",
-          batchId: batch.id,
-          error: error instanceof SubPdfGenerationError
+        const message = error instanceof SubPdfGenerationError
+          ? error.message
+          : error instanceof Error
             ? error.message
-            : error instanceof Error
-              ? error.message
-              : "La génération locale du sous-PDF a échoué."
-        });
+            : "La génération locale du sous-PDF a échoué.";
+        dispatch({ type: "BATCH_GENERATION_FAILED", batchId: batch.id, error: message });
+        throw new Error(`Le lot ${batch.sequence} n’a pas pu être préparé : ${message}`);
       }
     }
-  }, [state.batching.activeBatchId, state.batching.plan, state.pdf]);
-
-  const downloadBatch = useCallback((batchId: string): void => {
-    const artifact = state.batching.artifacts[batchId];
-    if (artifact === undefined) {
-      return;
-    }
-
-    const downloadableBytes = new Uint8Array(artifact.bytes.byteLength);
-    downloadableBytes.set(artifact.bytes);
-    const blob = new Blob([downloadableBytes.buffer], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = artifact.fileName;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }, [state.batching.artifacts]);
-
-  const clearBatches = useCallback((): void => {
-    batchGenerationSequenceRef.current += 1;
-    dispatch({ type: "BATCHES_CLEARED" });
-  }, []);
-
-  const updateExtractionSettings = useCallback((settings: ExtractionSettings): void => {
-    dispatch({ type: "EXTRACTION_SETTINGS_UPDATED", settings });
-  }, []);
+  }, [ensureWorkflowConfig, state.mapping.data, state.pdf]);
 
   const prepareArtifact = useCallback(async (
     batchId: string,
@@ -843,15 +791,12 @@ export default function App(): React.ReactElement {
           mapping={state.mapping}
           onAnalyze={() => void analyzeMapping()}
           onCancelMapping={cancelMapping}
-          onClearBatches={clearBatches}
+          onValidateMapping={prepareValidatedMapping}
           onClose={closeDocument}
-          onDownloadBatch={downloadBatch}
           onExtractAll={() => void extractAllBatches()}
           onExtractBatch={(batchId) => void extractSingleBatch(batchId)}
           onCancelExtraction={cancelExtraction}
           onClearExtraction={clearExtraction}
-          onGenerateAllBatches={() => void generateAllPlannedBatches()}
-          onGenerateBatch={(batchId) => void generatePlannedBatch(batchId)}
           onGenerateAllIllustrations={generateAllIllustrations}
           onGenerateIllustration={generateOneIllustration}
           onCancelIllustrationGeneration={cancelIllustrationGeneration}
@@ -860,13 +805,10 @@ export default function App(): React.ReactElement {
           onAddRegion={addRegion}
           onDeleteRegion={deleteRegion}
           onPageChange={setPage}
-          onPlanBatches={planBatches}
           onResetZoom={resetZoom}
           onSelectRegion={selectRegion}
           onSelectSegment={selectSegment}
           onUpdateRegionBbox={updateRegionBbox}
-          onUpdateBatchSettings={updateBatchSettings}
-          onUpdateExtractionSettings={updateExtractionSettings}
           onUpdateRegionRole={updateRegionRole}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}

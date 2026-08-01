@@ -1,9 +1,9 @@
 {
   "artifact": "qcm-extractor-portable",
-  "generated_at": "2026-08-01T14:11:51Z",
-  "application_version": "0.9.1",
+  "generated_at": "2026-08-01T18:45:00Z",
+  "application_version": "0.10.0",
   "phase": 7,
-  "version": "7.1.1",
+  "version": "7.2.0",
   "features": [
     "pdf-local",
     "mapping-background",
@@ -26,7 +26,12 @@
     "feedback-provenance-display",
     "json-inside-zip",
     "zip-export-with-images",
-    "dependency-free-zip-writer"
+    "dependency-free-zip-writer",
+    "sequential-single-panel-workflow",
+    "server-managed-batch-settings",
+    "automatic-batch-preparation",
+    "automatic-illustration-extraction",
+    "workflow-config-endpoint"
   ],
   "persistent_pdf_storage": false,
   "dependencies": {

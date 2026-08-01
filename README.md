@@ -1,4 +1,8 @@
-# Extracteur de QCM — Phase 7.1.1
+# Extracteur de QCM PDF — phase 7.2.0
+
+Cette version applique un workflow séquentiel : cartographie et correction des zones, validation, préparation automatique des lots, extraction des QCM, extraction automatique des illustrations, puis révision question par question et export ZIP.
+
+Les paramètres de constitution des lots et de parallélisme sont exclusivement définis dans `deployment/qcm-extractor-site/private/config/runtime.php`.
 
 Cette archive regroupe les phases 0 à 7. La phase 7 ajoute la révision question par question dans une interface à deux colonnes : le PDF source est affiché à gauche et le contenu extrait, entièrement éditable, à droite.
 
@@ -7,7 +11,7 @@ Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne so
 ## Arborescence
 
 ```text
-phase7_qcm_extractor_7.1.1/
+phase7_qcm_extractor_7.2.0/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP

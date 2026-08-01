@@ -2800,3 +2800,32 @@ summary:focus-visible {
 .review-assets--prominent .review-assets__grid img {
   height: 190px;
 }
+
+
+/* Phase 7.2 — workflow séquentiel */
+.mapping-panel__validation-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 0.75rem;
+}
+
+.mapping-panel__validation-actions .button {
+  width: 100%;
+}
+
+.preparation-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.75rem;
+  background: var(--surface-muted, #f3f5f7);
+  color: var(--text-muted, #52606d);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .mapping-panel__validation-actions {
+    grid-template-columns: 1fr;
+  }
+}

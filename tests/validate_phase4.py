@@ -24,7 +24,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 4 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.9.1"
+assert package["version"] == "0.10.0"
 assert package["dependencies"]["pdf-lib"] == "1.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -71,8 +71,8 @@ app = (FRONTEND / "src/App.tsx").read_text(encoding="utf-8")
 for marker in (
     "createBatchPlan",
     "createSubPdf",
-    "generateAllPlannedBatches",
-    "downloadBatch",
+    "prepareValidatedMapping",
+    "loadWorkflowConfig",
     "BATCH_GENERATION_FAILED",
 ):
     assert marker in app, f"Intégration des lots absente : {marker}"
@@ -90,8 +90,10 @@ for marker in (
     assert marker in panel, f"Interface de lot absente : {marker}"
 
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
-for marker in ("side-panel-tabs", '"batches"', "BatchPanel", "onGenerateAllBatches"):
-    assert marker in viewer, f"Onglet de lots absent : {marker}"
+for marker in ('"preparing"', "PreparationPanel", "onValidateMapping"):
+    assert marker in viewer, f"Préparation automatique des lots absente : {marker}"
+assert "side-panel-tabs" not in viewer
+assert "BatchPanel" not in viewer
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 7" in index
@@ -108,8 +110,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.1.1"
-assert build_info["application_version"] == "0.9.1"
+assert build_info["version"] == "7.2.0"
+assert build_info["application_version"] == "0.10.0"
 assert build_info["dependencies"]["pdf_lib"] == "1.17.1"
 
 subprocess.run(

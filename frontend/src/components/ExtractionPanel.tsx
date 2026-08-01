@@ -1,9 +1,6 @@
 import { useMemo } from "react";
 import type { BatchPlan, PlannedBatch } from "../domain/batchPlan";
-import type {
-  ExtractionSettings,
-  ExtractionState
-} from "../domain/projectState";
+import type { ExtractionState } from "../domain/projectState";
 import type { DocumentMap } from "../domain/documentMap";
 import {
   mergeExtractionResults,
@@ -22,16 +19,11 @@ interface ExtractionPanelProps {
   readonly documentMap: DocumentMap;
   readonly plan: BatchPlan | null;
   readonly extraction: ExtractionState;
-  readonly onSettingsChange: (settings: ExtractionSettings) => void;
   readonly onExtractAll: () => void;
   readonly onExtractBatch: (batchId: string) => void;
   readonly onCancel: () => void;
   readonly onClear: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
-}
-
-function numericValue(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): number {
-  return Number.parseInt(event.target.value, 10) || 0;
 }
 
 function statusLabel(status: string): string {
@@ -76,7 +68,6 @@ export function ExtractionPanel({
   documentMap,
   plan,
   extraction,
-  onSettingsChange,
   onExtractAll,
   onExtractBatch,
   onCancel,
@@ -103,10 +94,7 @@ export function ExtractionPanel({
   ).length;
   const allCompleted = plannedBatches.length > 0 && completedCount === plannedBatches.length;
 
-  const updateSetting = <TKey extends keyof ExtractionSettings>(
-    key: TKey,
-    value: ExtractionSettings[TKey]
-  ): void => onSettingsChange({ ...extraction.settings, [key]: value });
+
 
   return (
     <aside className="mapping-panel extraction-panel" aria-label="Seconde passe d’extraction">
@@ -118,45 +106,15 @@ export function ExtractionPanel({
         <span className="mapping-complete-badge"><SparklesIcon /> LLM</span>
       </div>
 
-      <p className="batch-panel__intro">
-        Chaque sous-PDF est transmis au proxy sans stockage persistant. Les résultats sont validés puis fusionnés dans l’ordre du document.
-      </p>
 
       {plan === null ? (
         <div className="batch-empty-state">
           <LayersIcon />
           <strong>Aucun lot disponible</strong>
-          <span>Planifiez d’abord les lots dans l’onglet précédent.</span>
+          <span>La préparation automatique des lots doit être terminée avant l’extraction.</span>
         </div>
       ) : (
         <>
-          <section className="extraction-settings" aria-label="Paramètres d’extraction">
-            <label>
-              <span>Lots simultanés</span>
-              <select
-                disabled={running}
-                onChange={(event) => updateSetting("maxConcurrentBatches", numericValue(event))}
-                value={extraction.settings.maxConcurrentBatches}
-              >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={3}>3</option>
-              </select>
-            </label>
-            <label>
-              <span>Nouvelles tentatives</span>
-              <select
-                disabled={running}
-                onChange={(event) => updateSetting("maxRetries", numericValue(event))}
-                value={extraction.settings.maxRetries}
-              >
-                <option value={0}>Aucune</option>
-                <option value={1}>1 tentative</option>
-                <option value={2}>2 tentatives</option>
-              </select>
-            </label>
-          </section>
-
           <div className="batch-actions">
             <button
               className="button button--primary"

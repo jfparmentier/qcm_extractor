@@ -48,3 +48,8 @@ Après l’extraction, ouvrir l’onglet **Révision**. Les questions sont prés
 
 
 L’export final produit une archive ZIP contenant `questions.json` et les illustrations PNG sous `assets/`.
+
+
+## Workflow 7.2.0
+
+Les paramètres de lots et d’extraction se configurent dans `deployment/qcm-extractor-site/private/config/runtime.php`. L’interface ne les expose plus. Après validation des zones, les sous-PDF sont préparés automatiquement, puis l’interface affiche uniquement l’étape d’extraction. Les illustrations sont générées automatiquement lorsque tous les lots ont été extraits.

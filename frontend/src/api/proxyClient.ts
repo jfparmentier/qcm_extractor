@@ -11,6 +11,25 @@ export interface ProxyResponseMeta {
 
 export type ProxyOperation = "analyze-map" | "extract-questions";
 
+export interface WorkflowConfig {
+  readonly batch: {
+    readonly maxQuestionsPerBatch: number;
+    readonly maxPagesPerBatch: number;
+    readonly maxEstimatedBytes: number;
+    readonly contextPaddingPages: number;
+    readonly maxGapPages: number;
+  };
+  readonly extraction: {
+    readonly maxConcurrentBatches: number;
+    readonly maxRetries: number;
+  };
+}
+
+interface WorkflowConfigResponse {
+  readonly ok: true;
+  readonly data: WorkflowConfig;
+}
+
 export interface ProxySuccess<TData> {
   readonly ok: true;
   readonly request_id: string;
@@ -108,6 +127,15 @@ const API_BASE_URL = (
 
 export function getProxyDiagnosticUrl(): string {
   return `${API_BASE_URL}/diagnostic.php`;
+}
+
+export async function loadWorkflowConfig(signal?: AbortSignal): Promise<WorkflowConfig> {
+  const response = await fetchProxy<WorkflowConfigResponse>(
+    "workflow-config.php",
+    { method: "GET" },
+    signal
+  );
+  return response.data;
 }
 
 function encodeBase64Url(value: unknown): string {

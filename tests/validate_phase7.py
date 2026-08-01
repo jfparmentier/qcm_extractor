@@ -18,12 +18,16 @@ required = {
     "deployment/qcm-extractor-site/public/assets/export/createZip.js",
     "deployment/qcm-extractor-site/public/assets/components/QuestionReview.js",
     "tests/test_review.mjs",
+    "frontend/src/components/PreparationPanel.tsx",
+    "backend/public/workflow-config.php",
+    "deployment/qcm-extractor-site/public/api/workflow-config.php",
+    "deployment/qcm-extractor-site/public/assets/components/PreparationPanel.js",
 }
 missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 7 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.9.1"
+assert package["version"] == "0.10.0"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -45,17 +49,21 @@ for marker in (
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
 for marker in (
     '"review"',
+    '"preparing"',
     "QuestionReview",
+    "PreparationPanel",
     "createReviewQuestions",
     "createReviewExport",
     "createReviewArchive",
     "downloadBlob",
-    "<CheckIcon /> Révision",
     "illustrationsReady",
-    "missingIllustrationCount",
-    'setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "review")',
+    "extractionAllCompleted",
+    "onValidateMapping",
+    "window.setTimeout(onGenerateAllIllustrations, 0)",
 ):
     assert marker in viewer, marker
+assert "side-panel-tabs" not in viewer
+assert "BatchPanel" not in viewer
 
 review_domain = (FRONTEND / "src/domain/review.ts").read_text(encoding="utf-8")
 for marker in (
@@ -81,14 +89,41 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.1.1"
-assert build_info["application_version"] == "0.9.1"
+assert build_info["version"] == "7.2.0"
+assert build_info["application_version"] == "0.10.0"
 assert "question-by-question-review" in build_info["features"]
 assert "zip-export-with-images" in build_info["features"]
 assert "json-inside-zip" in build_info["features"]
 assert "dependency-free-zip-writer" in build_info["features"]
 assert "review-after-illustrations" in build_info["features"]
 assert "mandatory-llm-feedback" in build_info["features"]
+assert "sequential-single-panel-workflow" in build_info["features"]
+assert "server-managed-batch-settings" in build_info["features"]
+assert "automatic-batch-preparation" in build_info["features"]
+assert "automatic-illustration-extraction" in build_info["features"]
+
+mapping_panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
+assert "Valider les zones et continuer" in mapping_panel
+assert "Le proxy démarre une tâche asynchrone" not in mapping_panel
+for marker in ("<dt>Document</dt>", "<dt>Type</dt>", "<dt>Langue</dt>"):
+    assert marker not in mapping_panel
+
+extraction_panel = (FRONTEND / "src/components/ExtractionPanel.tsx").read_text(encoding="utf-8")
+assert "Chaque sous-PDF est transmis au proxy sans stockage persistant" not in extraction_panel
+assert "Lots simultanés" not in extraction_panel
+assert "Nouvelles tentatives" not in extraction_panel
+
+runtime = (ROOT / "deployment/qcm-extractor-site/private/config/runtime.php").read_text(encoding="utf-8")
+for marker in (
+    "QCM_BATCH_MAX_QUESTIONS",
+    "QCM_BATCH_MAX_PAGES",
+    "QCM_BATCH_MAX_ESTIMATED_BYTES",
+    "QCM_BATCH_CONTEXT_PADDING_PAGES",
+    "QCM_BATCH_MAX_GAP_PAGES",
+    "QCM_EXTRACTION_MAX_CONCURRENT_BATCHES",
+    "QCM_EXTRACTION_MAX_RETRIES",
+):
+    assert marker in runtime
 
 prompt = (ROOT / "backend/prompts/extraction.txt").read_text(encoding="utf-8")
 for marker in (
@@ -114,4 +149,4 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.1.1 : éditeur question par question et export ZIP avec images")
+print("OK phase 7.2.0 : workflow séquentiel, paramètres serveur et illustrations automatiques")

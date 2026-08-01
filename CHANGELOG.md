@@ -1,3 +1,14 @@
+# Version 7.2.0 — workflow séquentiel et ergonomie
+
+- suppression des onglets simultanés dans la colonne droite ;
+- validation explicite des zones avant la poursuite ;
+- planification et génération automatiques des sous-PDF après validation ;
+- paramètres de lots et d’extraction fixés dans `private/config/runtime.php` ;
+- nouvel endpoint non sensible `api/workflow-config.php` ;
+- suppression des textes techniques demandés et du résumé Document/Type/Langue ;
+- lancement automatique de l’extraction locale des illustrations après la seconde passe ;
+- passage automatique à la révision lorsque les illustrations sont prêtes.
+
 # Journal des modifications
 
 ## 7.1.1 — Export ZIP avec illustrations

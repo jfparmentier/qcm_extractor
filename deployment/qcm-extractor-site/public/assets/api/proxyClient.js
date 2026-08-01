@@ -21,6 +21,10 @@ const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length > 0
 export function getProxyDiagnosticUrl() {
     return `${API_BASE_URL}/diagnostic.php`;
 }
+export async function loadWorkflowConfig(signal) {
+    const response = await fetchProxy("workflow-config.php", { method: "GET" }, signal);
+    return response.data;
+}
 function encodeBase64Url(value) {
     const json = JSON.stringify(value);
     const bytes = new TextEncoder().encode(json);

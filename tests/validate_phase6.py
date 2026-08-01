@@ -23,7 +23,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 6 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.9.1"
+assert package["version"] == "0.10.0"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -70,7 +70,7 @@ for forbidden in (
     assert forbidden not in panel, f"Contrôle interdit dans l’onglet Images : {forbidden}"
 
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
-for marker in ('"illustrations"', "IllustrationPanel", "onGenerateAllIllustrations", "<ImageIcon /> Images"):
+for marker in ('"illustrations"', "IllustrationPanel", "onGenerateAllIllustrations", "window.setTimeout(onGenerateAllIllustrations, 0)"):
     assert marker in viewer, marker
 
 app = (FRONTEND / "src/App.tsx").read_text(encoding="utf-8")
@@ -85,8 +85,8 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] >= 6
-assert build_info["version"] == "7.1.1"
-assert build_info["application_version"] == "0.9.1"
+assert build_info["version"] == "7.2.0"
+assert build_info["application_version"] == "0.10.0"
 assert "local-illustration-cropping" in build_info["features"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")

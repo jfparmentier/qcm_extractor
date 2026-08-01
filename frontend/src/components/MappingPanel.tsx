@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { MappingState } from "../domain/projectState";
 import {
   PAGE_REGION_ROLES,
-  getDocumentTypeLabel,
   getPageRegionRoleLabel,
   getQuestionTypeLabel,
   getSegmentDisplayName,
@@ -26,6 +25,7 @@ interface MappingPanelProps {
   readonly isDrawing: boolean;
   readonly onAnalyze: () => void;
   readonly onCancel: () => void;
+  readonly onValidate: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
   readonly onSelectRegion: (segmentId: string, regionId: string) => void;
   readonly onDrawingRoleChange: (role: PageRegionRole) => void;
@@ -73,6 +73,7 @@ export function MappingPanel({
   isDrawing,
   onAnalyze,
   onCancel,
+  onValidate,
   onSelectSegment,
   onSelectRegion,
   onDrawingRoleChange,
@@ -108,10 +109,6 @@ export function MappingPanel({
         </div>
         <span className="eyebrow">Première passe</span>
         <h2>Cartographie du document</h2>
-        <p>
-          Le proxy démarre une tâche asynchrone, puis le navigateur interroge régulièrement
-          son état. Cette méthode évite les coupures des hébergements PHP pendant les analyses longues.
-        </p>
         <div className="mapping-progress" aria-hidden="true">
           <span />
         </div>
@@ -188,11 +185,7 @@ export function MappingPanel({
         <span className="mapping-complete-badge"><CheckIcon /> Prête</span>
       </div>
 
-      <dl className="mapping-summary">
-        <div><dt>Document</dt><dd>{document.title || "Sans titre"}</dd></div>
-        <div><dt>Type</dt><dd>{getDocumentTypeLabel(document.document_type)}</dd></div>
-        <div><dt>Langue</dt><dd>{document.language}</dd></div>
-      </dl>
+
 
       {document.warnings.length > 0 && (
         <details className="mapping-warnings">
@@ -347,9 +340,19 @@ export function MappingPanel({
           <span>Modèle : {mapping.meta?.model ?? "—"}</span>
           <span>Jetons : {formatTokens(mapping.meta?.usage.total_tokens ?? null)}</span>
         </div>
-        <button className="button button--secondary button--full" onClick={onAnalyze} type="button">
-          <SparklesIcon /> Relancer l’analyse
-        </button>
+        <div className="mapping-panel__validation-actions">
+          <button className="button button--secondary" onClick={onAnalyze} type="button">
+            <SparklesIcon /> Relancer l’analyse
+          </button>
+          <button
+            className="button button--primary"
+            disabled={segments.length === 0}
+            onClick={onValidate}
+            type="button"
+          >
+            <CheckIcon /> Valider les zones et continuer
+          </button>
+        </div>
       </footer>
     </aside>
   );
