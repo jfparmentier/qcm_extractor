@@ -1,4 +1,4 @@
-# Dossier de déploiement OVH / MAMP — Phase 7.0.0
+# Dossier de déploiement OVH / MAMP — Phase 7.1.0
 
 Ce dossier peut être copié tel quel sur le serveur. La racine web doit pointer vers `public`, tandis que `private` contient le proxy, les prompts, les schémas et la configuration secrète.
 
@@ -12,4 +12,6 @@ La cartographie et l’extraction détaillée sont asynchrones. La production de
 
 ## Révision et export JSON
 
-Après l’extraction, ouvrir l’onglet **Révision**. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+Après l’extraction détaillée, générer les illustrations dans l’onglet **Images**. La phase **Révision** s’ouvre automatiquement lorsque toutes les images attendues sont disponibles. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+
+Le feedback de chaque question est affiché dans l’éditeur. S’il n’existe pas dans le PDF, il est généré par le LLM et identifié comme tel.

@@ -70,14 +70,15 @@ function normalizeQuestion(question, batch, diagnostics) {
     if (question.type === "true_false" && question.choices.length !== 2) {
         warnings.push("Une question vrai/faux ne contient pas exactement deux propositions.");
     }
+    if (question.feedback.content.trim().length === 0 || question.feedback.origin === "not_available") {
+        throw new ExtractionValidationError("Une question ne contient pas le feedback pédagogique obligatoire.", [`${question.segment_id} : feedback absent ou non généré`]);
+    }
     return {
         ...question,
         title: question.title.origin === "not_available"
             ? { content: "", origin: "not_available" }
             : question.title,
-        feedback: question.feedback.origin === "not_available"
-            ? { content: "", origin: "not_available" }
-            : question.feedback,
+        feedback: question.feedback,
         correct_choice_ids: correctChoiceIds,
         correct_answer_origin: correctAnswerOrigin,
         source_pages: sourcePages,

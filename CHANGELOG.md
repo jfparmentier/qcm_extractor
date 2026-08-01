@@ -1,5 +1,17 @@
 # Journal des modifications
 
+## 7.1.0 — Révision après illustrations et feedback obligatoire
+
+- la phase de révision ne démarre plus immédiatement après l’extraction détaillée ;
+- lorsqu’une question possède des zones d’image, l’application ouvre d’abord l’étape Images et attend la génération de toutes les illustrations ;
+- l’onglet Révision reste désactivé tant qu’une illustration attendue manque ;
+- la révision s’ouvre automatiquement dès que les images sont disponibles ;
+- les illustrations extraites sont affichées de manière renforcée sous l’énoncé pendant la révision ;
+- le prompt d’extraction impose un feedback pédagogique non vide pour chaque question ;
+- en l’absence de correction dans le PDF, le LLM génère le feedback avec l’origine `generated_by_model` ;
+- les schémas OpenAI, frontend et export refusent désormais les feedbacks vides ou `not_available` ;
+- une question ne peut pas être validée tant que son feedback est vide.
+
 ## 7.0.0 — Révision question par question
 
 - ajout d’un onglet « Révision » disponible après la seconde passe d’extraction ;

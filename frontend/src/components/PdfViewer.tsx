@@ -176,6 +176,18 @@ export function PdfViewer({
     () => reviewSourceFingerprint(extractedQuestions),
     [extractedQuestions]
   );
+  const illustrationsReady = useMemo(
+    () => illustrationPlan.candidates.every(
+      (candidate) => illustrationGeneration.assets[candidate.id] !== undefined
+    ),
+    [illustrationGeneration.assets, illustrationPlan.candidates]
+  );
+  const missingIllustrationCount = useMemo(
+    () => illustrationPlan.candidates.filter(
+      (candidate) => illustrationGeneration.assets[candidate.id] === undefined
+    ).length,
+    [illustrationGeneration.assets, illustrationPlan.candidates]
+  );
 
   useEffect(() => {
     if (extractedQuestions.length === 0) {
@@ -197,8 +209,33 @@ export function PdfViewer({
     const firstPage = nextQuestions[0]?.sourcePages[0];
     if (firstPage !== undefined) onPageChange(firstPage);
     setIsDrawing(false);
+    setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "review");
+  }, [activePanel, extractedFingerprint, extractedQuestions, extraction.runStatus, illustrationPlan.candidates.length, onPageChange]);
+
+  useEffect(() => {
+    if (
+      reviewQuestions.length === 0 ||
+      extraction.runStatus !== "completed" ||
+      illustrationPlan.candidates.length === 0 ||
+      !illustrationsReady ||
+      illustrationGeneration.status === "running"
+    ) {
+      return;
+    }
+
+    const firstPage = extractedQuestions[0]?.source_pages[0];
+    if (firstPage !== undefined) onPageChange(firstPage);
+    setIsDrawing(false);
     setActivePanel("review");
-  }, [activePanel, extractedFingerprint, extractedQuestions, extraction.runStatus, onPageChange]);
+  }, [
+    extraction.runStatus,
+    illustrationGeneration.status,
+    illustrationPlan.candidates.length,
+    illustrationsReady,
+    onPageChange,
+    reviewQuestions.length,
+    extractedQuestions
+  ]);
 
   const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
     if (mapping.data === null) return [];
@@ -455,12 +492,22 @@ export function PdfViewer({
                     <button
                       aria-current={activePanel === "review" ? "page" : undefined}
                       className={activePanel === "review" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                      disabled={reviewQuestions.length === 0 || extraction.runStatus === "running"}
+                      disabled={
+                        reviewQuestions.length === 0 ||
+                        extraction.runStatus === "running" ||
+                        !illustrationsReady
+                      }
                       onClick={() => {
+                        if (!illustrationsReady) return;
                         setIsDrawing(false);
                         setActivePanel("review");
                         handleReviewIndexChange(reviewIndex);
                       }}
+                      title={
+                        !illustrationsReady
+                          ? `La révision sera disponible après l’extraction de ${missingIllustrationCount} illustration${missingIllustrationCount > 1 ? "s" : ""}.`
+                          : "Réviser les questions extraites"
+                      }
                       type="button"
                     >
                       <CheckIcon /> Révision

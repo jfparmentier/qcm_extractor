@@ -86,6 +86,9 @@ export function reviewQuestionIssues(question) {
     if (question.correctAnswerOrigin !== "not_available" && question.correctChoiceIds.length === 0) {
         issues.push("Sélectionnez une réponse correcte ou indiquez qu’elle n’est pas disponible.");
     }
+    if (question.feedback.trim().length === 0) {
+        issues.push("Le feedback pédagogique est vide.");
+    }
     if (question.sourcePages.length === 0)
         issues.push("Aucune page source n’est associée à la question.");
     return issues;

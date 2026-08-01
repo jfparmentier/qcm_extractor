@@ -1,4 +1,4 @@
-# Extracteur de QCM — Phase 7.0.0
+# Extracteur de QCM — Phase 7.1.0
 
 Cette archive regroupe les phases 0 à 7. La phase 7 ajoute la révision question par question dans une interface à deux colonnes : le PDF source est affiché à gauche et le contenu extrait, entièrement éditable, à droite.
 
@@ -7,7 +7,7 @@ Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne so
 ## Arborescence
 
 ```text
-phase7_qcm_extractor_7.0.0/
+phase7_qcm_extractor_7.1.0/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP
@@ -31,15 +31,17 @@ Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN version
 
 ## Phase 7 : révision des questions
 
-Après la seconde passe d’extraction, l’onglet **Révision** s’ouvre automatiquement. Il est également accessible depuis la barre des étapes.
+Après la seconde passe d’extraction, l’application ouvre d’abord l’onglet **Images** lorsqu’au moins une illustration est attendue. La phase de révision ne démarre qu’après la génération locale de toutes les illustrations. Lorsqu’aucune image n’est associée au document, la révision s’ouvre directement.
 
 Pour chaque question :
 
 1. contrôler la ou les pages sources dans la colonne de gauche ;
-2. modifier le type, le titre, l’énoncé, les propositions, les réponses correctes et le feedback dans la colonne de droite ;
-3. vérifier les illustrations associées ;
+2. vérifier les illustrations générées, affichées directement sous l’énoncé ;
+3. modifier le type, le titre, l’énoncé, les propositions, les réponses correctes et le feedback pédagogique dans la colonne de droite ;
 4. cocher **Question validée** lorsque les contrôles bloquants sont résolus ;
 5. utiliser **Précédente** et **Suivante** pour parcourir les questions.
+
+Le feedback est désormais obligatoire. Lorsqu’aucune correction n’est présente dans le PDF, le LLM doit produire une explication pédagogique marquée `generated_by_model`.
 
 Sur la dernière question, le bouton **Exporter le JSON** devient actif lorsque toutes les questions sont validées. Le fichier produit respecte `schemas/export.schema.json`. Les illustrations sont référencées sous la forme `assets/nom-du-fichier.png`; la constitution d’une archive ZIP complète reste prévue pour la phase d’export dédiée.
 

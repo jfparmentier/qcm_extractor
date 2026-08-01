@@ -32,7 +32,7 @@ def sha256(path: Path) -> str:
 files = sorted(path for path in ROOT.rglob("*") if included(path))
 manifest = {
     "artifact": "phase7_qcm_extractor",
-    "version": "7.0.0",
+    "version": "7.1.0",
     "phase": 7,
     "generated_files": [
         {

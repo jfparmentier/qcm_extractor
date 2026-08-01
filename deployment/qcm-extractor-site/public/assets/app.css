@@ -2791,3 +2791,12 @@ summary:focus-visible {
 .review-warnings--blocking ul {
   color: var(--danger);
 }
+
+.review-assets--prominent {
+  border-color: #9fb9e8;
+  background: #f5f8ff;
+}
+
+.review-assets--prominent .review-assets__grid img {
+  height: 190px;
+}

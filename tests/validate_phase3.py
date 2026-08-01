@@ -139,7 +139,7 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.0.0"
+assert build_info["version"] == "7.1.0"
 assert build_info["application_version"] == "0.9.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 

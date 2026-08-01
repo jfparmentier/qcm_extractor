@@ -33,8 +33,8 @@
       "correct_choice_ids": [],
       "correct_answer_origin": "not_available",
       "feedback": {
-        "content": "",
-        "origin": "not_available"
+        "content": "Le document ne fournit pas de correction explicite. Une ampoule allumée reçoit de l’énergie électrique du circuit : le courant conventionnel la traverse, mais il n’est pas consommé comme une substance. La réponse doit donc être vérifiée selon la formulation pédagogique attendue par le cours.",
+        "origin": "generated_by_model"
       },
       "images": [
         {

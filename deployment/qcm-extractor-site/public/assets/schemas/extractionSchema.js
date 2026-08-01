@@ -262,7 +262,26 @@ const extractionSchema = {
                     ]
                 },
                 "feedback": {
-                    "$ref": "#/$defs/provenanced_text"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "content",
+                        "origin"
+                    ],
+                    "properties": {
+                        "content": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "origin": {
+                            "enum": [
+                                "explicit_in_document",
+                                "generated_by_model",
+                                "provided_by_user"
+                            ],
+                            "type": "string"
+                        }
+                    }
                 },
                 "images": {
                     "type": "array",

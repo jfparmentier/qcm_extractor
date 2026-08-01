@@ -28,6 +28,26 @@ assert.equal(questions.length, 1);
 assert.deepEqual(questions[0].choices.map((choice) => choice.id), ["choice-a", "choice-b"]);
 assert.deepEqual(questions[0].correctChoiceIds, ["choice-a"]);
 assert.deepEqual(reviewQuestionIssues(questions[0]), []);
+assert.equal(questions[0].feedback, "Explication");
+assert.equal(questions[0].feedbackOrigin, "explicit_in_document");
+const emptyFeedbackIssues = reviewQuestionIssues({
+  ...questions[0],
+  feedback: "",
+  feedbackOrigin: "not_available"
+});
+assert.ok(emptyFeedbackIssues.includes("Le feedback pédagogique est vide."));
+
+const generatedFeedback = createReviewQuestions([{
+  ...extracted[0],
+  id: "q-002",
+  segment_id: "segment-002",
+  feedback: {
+    content: "Le modèle explique pourquoi la réponse A est correcte.",
+    origin: "generated_by_model"
+  }
+}]);
+assert.equal(generatedFeedback[0].feedbackOrigin, "generated_by_model");
+assert.match(generatedFeedback[0].feedback, /réponse A/);
 
 const reviewed = [{ ...questions[0], validated: true }];
 const pdf = {

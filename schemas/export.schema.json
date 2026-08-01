@@ -231,7 +231,8 @@
           ]
         },
         "feedback": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "feedback_origin": {
           "enum": [

@@ -316,6 +316,27 @@ export function QuestionReview({
               />
             </label>
 
+            {questionAssets.length > 0 && (
+              <section className="review-assets review-assets--prominent" aria-label="Illustrations extraites de la question">
+                <h4><ImageIcon /> Illustrations extraites</h4>
+                <div className="review-assets__grid">
+                  {questionAssets.map(({ candidate, asset }) => (
+                    <article key={candidate.id}>
+                      {asset !== undefined ? (
+                        <img alt={candidate.altText} src={asset.previewUrl} />
+                      ) : (
+                        <div className="review-asset-placeholder"><ImageIcon /><span>Illustration indisponible</span></div>
+                      )}
+                      <div>
+                        <strong>{candidate.altText}</strong>
+                        <span>Page {candidate.sourcePage} · {candidate.role === "essential" ? "essentielle" : "décorative"}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <fieldset className="choice-editor">
               <legend>Propositions et réponses correctes</legend>
               <div className="choice-editor__list">
@@ -377,34 +398,15 @@ export function QuestionReview({
             </label>
 
             <label className="question-field">
-              <span>Feedback <small>{originLabel(question.feedbackOrigin)}</small></span>
+              <span>Feedback pédagogique <small>{originLabel(question.feedbackOrigin)}</small></span>
               <textarea
                 onChange={(event) => changeQuestion({ feedback: event.target.value, feedbackOrigin: "provided_by_user" })}
-                rows={5}
+                placeholder="Explication de la réponse et des erreurs fréquentes"
+                required
+                rows={6}
                 value={question.feedback}
               />
             </label>
-
-            {questionAssets.length > 0 && (
-              <section className="review-assets" aria-label="Illustrations de la question">
-                <h4><ImageIcon /> Illustrations</h4>
-                <div className="review-assets__grid">
-                  {questionAssets.map(({ candidate, asset }) => (
-                    <article key={candidate.id}>
-                      {asset !== undefined ? (
-                        <img alt={candidate.altText} src={asset.previewUrl} />
-                      ) : (
-                        <div className="review-asset-placeholder"><ImageIcon /><span>Image non générée</span></div>
-                      )}
-                      <div>
-                        <strong>{candidate.altText}</strong>
-                        <span>Page {candidate.sourcePage} · {candidate.role === "essential" ? "essentielle" : "décorative"}</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {validationIssues.length > 0 && (
               <section className="review-warnings review-warnings--blocking" aria-label="Erreurs de validation">

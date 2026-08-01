@@ -35,6 +35,8 @@ for marker in (
     "Exporter le JSON",
     "Question validée",
     "Propositions et réponses correctes",
+    "Illustrations extraites",
+    "Feedback pédagogique",
 ):
     assert marker in review, marker
 
@@ -46,6 +48,9 @@ for marker in (
     "createReviewExport",
     "downloadJson",
     "<CheckIcon /> Révision",
+    "illustrationsReady",
+    "missingIllustrationCount",
+    'setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "review")',
 ):
     assert marker in viewer, marker
 
@@ -56,6 +61,7 @@ for marker in (
     "validation_status",
     "replaceAssetTokens",
     "assets/",
+    "Le feedback pédagogique est vide.",
 ):
     assert marker in review_domain, marker
 
@@ -70,10 +76,25 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.0.0"
+assert build_info["version"] == "7.1.0"
 assert build_info["application_version"] == "0.9.0"
 assert "question-by-question-review" in build_info["features"]
 assert "json-export" in build_info["features"]
+assert "review-after-illustrations" in build_info["features"]
+assert "mandatory-llm-feedback" in build_info["features"]
+
+prompt = (ROOT / "backend/prompts/extraction.txt").read_text(encoding="utf-8")
+for marker in (
+    "Chaque question doit impérativement posséder un feedback.content non vide",
+    "feedback.origin = generated_by_model",
+    "feedback.origin ne doit jamais valoir not_available",
+):
+    assert marker in prompt, marker
+
+openai_schema = json.loads((ROOT / "backend/schemas/extraction.openai.schema.json").read_text(encoding="utf-8"))
+feedback_schema = openai_schema["properties"]["questions"]["items"]["properties"]["feedback"]
+assert feedback_schema["properties"]["content"]["minLength"] == 1
+assert "not_available" not in feedback_schema["properties"]["origin"]["enum"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 7" in index
@@ -86,4 +107,4 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.0.0 : éditeur question par question et export JSON")
+print("OK phase 7.1.0 : éditeur question par question et export JSON")

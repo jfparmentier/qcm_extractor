@@ -85,7 +85,7 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] >= 6
-assert build_info["version"] == "7.0.0"
+assert build_info["version"] == "7.1.0"
 assert build_info["application_version"] == "0.9.0"
 assert "local-illustration-cropping" in build_info["features"]
 
