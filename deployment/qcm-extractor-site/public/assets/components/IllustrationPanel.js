@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo } from "react";
-import { illustrationRoleLabel } from "../domain/illustration.js";
-import { formatFileSize } from "../pdf/formatFileSize.js";
-import { CheckIcon, DownloadIcon, ImageIcon, ResetIcon, SparklesIcon, StopIcon, WarningIcon } from "./Icons.js";
+import { illustrationRoleLabel } from "../domain/illustration.js?v=7.3.1";
+import { formatFileSize } from "../pdf/formatFileSize.js?v=7.3.1";
+import { CheckIcon, DownloadIcon, ImageIcon, ResetIcon, SparklesIcon, StopIcon, WarningIcon } from "./Icons.js?v=7.3.1";
 function generationStatusLabel(status) {
     switch (status) {
         case "running": return "Génération en cours";

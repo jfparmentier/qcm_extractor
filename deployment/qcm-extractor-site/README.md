@@ -1,10 +1,10 @@
-# Déploiement QCM Extractor 7.2.0
+# Déploiement QCM Extractor 7.3.1
 
-Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit désormais une seule étape visible à la fois.
+Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit une seule étape visible à la fois.
 
 ## Paramètres du workflow
 
-Modifiez dans `private/config/runtime.php` les clés `QCM_BATCH_*` et `QCM_EXTRACTION_MAX_*`. Ces valeurs sont exposées au navigateur par `public/api/workflow-config.php` sans divulguer la clé API.
+Les paramètres de planification des lots et d’extraction sont définis dans `private/config/runtime.php` avec les clés `QCM_BATCH_*` et `QCM_EXTRACTION_MAX_*`. Ils sont transmis au navigateur par `public/api/workflow-config.php` sans divulguer la clé API.
 
 Ce dossier peut être copié tel quel sur le serveur. La racine web doit pointer vers `public`, tandis que `private` contient le proxy, les prompts, les schémas et la configuration secrète.
 
@@ -13,14 +13,26 @@ Ce dossier peut être copié tel quel sur le serveur. La racine web doit pointer
 3. Servir `public/` par Apache.
 4. Vérifier `public/api/diagnostic.php`.
 
-La cartographie et l’extraction détaillée sont asynchrones. La production des illustrations est entièrement locale : le navigateur rend les pages PDF en haute résolution puis découpe les zones d’image existantes en PNG. Les PDF et PNG ne sont pas enregistrés par le serveur ; seuls de petits compteurs de limitation de débit et un journal technique non sensible peuvent être écrits sous `private/runtime`.
+La cartographie et l’extraction détaillée sont asynchrones. La production des illustrations est entièrement locale : le navigateur rend les pages PDF en haute résolution puis découpe les zones d’image validées en PNG. Les PDF et PNG ne sont pas enregistrés par le serveur ; seuls de petits compteurs de limitation de débit et un journal technique non sensible peuvent être écrits sous `private/runtime`.
 
+## Workflow de validation
+
+La cartographie est présentée QCM par QCM. L’utilisateur peut corriger les zones, naviguer entre les QCM détectés et supprimer une détection indésirable. Après validation du dernier QCM, les lots et les sous-PDF sont préparés automatiquement, puis l’extraction détaillée est lancée depuis l’étape suivante.
+
+Chaque question extraite possède un titre. Lorsque le document n’en fournit pas, le LLM génère un titre descriptif court. Le feedback est également affiché dans l’éditeur et généré par le LLM lorsqu’il n’existe pas dans le PDF.
 
 ## Révision et export ZIP
 
-Après l’extraction détaillée, générer les illustrations dans l’onglet **Images**. La phase **Révision** s’ouvre automatiquement lorsque toutes les images attendues sont disponibles. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+Lorsque l’extraction détaillée est terminée, les illustrations sont générées automatiquement, puis la révision s’ouvre. Les questions sont présentées une par une : la partie correspondante du PDF est affichée à gauche, sans superposition des zones, et le contenu éditable apparaît à droite.
 
-Le feedback de chaque question est affiché dans l’éditeur. S’il n’existe pas dans le PDF, il est généré par le LLM et identifié comme tel.
+Le passage à la question suivante valide automatiquement la question courante. Sur la dernière question, le bouton **Exporter le ZIP** reste disponible ; son activation valide la dernière question puis produit l’archive.
 
+L’export final contient :
 
-L’export final est une archive ZIP contenant `questions.json` et le dossier `assets/` avec les illustrations PNG générées localement.
+```text
+nom-du-document-qcm.zip
+├── questions.json
+└── assets/
+    ├── q-001-01.png
+    └── ...
+```

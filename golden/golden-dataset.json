@@ -62,8 +62,8 @@
         "segment_id": "segment-phys-002",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Quand l’ampoule éclaire",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Quand l’ampoule éclaire :\n\n![Schéma du circuit](asset:phys-002-circuit)",
@@ -157,8 +157,8 @@
         "segment_id": "segment-phys-003",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Deux ampoules identiques sont alimentées par une pile suivant le sché…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Deux ampoules identiques sont alimentées par une pile suivant le schéma ci-dessous.\n\n![Circuit avec interrupteur](asset:phys-003-circuit)\n\nSi je ferme l’interrupteur, l’ampoule A :",
@@ -252,8 +252,8 @@
         "segment_id": "segment-phys-005",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Initialement l’interrupteur est ouvert et les ampoules éteintes. Je f…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Initialement l’interrupteur est ouvert et les ampoules éteintes. Je ferme l’interrupteur. Quelle ampoule s’allume la première ?\n\n![Circuit de deux ampoules en série](asset:phys-005-circuit)",
@@ -347,8 +347,8 @@
         "segment_id": "segment-phys-010",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "À quoi est égale la tension \\(U\\)",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "À quoi est égale la tension \\(U\\) ?\n\n![Sens des tensions dans le circuit](asset:phys-010-circuit)",
@@ -450,8 +450,8 @@
         "segment_id": "segment-phys-014",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Une résistance de \\(1\\,\\Omega\\) est mise en parallèle avec une résist…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Une résistance de \\(1\\,\\Omega\\) est mise en parallèle avec une résistance de \\(10\\,000\\,\\Omega\\). Que vaut la résistance équivalente ?\n\n![Deux résistances en parallèle](asset:phys-014-circuit)",
@@ -563,8 +563,8 @@
         "segment_id": "segment-phys-016",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Que vaut l’intensité du courant traversant la résistance \\(R_2\\)",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Que vaut l’intensité du courant traversant la résistance \\(R_2\\) ?\n\n![Circuit parallèle](asset:phys-016-circuit)",
@@ -670,8 +670,8 @@
         "segment_id": "segment-phys-017",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Ma consommation d’énergie électrique pour l’année s’exprime en",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Ma consommation d’énergie électrique pour l’année s’exprime en :",
@@ -752,8 +752,8 @@
         "segment_id": "segment-phys-020",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Un grille-pain, que l’on considérera comme une résistance pure, est b…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Un grille-pain, que l’on considérera comme une résistance pure, est branché aux bornes \\((AB)\\) d’un générateur idéal de tension \\(E\\), avec \\(E\\) constante, en parallèle avec une résistance variable \\(R\\), comme indiqué ci-dessous.\n\n![Générateur, grille-pain et résistance variable](asset:phys-020-circuit)\n\nOn augmente la valeur de la résistance \\(R\\). Comment évolue la différence de potentiel aux bornes \\(AB\\) du grille-pain ?",
@@ -847,8 +847,8 @@
         "segment_id": "segment-phys-024",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Un dipôle a pour caractéristique la courbe représentée dans la figure…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Un dipôle a pour caractéristique la courbe représentée dans la figure ci-dessous, en convention récepteur.\n\n![Caractéristique tension-courant](asset:phys-024-graph)\n\nQuelle phrase est correcte ?",
@@ -935,8 +935,8 @@
         "segment_id": "segment-phys-043",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "On utilise les lois de Kirchhoff pour calculer le courant \\(i_3(t)\\).…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "On utilise les lois de Kirchhoff pour calculer le courant \\(i_3(t)\\). On cherche d’abord son amplitude complexe \\(I_3\\). Les équations aux mailles donnent :\n\n\\[\n\\begin{cases}\n(Z_1+Z_2)I_1-Z_2I_3=E_1,\\\\\n-Z_2I_1+(Z_2+Z_3)I_3=-E_2.\n\\end{cases}\n\\]\n\nOn résout \\(I_3\\) avec la méthode de Cramer. Que vaut \\(I_3\\) ?",
@@ -1031,8 +1031,8 @@
         "segment_id": "segment-math-limits-001",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Let \\(f\\) be defined by \\(f(x)=\\sin x+\\cos x\\) and let \\(g\\) be defin…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Let \\(f\\) be defined by \\(f(x)=\\sin x+\\cos x\\) and let \\(g\\) be defined by \\(g(u)=\\sin u+\\cos u\\), for all real numbers \\(x\\) and \\(u\\). Then:",
@@ -1126,8 +1126,8 @@
         "segment_id": "segment-math-limits-002",
         "type": "true_false",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "True or False. If \\(f(x)=\\frac{x^2-4}{x-2}\\) and \\(g(x)=x+2\\), then t…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "True or False. If \\(f(x)=\\frac{x^2-4}{x-2}\\) and \\(g(x)=x+2\\), then the functions \\(f\\) and \\(g\\) are equal.",
@@ -1228,8 +1228,8 @@
         "segment_id": "segment-math-limits-004",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Given two infinite decimals \\(a=.3939393939\\ldots\\) and \\(b=.67766777…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Given two infinite decimals \\(a=.3939393939\\ldots\\) and \\(b=.67766777666\\ldots\\), their sum \\(a+b\\):",
@@ -1328,8 +1328,8 @@
         "segment_id": "segment-math-limits-009",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Consider the function",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Consider the function\n\n\\[\nf(x)=\\begin{cases}\nx^2,&x\\text{ is rational and }x\\ne0,\\\\\n-x^2,&x\\text{ is irrational},\\\\\n\\text{undefined},&x=0.\n\\end{cases}\n\\]\n\nThen:",
@@ -1439,8 +1439,8 @@
         "segment_id": "segment-math-limits-015",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Suppose two linear functions \\(f\\) and \\(g\\) are shown below",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Suppose two linear functions \\(f\\) and \\(g\\) are shown below.\n\n![Graph of two linear functions](asset:math-limits-015-graph)\n\nThen \\(\\displaystyle \\lim_{x\\to a}\\frac{f(x)}{g(x)}\\) is:",
@@ -1552,8 +1552,8 @@
         "segment_id": "segment-math-tangents-001",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "At \\((0,0)\\), the graph of \\(f(x)=|x|\\)",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "At \\((0,0)\\), the graph of \\(f(x)=|x|\\):",
@@ -1672,8 +1672,8 @@
         "segment_id": "segment-math-rules-004",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Suppose you cut a slice from a circular pizza of radius \\(r\\), as shown",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Suppose you cut a slice from a circular pizza of radius \\(r\\), as shown.\n\n![Circular pizza slice](asset:math-rules-004-pizza)\n\nAs the angle \\(\\theta\\) changes, the area is \\(A(\\theta)=\\frac12r^2\\theta\\). Then \\(A'(\\theta)\\) is:",
@@ -1803,8 +1803,8 @@
         "segment_id": "segment-math-rules-008",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "Over a time interval \\(\\Delta t\\), the length \\(L\\) and width \\(W\\) o…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "Over a time interval \\(\\Delta t\\), the length \\(L\\) and width \\(W\\) of a rectangle grow to \\(L+\\Delta L\\) and \\(W+\\Delta W\\).\n\n![Growing rectangle](asset:math-rules-008-rectangle)\n\nThe average rate of change in area over \\(\\Delta t\\) is:",
@@ -1927,8 +1927,8 @@
         "segment_id": "segment-math-related-rates-002",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "A boat is drawn close to a dock by pulling in a rope, as shown",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "A boat is drawn close to a dock by pulling in a rope, as shown.\n\n![Boat, rope and dock](asset:math-related-rates-002-boat)\n\nHow is the rate at which the rope is pulled in related to the rate at which the boat approaches the dock?",
@@ -2057,8 +2057,8 @@
         "segment_id": "segment-math-mvt-007",
         "type": "single_choice",
         "title": {
-          "content": "",
-          "origin": "not_available"
+          "content": "The region between two concentric circles of radii \\(r_1\\) and \\(r_2\\…",
+          "origin": "generated_by_model"
         },
         "content_format": "markdown-latex",
         "statement": "The region between two concentric circles of radii \\(r_1\\) and \\(r_2\\), with \\(r_2>r_1\\), is an annulus of area \\(\\pi(r_2^2-r_1^2)\\).\n\n![Annulus](asset:math-mvt-007-annulus)\n\nWhich statement is correct?",

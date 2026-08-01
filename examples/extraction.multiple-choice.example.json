@@ -11,8 +11,8 @@
       "segment_id": "segment-synthetic-multiple",
       "type": "multiple_choice",
       "title": {
-        "content": "",
-        "origin": "not_available"
+        "content": "Identification des nombres premiers",
+        "origin": "generated_by_model"
       },
       "content_format": "markdown-latex",
       "statement": "Parmi les nombres suivants, lesquels sont premiers ?",

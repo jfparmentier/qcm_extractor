@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.10.0"
+assert package["version"] == "0.11.1"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -53,7 +53,7 @@ for status in ("idle", "running", "completed", "failed"):
 assert "selectedSegmentId" in state
 assert "progress" in state
 assert "MAPPING_PROGRESS" in state
-for marker in ("selectedRegionId", "UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
+for marker in ("selectedRegionId", "UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION", "DELETE_SEGMENT"):
     assert marker in state, f"Action d’édition géométrique absente : {marker}"
 
 mapping = (FRONTEND / "src/domain/documentMap.ts").read_text(encoding="utf-8")
@@ -68,7 +68,7 @@ for marker in (
     assert marker in mapping, f"Validation de cartographie incomplète : {marker}"
 
 panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
-for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons", "Contrôles d’état", "Éditeur de zones", "Tracer", "Rôle de la zone sélectionnée"):
+for marker in ("Cartographie du document", "Relancer", "Temps écoulé", "Jetons", "Éditeur de zones", "Tracer", "Rôle de la zone sélectionnée", "Supprimer ce QCM"):
     assert marker in panel
 
 canvas = (FRONTEND / "src/components/PdfPageCanvas.tsx").read_text(encoding="utf-8")
@@ -81,7 +81,7 @@ for marker in ("onRegionChange", "onRegionAdd", "RESIZE_HANDLES", "pointermove",
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
 assert "PdfThumbnail" not in viewer
 assert "thumbnail-sidebar" not in viewer
-for marker in ("drawingRole", "onAddRegion", "onDeleteRegion", "onUpdateRegionBbox", "Delete"):
+for marker in ("drawingRole", "onAddRegion", "onDeleteRegion", "onDeleteSegment", "onUpdateRegionBbox", "Delete"):
     assert marker in viewer, f"Commande de zone absente : {marker}"
 portable_viewer = (PUBLIC / "assets/components/PdfViewer.js").read_text(encoding="utf-8")
 assert "PdfThumbnail" not in portable_viewer
@@ -135,12 +135,12 @@ assert "./assets/main.js" in index
 for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     source = js_file.read_text(encoding="utf-8")
     for relative in re.findall(r'(?:from\s+|import\s*)["\'](\.{1,2}/[^"\']+)["\']', source):
-        target = (js_file.parent / relative).resolve()
+        target = (js_file.parent / relative.split("?", 1)[0]).resolve()
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.2.0"
-assert build_info["application_version"] == "0.10.0"
+assert build_info["version"] == "7.3.1"
+assert build_info["application_version"] == "0.11.1"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
 print("OK phase 3 : cartographie et éditeur géométrique préservés")

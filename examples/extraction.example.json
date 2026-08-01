@@ -11,8 +11,8 @@
       "segment_id": "segment-phys-002",
       "type": "single_choice",
       "title": {
-        "content": "",
-        "origin": "not_available"
+        "content": "Fonctionnement d’une ampoule dans un circuit",
+        "origin": "generated_by_model"
       },
       "content_format": "markdown-latex",
       "statement": "Quand l’ampoule éclaire :\n\n![Schéma du circuit](asset:phys-002-circuit)",

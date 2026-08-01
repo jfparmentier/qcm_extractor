@@ -145,6 +145,7 @@ export function reviewSourceFingerprint(questions: readonly ExtractedQuestion[])
 
 export function reviewQuestionIssues(question: ReviewQuestion): readonly string[] {
   const issues: string[] = [];
+  if (question.title.trim().length === 0) issues.push("Le titre est vide.");
   if (question.statement.trim().length === 0) issues.push("L’énoncé est vide.");
   if (question.choices.length < 2) issues.push("Au moins deux propositions sont nécessaires.");
   if (question.type === "true_false" && question.choices.length !== 2) {

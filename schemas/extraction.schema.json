@@ -103,38 +103,17 @@
       ],
       "properties": {
         "content": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "origin": {
           "enum": [
             "explicit_in_document",
             "generated_by_model",
-            "provided_by_user",
-            "not_available"
+            "provided_by_user"
           ]
         }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "origin": {
-                "const": "not_available"
-              }
-            },
-            "type": "object"
-          },
-          "then": {
-            "properties": {
-              "content": {
-                "maxLength": 0,
-                "type": "string"
-              }
-            },
-            "type": "object"
-          }
-        }
-      ]
+      }
     },
     "choice": {
       "type": "object",

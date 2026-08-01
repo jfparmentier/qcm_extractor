@@ -43,6 +43,8 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
 assert "Phase 7" in index
+assert "?v=7.3.1" in index
+assert 'name="application-version" content="7.3.1"' in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
@@ -110,9 +112,9 @@ panel = (PUBLIC / "assets" / "components" / "MappingPanel.js").read_text(encodin
 state = (PUBLIC / "assets" / "domain" / "projectState.js").read_text(encoding="utf-8")
 for marker in ("onRegionChange", "onRegionAdd", "pdf-region__handle"):
     assert marker in canvas
-for marker in ("region-editor", "Tracer", "Supprimer la zone"):
+for marker in ("region-editor", "Tracer", "Supprimer la zone", "Supprimer ce QCM"):
     assert marker in panel
-for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
+for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION", "DELETE_SEGMENT"):
     assert marker in state
 
-print("OK déploiement 7.2.0 : workflow séquentiel et configuration serveur")
+print("OK déploiement 7.3.1 : ressources anti-cache et révision simplifiée")

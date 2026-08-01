@@ -1,4 +1,4 @@
-# Déploiement sur OVH Hosting Perso et MAMP — version 6.0.0
+# Déploiement sur OVH Hosting Perso et MAMP — version 7.3.1
 
 Le dossier à copier est `deployment/qcm-extractor-site/`.
 
@@ -44,12 +44,14 @@ Le journal `private/runtime/logs/qcm-proxy.log` ne contient ni PDF, ni prompt, n
 
 ## Révision et export ZIP
 
-Après l’extraction, ouvrir l’onglet **Révision**. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+La cartographie est validée QCM par QCM et permet de supprimer une détection incorrecte. Après validation des zones, les sous-PDF sont préparés automatiquement. Lorsque l’extraction détaillée est terminée, les illustrations sont générées localement puis la révision s’ouvre.
 
+La révision affiche une question à la fois : la partie correspondante du PDF apparaît à gauche, sans zones superposées, et les champs éditables apparaissent à droite. Le passage à la question suivante valide automatiquement la question courante. Le bouton **Exporter le ZIP** de la dernière question valide celle-ci et produit l’archive finale.
 
-L’export final produit une archive ZIP contenant `questions.json` et les illustrations PNG sous `assets/`.
+Le LLM génère un titre descriptif lorsqu’aucun titre n’est présent dans le document. Il génère également un feedback pédagogique lorsque le document n’en contient pas.
 
+L’archive finale contient `questions.json` et les illustrations PNG sous `assets/`.
 
-## Workflow 7.2.0
+## Workflow 7.3.1
 
 Les paramètres de lots et d’extraction se configurent dans `deployment/qcm-extractor-site/private/config/runtime.php`. L’interface ne les expose plus. Après validation des zones, les sous-PDF sont préparés automatiquement, puis l’interface affiche uniquement l’étape d’extraction. Les illustrations sont générées automatiquement lorsque tous les lots ont été extraits.

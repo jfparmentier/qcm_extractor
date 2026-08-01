@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { DocumentMap } from "../domain/documentMap";
-import { getSegmentDisplayName } from "../domain/documentMap";
+import type { DocumentMap, NormalizedBoundingBox, PageRegion } from "../domain/documentMap";
 import type { GeneratedIllustrationAsset, IllustrationPlan } from "../domain/illustration";
 import type { LoadedPdf } from "../domain/projectState";
 import {
@@ -10,7 +9,6 @@ import {
   type ReviewQuestion
 } from "../domain/review";
 import {
-  CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
@@ -20,7 +18,7 @@ import {
   TrashIcon,
   WarningIcon
 } from "./Icons";
-import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
+import { PdfPageCanvas } from "./PdfPageCanvas";
 
 interface QuestionReviewProps {
   readonly pdf: LoadedPdf;
@@ -55,8 +53,25 @@ function originLabel(origin: string): string {
     case "generated_by_model": return "Généré par le modèle";
     case "inferred_by_model": return "Déduit par le modèle";
     case "provided_by_user": return "Modifié par l’utilisateur";
-    default: return "Non disponible";
+    default: return "";
   }
+}
+
+function focusForRegions(regions: readonly PageRegion[]): NormalizedBoundingBox | null {
+  if (regions.length === 0) return null;
+  const left = Math.min(...regions.map((region) => region.bbox.x));
+  const top = Math.min(...regions.map((region) => region.bbox.y));
+  const right = Math.max(...regions.map((region) => region.bbox.x + region.bbox.width));
+  const bottom = Math.max(...regions.map((region) => region.bbox.y + region.bbox.height));
+  const margin = 0.035;
+  const x = Math.max(0, left - margin);
+  const y = Math.max(0, top - margin);
+  return {
+    x,
+    y,
+    width: Math.min(1, right + margin) - x,
+    height: Math.min(1, bottom + margin) - y
+  };
 }
 
 export function QuestionReview({
@@ -80,25 +95,21 @@ export function QuestionReview({
   const [renderError, setRenderError] = useState<string | null>(null);
   const question = questions[currentIndex];
   const total = questions.length;
-  const validatedCount = questions.filter((entry) => entry.validated).length;
-  const allValidated = total > 0 && validatedCount === total;
   const validationIssues = question === undefined ? [] : reviewQuestionIssues(question);
-  const canValidate = validationIssues.length === 0;
   const isLast = currentIndex === total - 1;
 
   const segmentInfo = useMemo(() => {
     if (question === undefined) return null;
-    const segmentIndex = documentMap.question_segments.findIndex(
-      (segment) => segment.temporary_id === question.segmentId
+    const segment = documentMap.question_segments.find(
+      (candidate) => candidate.temporary_id === question.segmentId
     );
-    const segment = segmentIndex >= 0 ? documentMap.question_segments[segmentIndex] : undefined;
-    return segment === undefined ? null : { segment, segmentIndex };
+    return segment ?? null;
   }, [documentMap.question_segments, question]);
 
   const sourcePages = useMemo(() => {
     if (question === undefined) return [];
     const pages = new Set(question.sourcePages);
-    segmentInfo?.segment.page_regions.forEach((region) => pages.add(region.page));
+    segmentInfo?.page_regions.forEach((region) => pages.add(region.page));
     return [...pages].sort((left, right) => left - right);
   }, [question, segmentInfo]);
 
@@ -108,21 +119,12 @@ export function QuestionReview({
     setRenderError(null);
   }, [currentPage, onCurrentPageChange, question, sourcePages]);
 
-  const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
-    if (segmentInfo === null) return [];
-    return segmentInfo.segment.page_regions
-      .filter((region) => region.page === currentPage)
-      .map((region) => ({
-        id: region.client_id,
-        regionId: region.client_id,
-        segmentId: segmentInfo.segment.temporary_id,
-        label: getSegmentDisplayName(segmentInfo.segment, segmentInfo.segmentIndex),
-        role: region.role,
-        bbox: region.bbox,
-        selected: false,
-        segmentSelected: true
-      }));
-  }, [currentPage, segmentInfo]);
+  const focusBbox = useMemo(
+    () => focusForRegions(
+      segmentInfo?.page_regions.filter((region) => region.page === currentPage) ?? []
+    ),
+    [currentPage, segmentInfo]
+  );
 
   const questionAssets = useMemo(() => {
     if (question === undefined) return [];
@@ -153,7 +155,10 @@ export function QuestionReview({
       : (selected
           ? question.correctChoiceIds.filter((id) => id !== choiceId)
           : [...question.correctChoiceIds, choiceId]);
-    changeQuestion({ correctChoiceIds, correctAnswerOrigin: "provided_by_user" });
+    changeQuestion({
+      correctChoiceIds,
+      correctAnswerOrigin: correctChoiceIds.length === 0 ? "not_available" : "provided_by_user"
+    });
   }, [changeQuestion, question]);
 
   const addChoice = useCallback((): void => {
@@ -164,11 +169,12 @@ export function QuestionReview({
 
   const deleteChoice = useCallback((choiceId: string): void => {
     if (question === undefined || question.choices.length <= 2) return;
+    const correctChoiceIds = question.correctChoiceIds.filter((id) => id !== choiceId);
     changeQuestion({
       choices: question.choices.filter((choice) => choice.id !== choiceId),
-      correctChoiceIds: question.correctChoiceIds.filter((id) => id !== choiceId),
-      correctAnswerOrigin: question.correctChoiceIds.includes(choiceId)
-        ? "provided_by_user"
+      correctChoiceIds,
+      correctAnswerOrigin: correctChoiceIds.length === 0
+        ? "not_available"
         : question.correctAnswerOrigin
     });
   }, [changeQuestion, question]);
@@ -186,38 +192,11 @@ export function QuestionReview({
   }, [changeQuestion, question]);
 
   if (question === undefined) {
-    return (
-      <div className="review-empty-state">
-        <strong>Aucune question extraite</strong>
-      </div>
-    );
+    return <div className="review-empty-state"><strong>Aucune question extraite</strong></div>;
   }
 
   return (
     <section className="question-review" aria-label="Révision des questions">
-      <header className="question-review__header">
-        <div>
-          <span className="eyebrow">Phase 7 · Révision</span>
-          <h2>Question {currentIndex + 1} sur {total}</h2>
-          <p>{validatedCount} question{validatedCount > 1 ? "s" : ""} validée{validatedCount > 1 ? "s" : ""}</p>
-        </div>
-        <div className="question-review__header-actions">
-          <label className={`review-validation-toggle${question.validated ? " review-validation-toggle--checked" : ""}`}>
-            <input
-              checked={question.validated}
-              disabled={!canValidate && !question.validated}
-              onChange={(event) => onQuestionChange({ ...question, validated: event.target.checked })}
-              type="checkbox"
-            />
-            <CheckIcon /> Question validée
-          </label>
-        </div>
-      </header>
-
-      <div className="question-review__progress" aria-hidden="true">
-        <span style={{ width: `${((currentIndex + 1) / total) * 100}%` }} />
-      </div>
-
       <div className="question-review__columns">
         <section className="question-source-column" aria-label="Document PDF source">
           <header className="question-column-header">
@@ -251,8 +230,8 @@ export function QuestionReview({
             <PdfPageCanvas
               className="question-source-canvas"
               document={pdf.document}
+              focusBbox={focusBbox}
               onRenderError={setRenderError}
-              overlays={overlays}
               pageNumber={currentPage}
               scale={zoom}
             />
@@ -274,11 +253,15 @@ export function QuestionReview({
               <select
                 onChange={(event) => {
                   const type = event.target.value as ReviewQuestion["type"];
+                  const correctChoiceIds = isSingleAnswer(type)
+                    ? question.correctChoiceIds.slice(0, 1)
+                    : question.correctChoiceIds;
                   changeQuestion({
                     type,
-                    correctChoiceIds: isSingleAnswer(type)
-                      ? question.correctChoiceIds.slice(0, 1)
-                      : question.correctChoiceIds
+                    correctChoiceIds,
+                    correctAnswerOrigin: correctChoiceIds.length === 0
+                      ? "not_available"
+                      : question.correctAnswerOrigin
                   });
                 }}
                 value={question.type}
@@ -290,7 +273,7 @@ export function QuestionReview({
             </label>
 
             <label className="question-field">
-              <span>Titre <small>{originLabel(question.titleOrigin)}</small></span>
+              <span>Titre</span>
               <input
                 onChange={(event) => changeQuestion({ title: event.target.value, titleOrigin: "provided_by_user" })}
                 placeholder="Titre de la question"
@@ -371,25 +354,6 @@ export function QuestionReview({
               </button>
             </fieldset>
 
-            <label className="question-field question-field--compact">
-              <span>Origine de la réponse correcte</span>
-              <select
-                onChange={(event) => {
-                  const correctAnswerOrigin = event.target.value as ReviewQuestion["correctAnswerOrigin"];
-                  changeQuestion({
-                    correctAnswerOrigin,
-                    correctChoiceIds: correctAnswerOrigin === "not_available" ? [] : question.correctChoiceIds
-                  });
-                }}
-                value={question.correctAnswerOrigin}
-              >
-                <option value="explicit_in_document">Présente dans le document</option>
-                <option value="inferred_by_model">Déduite par le modèle</option>
-                <option value="provided_by_user">Fournie par l’utilisateur</option>
-                <option value="not_available">Non disponible</option>
-              </select>
-            </label>
-
             <label className="question-field">
               <span>Feedback pédagogique <small>{originLabel(question.feedbackOrigin)}</small></span>
               <textarea
@@ -402,15 +366,15 @@ export function QuestionReview({
             </label>
 
             {validationIssues.length > 0 && (
-              <section className="review-warnings review-warnings--blocking" aria-label="Erreurs de validation">
-                <h4><WarningIcon /> Corrections nécessaires avant validation</h4>
+              <section className="review-warnings" aria-label="Points à vérifier">
+                <h4><WarningIcon /> Points à vérifier avant l’export</h4>
                 <ul>{validationIssues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
               </section>
             )}
 
             {question.warnings.length > 0 && (
               <section className="review-warnings" aria-label="Avertissements">
-                <h4><WarningIcon /> Points à vérifier</h4>
+                <h4><WarningIcon /> Avertissements du modèle</h4>
                 <ul>{question.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
               </section>
             )}
@@ -427,10 +391,6 @@ export function QuestionReview({
         >
           <ChevronLeftIcon /> Précédente
         </button>
-        <div className="review-navigation-status">
-          <span>{currentIndex + 1} / {total}</span>
-          <strong>{question.validated ? "Validée" : "À valider"}</strong>
-        </div>
         {!isLast ? (
           <button
             className="button button--primary"
@@ -442,7 +402,7 @@ export function QuestionReview({
         ) : (
           <button
             className="button button--primary button--export"
-            disabled={!allValidated || exporting}
+            disabled={exporting}
             onClick={onExport}
             type="button"
           >
@@ -450,11 +410,6 @@ export function QuestionReview({
           </button>
         )}
       </footer>
-      {isLast && !allValidated && (
-        <p className="review-export-hint" role="status">
-          Validez encore {total - validatedCount} question{total - validatedCount > 1 ? "s" : ""} pour activer l’export.
-        </p>
-      )}
     </section>
   );
 }

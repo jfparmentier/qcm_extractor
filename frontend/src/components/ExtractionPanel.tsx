@@ -100,7 +100,6 @@ export function ExtractionPanel({
     <aside className="mapping-panel extraction-panel" aria-label="Seconde passe d’extraction">
       <div className="mapping-panel__header">
         <div>
-          <span className="eyebrow">Phase 5</span>
           <h2>Extraire les QCM</h2>
         </div>
         <span className="mapping-complete-badge"><SparklesIcon /> LLM</span>
@@ -123,7 +122,7 @@ export function ExtractionPanel({
               type="button"
             >
               {allCompleted ? <CheckIcon /> : <SparklesIcon />}
-              {allCompleted ? "Extraction terminée" : "Extraire tous les lots"}
+              {allCompleted ? "Extraction terminée" : "Extraire les QCM"}
             </button>
             {running ? (
               <button className="button button--danger" onClick={onCancel} type="button">

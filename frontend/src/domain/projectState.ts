@@ -179,6 +179,7 @@ export type ProjectAction =
   | { readonly type: "MAPPING_FAILED"; readonly error: MappingError }
   | { readonly type: "MAPPING_CANCELLED" }
   | { readonly type: "SELECT_SEGMENT"; readonly segmentId: string }
+  | { readonly type: "DELETE_SEGMENT"; readonly segmentId: string }
   | {
       readonly type: "SELECT_REGION";
       readonly segmentId: string;
@@ -468,6 +469,47 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           ...state.mapping,
           selectedSegmentId: action.segmentId,
           selectedRegionId: targetRegion?.client_id ?? null
+        }
+      };
+    }
+
+    case "DELETE_SEGMENT": {
+      if (state.mapping.data === null) {
+        return state;
+      }
+
+      const currentIndex = state.mapping.data.question_segments.findIndex(
+        (segment) => segment.temporary_id === action.segmentId
+      );
+      if (currentIndex < 0) {
+        return state;
+      }
+
+      const questionSegments = state.mapping.data.question_segments.filter(
+        (segment) => segment.temporary_id !== action.segmentId
+      );
+      const nextSegment = questionSegments[Math.min(currentIndex, Math.max(0, questionSegments.length - 1))] ?? null;
+      const nextPage = nextSegment?.question_pages[0] ?? nextSegment?.page_regions[0]?.page ?? state.currentPage;
+      const nextRegion = nextSegment?.page_regions.find((region) => region.page === nextPage)
+        ?? nextSegment?.page_regions[0]
+        ?? null;
+
+      return {
+        ...state,
+        currentPage: nextRegion?.page ?? nextPage,
+        mapping: {
+          ...state.mapping,
+          data: { ...state.mapping.data, question_segments: questionSegments },
+          selectedSegmentId: nextSegment?.temporary_id ?? null,
+          selectedRegionId: nextRegion?.client_id ?? null
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
         }
       };
     }

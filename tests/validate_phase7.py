@@ -27,24 +27,31 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 7 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.10.0"
+assert package["version"] == "0.11.1"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
 review = (FRONTEND / "src/components/QuestionReview.tsx").read_text(encoding="utf-8")
 for marker in (
-    "Question {currentIndex + 1} sur {total}",
     "PDF de la question",
     "Contenu extrait",
     "Précédente",
     "Suivante",
     "Exporter le ZIP",
-    "Question validée",
     "Propositions et réponses correctes",
     "Illustrations extraites",
     "Feedback pédagogique",
+    "focusBbox={focusBbox}",
 ):
     assert marker in review, marker
+for removed in (
+    "Phase 7 · Révision",
+    "Question validée",
+    "Origine de la réponse correcte",
+    "Non disponible</small>",
+    "Question {currentIndex + 1} / {total}",
+):
+    assert removed not in review, removed
 
 viewer = (FRONTEND / "src/components/PdfViewer.tsx").read_text(encoding="utf-8")
 for marker in (
@@ -64,6 +71,9 @@ for marker in (
     assert marker in viewer, marker
 assert "side-panel-tabs" not in viewer
 assert "BatchPanel" not in viewer
+assert "PDF en mémoire" not in viewer
+for marker in ("onDeleteSegment", "finalizedQuestions", "validated: true"):
+    assert marker in viewer, marker
 
 review_domain = (FRONTEND / "src/domain/review.ts").read_text(encoding="utf-8")
 for marker in (
@@ -89,8 +99,8 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.2.0"
-assert build_info["application_version"] == "0.10.0"
+assert build_info["version"] == "7.3.1"
+assert build_info["application_version"] == "0.11.1"
 assert "question-by-question-review" in build_info["features"]
 assert "zip-export-with-images" in build_info["features"]
 assert "json-inside-zip" in build_info["features"]
@@ -101,17 +111,45 @@ assert "sequential-single-panel-workflow" in build_info["features"]
 assert "server-managed-batch-settings" in build_info["features"]
 assert "automatic-batch-preparation" in build_info["features"]
 assert "automatic-illustration-extraction" in build_info["features"]
+for feature in (
+    "mapping-question-by-question",
+    "mapping-segment-deletion",
+    "focused-pdf-review",
+    "automatic-review-validation",
+    "mandatory-generated-titles",
+    "simplified-review-interface",
+):
+    assert feature in build_info["features"], feature
+
+assert "cache-busted-static-modules" in build_info["features"]
+assert "review-navigation-banner-removed" in build_info["features"]
 
 mapping_panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
-assert "Valider les zones et continuer" in mapping_panel
-assert "Le proxy démarre une tâche asynchrone" not in mapping_panel
-for marker in ("<dt>Document</dt>", "<dt>Type</dt>", "<dt>Langue</dt>"):
-    assert marker not in mapping_panel
+for marker in (
+    "Valider les zones et continuer",
+    "Supprimer ce QCM",
+    "QCM {selectedIndex + 1} sur {segments.length}",
+    "Précédente",
+    "Suivante",
+):
+    assert marker in mapping_panel, marker
+for removed in (
+    "Le proxy démarre une tâche asynchrone",
+    "Contrôles d’état",
+    "segment-list",
+    "<dt>Document</dt>",
+    "<dt>Type</dt>",
+    "<dt>Langue</dt>",
+):
+    assert removed not in mapping_panel, removed
 
 extraction_panel = (FRONTEND / "src/components/ExtractionPanel.tsx").read_text(encoding="utf-8")
 assert "Chaque sous-PDF est transmis au proxy sans stockage persistant" not in extraction_panel
 assert "Lots simultanés" not in extraction_panel
 assert "Nouvelles tentatives" not in extraction_panel
+assert "Phase 5" not in extraction_panel
+assert "Extraire tous les lots" not in extraction_panel
+assert '"Extraire les QCM"' in extraction_panel
 
 runtime = (ROOT / "deployment/qcm-extractor-site/private/config/runtime.php").read_text(encoding="utf-8")
 for marker in (
@@ -129,24 +167,31 @@ prompt = (ROOT / "backend/prompts/extraction.txt").read_text(encoding="utf-8")
 for marker in (
     "Chaque question doit impérativement posséder un feedback.content non vide",
     "feedback.origin = generated_by_model",
-    "feedback.origin ne doit jamais valoir not_available",
+    "génère systématiquement un titre court",
+    "title.content et feedback.content ne doivent jamais être vides",
 ):
     assert marker in prompt, marker
 
 openai_schema = json.loads((ROOT / "backend/schemas/extraction.openai.schema.json").read_text(encoding="utf-8"))
-feedback_schema = openai_schema["properties"]["questions"]["items"]["properties"]["feedback"]
+question_schema = openai_schema["properties"]["questions"]["items"]["properties"]
+feedback_schema = question_schema["feedback"]
+title_schema = question_schema["title"]
 assert feedback_schema["properties"]["content"]["minLength"] == 1
 assert "not_available" not in feedback_schema["properties"]["origin"]["enum"]
+assert title_schema["properties"]["content"]["minLength"] == 1
+assert "not_available" not in title_schema["properties"]["origin"]["enum"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 7" in index
+assert "?v=7.3.1" in index
+assert 'name="application-version" content="7.3.1"' in index
 
 for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     subprocess.run(["node", "--check", str(js_file)], check=True, capture_output=True, text=True)
     source = js_file.read_text(encoding="utf-8")
     for relative in re.findall(r'(?:from\s+|import\s*)["\'](\.{1,2}/[^"\']+)["\']', source):
-        target = (js_file.parent / relative).resolve()
+        target = (js_file.parent / relative.split("?", 1)[0]).resolve()
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.2.0 : workflow séquentiel, paramètres serveur et illustrations automatiques")
+print("OK phase 7.3.1 : cache explicite et révision sans indicateur central")

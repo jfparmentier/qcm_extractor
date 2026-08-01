@@ -72,6 +72,7 @@ interface PdfViewerProps {
     bbox: NormalizedBoundingBox
   ) => void;
   readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
+  readonly onDeleteSegment: (segmentId: string) => void;
   readonly onExtractAll: () => void;
   readonly onExtractBatch: (batchId: string) => void;
   readonly onCancelExtraction: () => void;
@@ -115,6 +116,7 @@ export function PdfViewer({
   onUpdateRegionRole,
   onAddRegion,
   onDeleteRegion,
+  onDeleteSegment,
   onExtractAll,
   onExtractBatch,
   onCancelExtraction,
@@ -242,9 +244,10 @@ export function PdfViewer({
 
 
   const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
-    if (mapping.data === null) return [];
+    if (mapping.data === null || activePanel !== "mapping") return [];
     const regions: PdfOverlayRegion[] = [];
     mapping.data.question_segments.forEach((segment, segmentIndex) => {
+      if (segment.temporary_id !== mapping.selectedSegmentId) return;
       segment.page_regions.forEach((region) => {
         if (region.page !== currentPage) return;
         regions.push({
@@ -255,12 +258,12 @@ export function PdfViewer({
           role: region.role,
           bbox: region.bbox,
           selected: region.client_id === mapping.selectedRegionId,
-          segmentSelected: segment.temporary_id === mapping.selectedSegmentId
+          segmentSelected: true
         });
       });
     });
     return regions;
-  }, [currentPage, mapping.data, mapping.selectedRegionId, mapping.selectedSegmentId]);
+  }, [activePanel, currentPage, mapping.data, mapping.selectedRegionId, mapping.selectedSegmentId]);
 
   const selectedRegionOwner = useMemo(() => {
     if (mapping.data === null || mapping.selectedRegionId === null) return null;
@@ -336,26 +339,33 @@ export function PdfViewer({
 
   const handleReviewIndexChange = useCallback((index: number): void => {
     const nextIndex = Math.min(Math.max(0, index), Math.max(0, reviewQuestions.length - 1));
+    if (nextIndex > reviewIndex) {
+      setReviewQuestions((current) => current.map((question, questionIndex) =>
+        questionIndex === reviewIndex ? { ...question, validated: true } : question
+      ));
+    }
     setReviewIndex(nextIndex);
     const page = reviewQuestions[nextIndex]?.sourcePages[0];
     if (page !== undefined) onPageChange(page);
-  }, [onPageChange, reviewQuestions]);
+  }, [onPageChange, reviewIndex, reviewQuestions]);
 
   const handleReviewQuestionChange = useCallback((question: ReviewQuestion): void => {
     setReviewQuestions((current) => current.map((entry) => entry.id === question.id ? question : entry));
   }, []);
 
   const handleReviewExport = useCallback(async (): Promise<void> => {
-    if (mapping.data === null || reviewQuestions.length === 0 || reviewQuestions.some((question) => !question.validated)) {
-      return;
-    }
+    if (mapping.data === null || reviewQuestions.length === 0) return;
 
+    const finalizedQuestions = reviewQuestions.map((question, questionIndex) =>
+      questionIndex === reviewIndex ? { ...question, validated: true } : question
+    );
+    setReviewQuestions(finalizedQuestions);
     setExporting(true);
     try {
       const value = await createReviewExport(
         pdf,
         mapping.data,
-        reviewQuestions,
+        finalizedQuestions,
         illustrationPlan,
         illustrationGeneration.assets
       );
@@ -370,7 +380,7 @@ export function PdfViewer({
     } finally {
       setExporting(false);
     }
-  }, [illustrationGeneration.assets, illustrationPlan, mapping.data, pdf, reviewQuestions]);
+  }, [illustrationGeneration.assets, illustrationPlan, mapping.data, pdf, reviewIndex, reviewQuestions]);
 
   const completedMap = mapping.status === "completed" ? mapping.data : null;
   const mappingCompleted = completedMap !== null;
@@ -390,7 +400,6 @@ export function PdfViewer({
         </div>
 
         <div className="document-header__actions">
-          <span className="local-badge">PDF en mémoire</span>
           {activePanel === "mapping" && (
             <button
               className="button button--primary analysis-header-button"
@@ -507,6 +516,7 @@ export function PdfViewer({
                     onAnalyze={onAnalyze}
                     onCancel={onCancelMapping}
                     onDeleteRegion={onDeleteRegion}
+                    onDeleteSegment={onDeleteSegment}
                     onDrawingRoleChange={setDrawingRole}
                     onSelectRegion={onSelectRegion}
                     onSelectSegment={onSelectSegment}

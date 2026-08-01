@@ -53,6 +53,7 @@ interface PdfPageCanvasProps {
   readonly scale: number;
   readonly className?: string;
   readonly overlays?: readonly PdfOverlayRegion[];
+  readonly focusBbox?: NormalizedBoundingBox | null;
   readonly drawRole?: PageRegionRole | null;
   readonly onOverlaySelect?: (segmentId: string, regionId: string) => void;
   readonly onRegionChange?: (
@@ -148,6 +149,7 @@ export function PdfPageCanvas({
   scale,
   className,
   overlays = [],
+  focusBbox = null,
   drawRole = null,
   onOverlaySelect,
   onRegionChange,
@@ -181,17 +183,24 @@ export function PdfPageCanvas({
         throw new Error("Le contexte de rendu Canvas 2D est indisponible.");
       }
 
-      canvas.width = Math.max(1, Math.floor(viewport.width * outputScale));
-      canvas.height = Math.max(1, Math.floor(viewport.height * outputScale));
-      canvas.style.width = `${Math.floor(viewport.width)}px`;
-      canvas.style.height = `${Math.floor(viewport.height)}px`;
+      const focus = focusBbox === null
+        ? { x: 0, y: 0, width: 1, height: 1 }
+        : clampNormalizedBoundingBox(focusBbox, MIN_REGION_SIZE);
+      const cssWidth = Math.max(1, viewport.width * focus.width);
+      const cssHeight = Math.max(1, viewport.height * focus.height);
+      canvas.width = Math.max(1, Math.floor(cssWidth * outputScale));
+      canvas.height = Math.max(1, Math.floor(cssHeight * outputScale));
+      canvas.style.width = `${Math.floor(cssWidth)}px`;
+      canvas.style.height = `${Math.floor(cssHeight)}px`;
 
       renderTaskRef.current?.cancel();
+      const offsetX = -viewport.width * focus.x * outputScale;
+      const offsetY = -viewport.height * focus.y * outputScale;
       const renderTask = page.render({
         canvas,
         canvasContext: context,
         viewport,
-        transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0]
+        transform: [outputScale, 0, 0, outputScale, offsetX, offsetY]
       });
       renderTaskRef.current = renderTask;
 
@@ -220,7 +229,16 @@ export function PdfPageCanvas({
       renderTaskRef.current?.cancel();
       renderTaskRef.current = null;
     };
-  }, [document, onRenderError, pageNumber, scale]);
+  }, [
+    document,
+    focusBbox?.height,
+    focusBbox?.width,
+    focusBbox?.x,
+    focusBbox?.y,
+    onRenderError,
+    pageNumber,
+    scale
+  ]);
 
   useEffect(() => {
     interactionRef.current = null;

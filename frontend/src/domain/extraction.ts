@@ -195,6 +195,13 @@ function normalizeQuestion(
     warnings.push("Une question vrai/faux ne contient pas exactement deux propositions.");
   }
 
+  if (question.title.content.trim().length === 0 || question.title.origin === "not_available") {
+    throw new ExtractionValidationError(
+      "Une question ne contient pas le titre obligatoire.",
+      [`${question.segment_id} : titre absent ou non généré`]
+    );
+  }
+
   if (question.feedback.content.trim().length === 0 || question.feedback.origin === "not_available") {
     throw new ExtractionValidationError(
       "Une question ne contient pas le feedback pédagogique obligatoire.",
@@ -204,10 +211,7 @@ function normalizeQuestion(
 
   return {
     ...question,
-    title:
-      question.title.origin === "not_available"
-        ? { content: "", origin: "not_available" }
-        : question.title,
+    title: question.title,
     feedback: question.feedback,
     correct_choice_ids: correctChoiceIds,
     correct_answer_origin: correctAnswerOrigin,

@@ -43,11 +43,11 @@ IMAGES
 
 CONTENU
 - type vaut single_choice, multiple_choice ou true_false.
-- title peut être absent du document : dans ce cas, content est vide et origin vaut not_available. Ne génère un titre que si cela aide réellement la révision, avec origin generated_by_model.
+- title.content doit toujours être non vide. Si le document fournit un titre explicite, reproduis-le avec origin = explicit_in_document. Sinon, génère systématiquement un titre court, précis et descriptif dans la langue du document, avec origin = generated_by_model.
 - statement doit contenir l’énoncé complet sans les propositions de réponse.
 - choices doit reproduire toutes les propositions dans leur ordre d’origine.
 - Pour les questions vrai/faux, choices contient exactement deux propositions.
-- feedback.content ne doit jamais être vide et feedback.origin ne doit jamais valoir not_available.
+- title.content et feedback.content ne doivent jamais être vides ; title.origin et feedback.origin ne doivent jamais valoir not_available.
 - confidence est comprise entre 0 et 1.
 - status vaut toujours draft.
 

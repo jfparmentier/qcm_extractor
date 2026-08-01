@@ -1,9 +1,9 @@
 {
   "artifact": "qcm-extractor-portable",
-  "generated_at": "2026-08-01T18:45:00Z",
-  "application_version": "0.10.0",
+  "generated_at": "2026-08-01T20:10:00Z",
+  "application_version": "0.11.1",
   "phase": 7,
-  "version": "7.2.0",
+  "version": "7.3.1",
   "features": [
     "pdf-local",
     "mapping-background",
@@ -31,7 +31,15 @@
     "server-managed-batch-settings",
     "automatic-batch-preparation",
     "automatic-illustration-extraction",
-    "workflow-config-endpoint"
+    "workflow-config-endpoint",
+    "mapping-question-by-question",
+    "mapping-segment-deletion",
+    "focused-pdf-review",
+    "automatic-review-validation",
+    "mandatory-generated-titles",
+    "simplified-review-interface",
+    "cache-busted-static-modules",
+    "review-navigation-banner-removed"
   ],
   "persistent_pdf_storage": false,
   "dependencies": {

@@ -81,15 +81,15 @@
             ],
             "properties": {
               "content": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "origin": {
                 "type": "string",
                 "enum": [
                   "explicit_in_document",
                   "generated_by_model",
-                  "provided_by_user",
-                  "not_available"
+                  "provided_by_user"
                 ]
               }
             }

@@ -1,4 +1,4 @@
-import { createZipBlob } from "../export/createZip.js";
+import { createZipBlob } from "../export/createZip.js?v=7.3.1";
 function exportChoiceId(id) {
     const clean = id.replace(/^choice-/, "").replace(/[^A-Za-z0-9._-]+/g, "-") || "option";
     return `choice-${clean}`;
@@ -62,6 +62,8 @@ export function reviewSourceFingerprint(questions) {
 }
 export function reviewQuestionIssues(question) {
     const issues = [];
+    if (question.title.trim().length === 0)
+        issues.push("Le titre est vide.");
     if (question.statement.trim().length === 0)
         issues.push("L’énoncé est vide.");
     if (question.choices.length < 2)

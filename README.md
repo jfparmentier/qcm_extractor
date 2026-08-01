@@ -1,4 +1,4 @@
-# Extracteur de QCM PDF — phase 7.2.0
+# Extracteur de QCM PDF — phase 7.3.1
 
 Cette version applique un workflow séquentiel : cartographie et correction des zones, validation, préparation automatique des lots, extraction des QCM, extraction automatique des illustrations, puis révision question par question et export ZIP.
 
@@ -11,7 +11,7 @@ Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne so
 ## Arborescence
 
 ```text
-phase7_qcm_extractor_7.2.0/
+phase7_qcm_extractor_7.3.1/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP
@@ -35,19 +35,16 @@ Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN version
 
 ## Phase 7 : révision des questions
 
-Après la seconde passe d’extraction, l’application ouvre d’abord l’onglet **Images** lorsqu’au moins une illustration est attendue. La phase de révision ne démarre qu’après la génération locale de toutes les illustrations. Lorsqu’aucune image n’est associée au document, la révision s’ouvre directement.
+La cartographie est maintenant contrôlée QCM par QCM. Les boutons **Précédente** et **Suivante** permettent de parcourir les détections, et **Supprimer ce QCM** retire une détection erronée avant la préparation des lots. Sur le dernier QCM, **Valider les zones et continuer** lance automatiquement la planification des lots et la création locale des sous-PDF.
 
-Pour chaque question :
+Après l’extraction détaillée et la génération automatique des illustrations, la révision affiche une question à la fois en deux colonnes :
 
-1. contrôler la ou les pages sources dans la colonne de gauche ;
-2. vérifier les illustrations générées, affichées directement sous l’énoncé ;
-3. modifier le type, le titre, l’énoncé, les propositions, les réponses correctes et le feedback pédagogique dans la colonne de droite ;
-4. cocher **Question validée** lorsque les contrôles bloquants sont résolus ;
-5. utiliser **Précédente** et **Suivante** pour parcourir les questions.
+1. la partie correspondante du PDF, recadrée sans superposition de zones, à gauche ;
+2. le titre, l’énoncé, les illustrations, les propositions, les réponses correctes et le feedback éditables à droite.
 
-Le feedback est désormais obligatoire. Lorsqu’aucune correction n’est présente dans le PDF, le LLM doit produire une explication pédagogique marquée `generated_by_model`.
+Le LLM doit fournir un titre non vide. Lorsqu’aucun titre explicite n’existe dans la source, il en génère un court et descriptif avec l’origine `generated_by_model`.
 
-Sur la dernière question, le bouton **Exporter le ZIP** devient actif lorsque toutes les questions sont validées. L’archive produite contient `questions.json`, conforme à `schemas/export.schema.json`, ainsi qu’un dossier `assets/` réunissant toutes les illustrations PNG extraites. Les références Markdown et les chemins déclarés dans le JSON pointent directement vers ces fichiers.
+Le passage à la question suivante valide automatiquement la question courante. Sur la dernière question, **Exporter le ZIP** reste disponible et valide la dernière question au moment de l’export. L’archive contient `questions.json` et toutes les illustrations PNG sous `assets/`.
 
 ## Vérifications
 

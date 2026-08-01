@@ -331,6 +331,10 @@ export default function App(): React.ReactElement {
     dispatch({ type: "SELECT_SEGMENT", segmentId });
   }, []);
 
+  const deleteSegment = useCallback((segmentId: string): void => {
+    dispatch({ type: "DELETE_SEGMENT", segmentId });
+  }, []);
+
   const selectRegion = useCallback((segmentId: string, regionId: string): void => {
     dispatch({ type: "SELECT_REGION", segmentId, regionId });
   }, []);
@@ -804,6 +808,7 @@ export default function App(): React.ReactElement {
           onDownloadIllustration={downloadIllustration}
           onAddRegion={addRegion}
           onDeleteRegion={deleteRegion}
+          onDeleteSegment={deleteSegment}
           onPageChange={setPage}
           onResetZoom={resetZoom}
           onSelectRegion={selectRegion}

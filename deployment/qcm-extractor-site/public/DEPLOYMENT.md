@@ -1,13 +1,13 @@
-# Déploiement du dossier public — Phase 7.2.0
+# Déploiement du dossier public — Phase 7.3.1
 
 Le contenu de ce dossier constitue la racine HTTP. Il comprend le frontend portable et les endpoints PHP de cartographie et d’extraction.
 
 Les ressources utilisent des chemins relatifs. Les bibliothèques JavaScript sont chargées depuis les CDN versionnés déclarés dans `index.html`.
 
+## Enchaînement de l’interface
 
-## Révision et export ZIP
+La cartographie est vérifiée QCM par QCM. Une détection peut être supprimée avant la validation finale des zones. Les lots et les sous-PDF sont ensuite préparés automatiquement selon les paramètres du serveur.
 
-Après l’extraction détaillée, générer les illustrations. L’onglet **Révision** devient disponible et s’ouvre automatiquement lorsque toutes les images attendues sont disponibles. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+Après l’extraction des QCM, les illustrations sont générées automatiquement. La révision affiche une question à la fois, avec la partie correspondante du PDF à gauche, sans zones superposées, et l’éditeur à droite.
 
-
-L’export final produit une archive ZIP contenant `questions.json` et les illustrations PNG sous `assets/`.
+Le passage à la question suivante valide la question courante. Le bouton **Exporter le ZIP**, affiché sur la dernière question, valide celle-ci puis produit une archive contenant `questions.json` et les illustrations PNG sous `assets/`.

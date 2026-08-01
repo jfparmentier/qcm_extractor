@@ -23,7 +23,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 6 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.10.0"
+assert package["version"] == "0.11.1"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -85,8 +85,8 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] >= 6
-assert build_info["version"] == "7.2.0"
-assert build_info["application_version"] == "0.10.0"
+assert build_info["version"] == "7.3.1"
+assert build_info["application_version"] == "0.11.1"
 assert "local-illustration-cropping" in build_info["features"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
@@ -96,7 +96,7 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     subprocess.run(["node", "--check", str(js_file)], check=True, capture_output=True, text=True)
     source = js_file.read_text(encoding="utf-8")
     for relative in re.findall(r'(?:from\s+|import\s*)["\'](\.{1,2}/[^"\']+)["\']', source):
-        target = (js_file.parent / relative).resolve()
+        target = (js_file.parent / relative.split("?", 1)[0]).resolve()
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_illustration_plan.mjs"], cwd=ROOT, check=True)

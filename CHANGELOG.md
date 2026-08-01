@@ -1,13 +1,21 @@
-# Version 7.2.0 — workflow séquentiel et ergonomie
+# Version 7.3.1
 
-- suppression des onglets simultanés dans la colonne droite ;
-- validation explicite des zones avant la poursuite ;
-- planification et génération automatiques des sous-PDF après validation ;
-- paramètres de lots et d’extraction fixés dans `private/config/runtime.php` ;
-- nouvel endpoint non sensible `api/workflow-config.php` ;
-- suppression des textes techniques demandés et du résumé Document/Type/Langue ;
-- lancement automatique de l’extraction locale des illustrations après la seconde passe ;
-- passage automatique à la révision lorsque les illustrations sont prêtes.
+- Correction du paquet de déploiement : les modules JavaScript et la feuille de style utilisent désormais une version de cache explicite.
+- Suppression effective de l’indicateur « Question X / Y » dans la barre de navigation de la révision.
+- Le fichier `build-info.json` et la balise `application-version` permettent de vérifier immédiatement la version chargée.
+
+# Version 7.3.0 — cartographie et révision séquentielles
+
+- suppression du badge « PDF en mémoire » et du compteur de contrôles d’état ;
+- validation de la cartographie QCM par QCM avec navigation précédente/suivante ;
+- suppression possible d’un QCM détecté avant la préparation des lots ;
+- affichage des seules zones du QCM courant pendant la cartographie ;
+- suppression de l’étiquette « Phase 5 » et renommage du bouton principal en « Extraire les QCM » ;
+- génération obligatoire d’un titre par le LLM lorsqu’il est absent du document ;
+- simplification de la révision : suppression du bandeau supérieur et de l’origine éditable de la réponse correcte ;
+- validation automatique lors du passage à la question suivante et lors de l’export de la dernière question ;
+- affichage recadré de la partie correspondante du PDF sans superposition des zones ;
+- bouton d’export toujours disponible sur la dernière question.
 
 # Journal des modifications
 

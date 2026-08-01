@@ -1,4 +1,4 @@
-# Frontend — Phase 7.1.1
+# Frontend — Phase 7.3.0
 
 Application React/TypeScript exécutée dans le navigateur. Elle charge le PDF localement, gère la cartographie et les zones, crée les sous-PDF avec `pdf-lib`, orchestre la seconde passe d’extraction et fusionne les réponses validées.
 
