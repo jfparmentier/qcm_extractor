@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSegmentDisplayName } from "../domain/documentMap.js";
 import { mergeExtractionResults } from "../domain/extraction.js";
-import { createReviewExport, createReviewQuestions, downloadJson, exportFileName, reviewSourceFingerprint } from "../domain/review.js";
+import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js";
 import { formatFileSize } from "../pdf/formatFileSize.js";
 import { CheckIcon, CloseIcon, FileIcon, ImageIcon, LayersIcon, SelectionIcon, SparklesIcon } from "./Icons.js";
 import { ExtractionPanel } from "./ExtractionPanel.js";
@@ -174,10 +174,11 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
         setExporting(true);
         try {
             const value = await createReviewExport(pdf, mapping.data, reviewQuestions, illustrationPlan, illustrationGeneration.assets);
-            downloadJson(value, exportFileName(pdf.fileName));
+            const archive = await createReviewArchive(value, illustrationPlan, illustrationGeneration.assets);
+            downloadBlob(archive, exportFileName(pdf.fileName));
         }
         catch (error) {
-            window.alert(`L’export JSON a échoué : ${error instanceof Error ? error.message : String(error)}`);
+            window.alert(`L’export ZIP a échoué : ${error instanceof Error ? error.message : String(error)}`);
         }
         finally {
             setExporting(false);

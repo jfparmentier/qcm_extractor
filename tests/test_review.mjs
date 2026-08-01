@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
+  createReviewArchive,
   createReviewExport,
   createReviewQuestions,
+  exportFileName,
   reviewQuestionIssues
 } from "../deployment/qcm-extractor-site/public/assets/domain/review.js";
 
@@ -76,9 +82,48 @@ const plan = {
     warnings: []
   }]
 };
-const exported = await createReviewExport(pdf, documentMap, reviewed, plan, {});
+const pngBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const generatedAssets = {
+  "asset-001": {
+    ...plan.candidates[0],
+    blob: new Blob([pngBytes], { type: "image/png" }),
+    previewUrl: "blob:test",
+    width: 320,
+    height: 180,
+    byteLength: pngBytes.byteLength,
+    mimeType: "image/png",
+    generatedAt: Date.now(),
+    generationWarnings: []
+  }
+};
+const exported = await createReviewExport(pdf, documentMap, reviewed, plan, generatedAssets);
 assert.equal(exported.questions[0].statement, "Observer le circuit. ![Circuit](assets/q-001-01.png)");
 assert.equal(exported.questions[0].assets[0].path, "assets/q-001-01.png");
 assert.equal(exported.questions[0].validation_status, "validated");
 assert.match(exported.document.source_sha256, /^[a-f0-9]{64}$/);
-console.log("OK phase 7 review");
+assert.equal(exportFileName("Mon document.pdf"), "Mon-document-qcm.zip");
+
+const archive = await createReviewArchive(exported, plan, generatedAssets);
+assert.equal(archive.type, "application/zip");
+const archiveBytes = new Uint8Array(await archive.arrayBuffer());
+assert.deepEqual([...archiveBytes.slice(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
+
+const temporaryDirectory = mkdtempSync(join(tmpdir(), "qcm-review-"));
+try {
+  const archivePath = join(temporaryDirectory, "export.zip");
+  writeFileSync(archivePath, archiveBytes);
+  execFileSync("unzip", ["-t", archivePath], { stdio: "pipe" });
+  const jsonText = execFileSync("unzip", ["-p", archivePath, "questions.json"], { encoding: "utf8" });
+  assert.deepEqual(JSON.parse(jsonText), exported);
+  const extractedPng = execFileSync("unzip", ["-p", archivePath, "assets/q-001-01.png"]);
+  assert.deepEqual([...extractedPng], [...pngBytes]);
+  assert.ok(readFileSync(archivePath).byteLength > pngBytes.byteLength);
+} finally {
+  rmSync(temporaryDirectory, { recursive: true, force: true });
+}
+
+await assert.rejects(
+  () => createReviewArchive(exported, plan, {}),
+  /n’a pas été générée/
+);
+console.log("OK phase 7 review ZIP");

@@ -1,4 +1,4 @@
-# Extracteur de QCM — Phase 7.1.0
+# Extracteur de QCM — Phase 7.1.1
 
 Cette archive regroupe les phases 0 à 7. La phase 7 ajoute la révision question par question dans une interface à deux colonnes : le PDF source est affiché à gauche et le contenu extrait, entièrement éditable, à droite.
 
@@ -7,7 +7,7 @@ Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne so
 ## Arborescence
 
 ```text
-phase7_qcm_extractor_7.1.0/
+phase7_qcm_extractor_7.1.1/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP
@@ -43,7 +43,7 @@ Pour chaque question :
 
 Le feedback est désormais obligatoire. Lorsqu’aucune correction n’est présente dans le PDF, le LLM doit produire une explication pédagogique marquée `generated_by_model`.
 
-Sur la dernière question, le bouton **Exporter le JSON** devient actif lorsque toutes les questions sont validées. Le fichier produit respecte `schemas/export.schema.json`. Les illustrations sont référencées sous la forme `assets/nom-du-fichier.png`; la constitution d’une archive ZIP complète reste prévue pour la phase d’export dédiée.
+Sur la dernière question, le bouton **Exporter le ZIP** devient actif lorsque toutes les questions sont validées. L’archive produite contient `questions.json`, conforme à `schemas/export.schema.json`, ainsi qu’un dossier `assets/` réunissant toutes les illustrations PNG extraites. Les références Markdown et les chemins déclarés dans le JSON pointent directement vers ces fichiers.
 
 ## Vérifications
 

@@ -453,7 +453,7 @@ export function QuestionReview({
             onClick={onExport}
             type="button"
           >
-            <DownloadIcon /> {exporting ? "Préparation…" : "Exporter le JSON"}
+            <DownloadIcon /> {exporting ? "Préparation…" : "Exporter le ZIP"}
           </button>
         )}
       </footer>

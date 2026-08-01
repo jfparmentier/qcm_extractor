@@ -29,7 +29,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 5 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.9.0"
+assert package["version"] == "0.9.1"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -122,8 +122,8 @@ assert {"missing_segment_ids", "warnings"}.issubset(openai_schema["required"])
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] >= 6
-assert build_info["version"] == "7.1.0"
-assert build_info["application_version"] == "0.9.0"
+assert build_info["version"] == "7.1.1"
+assert build_info["application_version"] == "0.9.1"
 
 subprocess.run(["node", "tests/test_extraction_context.mjs"], cwd=ROOT, check=True)
 print("OK phase 5 conservée : seconde passe d’extraction")

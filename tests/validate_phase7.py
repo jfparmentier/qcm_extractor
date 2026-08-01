@@ -12,8 +12,10 @@ PUBLIC = ROOT / "deployment" / "qcm-extractor-site" / "public"
 
 required = {
     "frontend/src/domain/review.ts",
+    "frontend/src/export/createZip.ts",
     "frontend/src/components/QuestionReview.tsx",
     "deployment/qcm-extractor-site/public/assets/domain/review.js",
+    "deployment/qcm-extractor-site/public/assets/export/createZip.js",
     "deployment/qcm-extractor-site/public/assets/components/QuestionReview.js",
     "tests/test_review.mjs",
 }
@@ -21,7 +23,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 7 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.9.0"
+assert package["version"] == "0.9.1"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -32,7 +34,7 @@ for marker in (
     "Contenu extrait",
     "Précédente",
     "Suivante",
-    "Exporter le JSON",
+    "Exporter le ZIP",
     "Question validée",
     "Propositions et réponses correctes",
     "Illustrations extraites",
@@ -46,7 +48,8 @@ for marker in (
     "QuestionReview",
     "createReviewQuestions",
     "createReviewExport",
-    "downloadJson",
+    "createReviewArchive",
+    "downloadBlob",
     "<CheckIcon /> Révision",
     "illustrationsReady",
     "missingIllustrationCount",
@@ -61,6 +64,8 @@ for marker in (
     "validation_status",
     "replaceAssetTokens",
     "assets/",
+    "createReviewArchive",
+    "questions.json",
     "Le feedback pédagogique est vide.",
 ):
     assert marker in review_domain, marker
@@ -76,10 +81,12 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.1.0"
-assert build_info["application_version"] == "0.9.0"
+assert build_info["version"] == "7.1.1"
+assert build_info["application_version"] == "0.9.1"
 assert "question-by-question-review" in build_info["features"]
-assert "json-export" in build_info["features"]
+assert "zip-export-with-images" in build_info["features"]
+assert "json-inside-zip" in build_info["features"]
+assert "dependency-free-zip-writer" in build_info["features"]
 assert "review-after-illustrations" in build_info["features"]
 assert "mandatory-llm-feedback" in build_info["features"]
 
@@ -107,4 +114,4 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.1.0 : éditeur question par question et export JSON")
+print("OK phase 7.1.1 : éditeur question par question et export ZIP avec images")

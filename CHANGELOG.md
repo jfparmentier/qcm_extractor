@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 7.1.1 — Export ZIP avec illustrations
+
+- remplacement de l’export JSON isolé par une archive ZIP complète ;
+- ajout de `questions.json` à la racine de l’archive ;
+- inclusion de toutes les illustrations PNG générées sous `assets/` ;
+- maintien des chemins Markdown et des métadonnées JSON cohérents avec l’arborescence de l’archive ;
+- vérification bloquante lorsqu’une illustration attendue manque ou qu’un chemin est dupliqué ;
+- ajout d’un générateur ZIP local sans dépendance supplémentaire ni envoi serveur ;
+- mise à jour de l’interface, de la documentation et des tests de non-régression.
+
 ## 7.1.0 — Révision après illustrations et feedback obligatoire
 
 - la phase de révision ne démarre plus immédiatement après l’extraction détaillée ;

@@ -1,9 +1,9 @@
 {
   "artifact": "qcm-extractor-portable",
-  "generated_at": "2026-08-01T13:31:35Z",
-  "application_version": "0.9.0",
+  "generated_at": "2026-08-01T14:11:51Z",
+  "application_version": "0.9.1",
   "phase": 7,
-  "version": "7.1.0",
+  "version": "7.1.1",
   "features": [
     "pdf-local",
     "mapping-background",
@@ -21,10 +21,12 @@
     "two-column-question-editor",
     "choice-and-answer-editing",
     "question-validation",
-    "json-export",
     "review-after-illustrations",
     "mandatory-llm-feedback",
-    "feedback-provenance-display"
+    "feedback-provenance-display",
+    "json-inside-zip",
+    "zip-export-with-images",
+    "dependency-free-zip-writer"
   ],
   "persistent_pdf_storage": false,
   "dependencies": {

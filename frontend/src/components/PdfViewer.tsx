@@ -21,9 +21,10 @@ import {
   type CompletedBatchExtraction
 } from "../domain/extraction";
 import {
+  createReviewArchive,
   createReviewExport,
   createReviewQuestions,
-  downloadJson,
+  downloadBlob,
   exportFileName,
   reviewSourceFingerprint,
   type ReviewQuestion
@@ -342,9 +343,14 @@ export function PdfViewer({
         illustrationPlan,
         illustrationGeneration.assets
       );
-      downloadJson(value, exportFileName(pdf.fileName));
+      const archive = await createReviewArchive(
+        value,
+        illustrationPlan,
+        illustrationGeneration.assets
+      );
+      downloadBlob(archive, exportFileName(pdf.fileName));
     } catch (error: unknown) {
-      window.alert(`L’export JSON a échoué : ${error instanceof Error ? error.message : String(error)}`);
+      window.alert(`L’export ZIP a échoué : ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setExporting(false);
     }

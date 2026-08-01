@@ -42,6 +42,9 @@ La cartographie et l’extraction disposent de compteurs séparés. Les valeurs 
 Le journal `private/runtime/logs/qcm-proxy.log` ne contient ni PDF, ni prompt, ni réponse complète, ni clé API. Il consigne les identifiants de requête, états, durées et codes d’erreur.
 
 
-## Révision et export JSON
+## Révision et export ZIP
 
 Après l’extraction, ouvrir l’onglet **Révision**. Les questions sont présentées une par une, avec le PDF source à gauche et l’éditeur à droite. Le bouton d’export apparaît sur la dernière question et reste désactivé tant que toutes les questions ne sont pas validées.
+
+
+L’export final produit une archive ZIP contenant `questions.json` et les illustrations PNG sous `assets/`.

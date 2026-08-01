@@ -1,3 +1,4 @@
+import { createZipBlob, type ZipEntryInput } from "../export/createZip";
 import type { DocumentMap } from "./documentMap";
 import type {
   ContentOrigin,
@@ -276,8 +277,35 @@ export async function createReviewExport(
   };
 }
 
-export function downloadJson(value: unknown, fileName: string): void {
-  const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json;charset=utf-8" });
+export async function createReviewArchive(
+  value: ReviewExportDocument,
+  illustrationPlan: IllustrationPlan,
+  generatedAssets: Readonly<Record<string, GeneratedIllustrationAsset>>
+): Promise<Blob> {
+  const entries: ZipEntryInput[] = [{
+    name: "questions.json",
+    data: JSON.stringify(value, null, 2)
+  }];
+  const usedPaths = new Set<string>();
+
+  for (const candidate of illustrationPlan.candidates) {
+    const asset = generatedAssets[candidate.id];
+    if (asset === undefined) {
+      throw new Error(`L’illustration ${candidate.fileName} n’a pas été générée.`);
+    }
+
+    const path = `assets/${candidate.fileName}`;
+    if (usedPaths.has(path)) {
+      throw new Error(`Le chemin d’illustration ${path} apparaît plusieurs fois.`);
+    }
+    usedPaths.add(path);
+    entries.push({ name: path, data: asset.blob });
+  }
+
+  return createZipBlob(entries);
+}
+
+export function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -288,5 +316,5 @@ export function downloadJson(value: unknown, fileName: string): void {
 
 export function exportFileName(sourceFileName: string): string {
   const base = sourceFileName.replace(/\.pdf$/i, "").replace(/[^A-Za-z0-9._-]+/g, "-") || "qcm";
-  return `${base}-qcm.json`;
+  return `${base}-qcm.zip`;
 }

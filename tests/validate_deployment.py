@@ -114,4 +114,4 @@ for marker in ("region-editor", "Tracer", "Supprimer la zone"):
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION"):
     assert marker in state
 
-print("OK déploiement 7.1.0 : révision question par question et export JSON")
+print("OK déploiement 7.1.1 : révision question par question et export ZIP avec images")

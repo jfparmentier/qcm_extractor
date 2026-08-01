@@ -1,3 +1,4 @@
+import { createZipBlob } from "../export/createZip.js";
 function exportChoiceId(id) {
     const clean = id.replace(/^choice-/, "").replace(/[^A-Za-z0-9._-]+/g, "-") || "option";
     return `choice-${clean}`;
@@ -176,8 +177,27 @@ export async function createReviewExport(pdf, documentMap, questions, illustrati
         })
     };
 }
-export function downloadJson(value, fileName) {
-    const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json;charset=utf-8" });
+export async function createReviewArchive(value, illustrationPlan, generatedAssets) {
+    const entries = [{
+            name: "questions.json",
+            data: JSON.stringify(value, null, 2)
+        }];
+    const usedPaths = new Set();
+    for (const candidate of illustrationPlan.candidates) {
+        const asset = generatedAssets[candidate.id];
+        if (asset === undefined) {
+            throw new Error(`L’illustration ${candidate.fileName} n’a pas été générée.`);
+        }
+        const path = `assets/${candidate.fileName}`;
+        if (usedPaths.has(path)) {
+            throw new Error(`Le chemin d’illustration ${path} apparaît plusieurs fois.`);
+        }
+        usedPaths.add(path);
+        entries.push({ name: path, data: asset.blob });
+    }
+    return createZipBlob(entries);
+}
+export function downloadBlob(blob, fileName) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -187,5 +207,5 @@ export function downloadJson(value, fileName) {
 }
 export function exportFileName(sourceFileName) {
     const base = sourceFileName.replace(/\.pdf$/i, "").replace(/[^A-Za-z0-9._-]+/g, "-") || "qcm";
-    return `${base}-qcm.json`;
+    return `${base}-qcm.zip`;
 }
