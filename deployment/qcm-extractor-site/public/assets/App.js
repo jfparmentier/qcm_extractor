@@ -15,7 +15,6 @@ import { ErrorPanel } from "./components/ErrorPanel.js";
 import { FileDropZone } from "./components/FileDropZone.js";
 import { LoadingPanel } from "./components/LoadingPanel.js";
 import { PdfViewer } from "./components/PdfViewer.js";
-
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
         return {

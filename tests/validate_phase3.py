@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.8.0"
+assert package["version"] == "0.9.0"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -127,7 +127,7 @@ for marker in ("QCM_BACKGROUND_START_TIMEOUT_SECONDS", "QCM_BACKGROUND_POLL_TIME
     assert marker in config_php
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
-assert "Phase 6" in index
+assert "Phase 7" in index
 assert '"ajv/dist/2020"' in index
 assert "./assets/main.js" in index
 
@@ -139,8 +139,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "6.0.0"
-assert build_info["application_version"] == "0.8.0"
+assert build_info["version"] == "7.0.0"
+assert build_info["application_version"] == "0.9.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
 print("OK phase 3 : cartographie et éditeur géométrique préservés")

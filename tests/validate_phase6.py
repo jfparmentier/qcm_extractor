@@ -23,7 +23,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 6 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.8.0"
+assert package["version"] == "0.9.0"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -84,13 +84,13 @@ for marker in (
     assert marker in app, marker
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["phase"] == 6
-assert build_info["version"] == "6.0.0"
-assert build_info["application_version"] == "0.8.0"
+assert build_info["phase"] >= 6
+assert build_info["version"] == "7.0.0"
+assert build_info["application_version"] == "0.9.0"
 assert "local-illustration-cropping" in build_info["features"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
-assert "Phase 6" in index
+assert "Phase 7" in index
 
 for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     subprocess.run(["node", "--check", str(js_file)], check=True, capture_output=True, text=True)

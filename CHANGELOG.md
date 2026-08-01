@@ -1,5 +1,19 @@
 # Journal des modifications
 
+## 7.0.0 — Révision question par question
+
+- ajout d’un onglet « Révision » disponible après la seconde passe d’extraction ;
+- affichage d’une seule question à la fois avec navigation précédente et suivante ;
+- disposition en deux colonnes : PDF source à gauche et contenu éditable à droite ;
+- sélection des pages sources et superposition non modifiable des zones de la question ;
+- édition du type, du titre, de l’énoncé, des propositions, des réponses correctes et du feedback ;
+- ajout, suppression et réordonnancement des propositions ;
+- aperçu des illustrations générées associées à la question ;
+- validation explicite de chaque question avec contrôles de cohérence ;
+- export JSON disponible sur la dernière question lorsque toutes les questions sont validées ;
+- remplacement des jetons d’illustration par des références Markdown vers `assets/` dans l’export ;
+- mise à jour du dossier portable OVH/MAMP sans création de `frontend/dist`.
+
 ## 6.0.0 — Extraction et correction déterministe des illustrations
 
 - ajout d’un onglet « Images » après la seconde passe d’extraction ;

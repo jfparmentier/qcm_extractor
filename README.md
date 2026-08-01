@@ -1,13 +1,13 @@
-# Extracteur de QCM — Phase 6.0.0
+# Extracteur de QCM — Phase 7.0.0
 
-Cette archive regroupe les phases 0 à 6. La phase 6 ajoute la production locale des illustrations à partir des zones d’image déjà définies dans la cartographie. Les pages PDF sont rendues en haute résolution dans le navigateur, puis les zones sont découpées en PNG et associées aux questions extraites.
+Cette archive regroupe les phases 0 à 7. La phase 7 ajoute la révision question par question dans une interface à deux colonnes : le PDF source est affiché à gauche et le contenu extrait, entièrement éditable, à droite.
 
 Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne sont utilisés. Le PDF original, les sous-PDF et les illustrations restent en mémoire dans le navigateur. Le dossier directement exploitable sous OVH Hosting Perso ou MAMP est `deployment/qcm-extractor-site`.
 
 ## Arborescence
 
 ```text
-phase6_qcm_extractor_6.0.0/
+phase7_qcm_extractor_7.0.0/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP
@@ -29,18 +29,19 @@ phase6_qcm_extractor_6.0.0/
 
 Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN versionnés. Une connexion internet est nécessaire au chargement initial.
 
-## Phase 6 : illustrations locales
+## Phase 7 : révision des questions
 
-Après la seconde passe d’extraction :
+Après la seconde passe d’extraction, l’onglet **Révision** s’ouvre automatiquement. Il est également accessible depuis la barre des étapes.
 
-1. ouvrir l’onglet **Images** ;
-2. lancer la génération de toutes les illustrations ou d’une illustration isolée ;
-3. contrôler les aperçus, dimensions, tailles, textes alternatifs et jetons d’insertion ;
-4. télécharger individuellement les PNG si nécessaire.
+Pour chaque question :
 
-Le découpage utilise exactement les zones `essential_image` et `decorative_image` présentes dans la cartographie. La boîte englobante proposée par le LLM pendant la seconde passe sert uniquement à rapprocher les métadonnées ; elle ne remplace jamais la zone définie dans la cartographie. Aucun contrôle de retouche, de redimensionnement de zone ou de remplacement par un fichier local n’est proposé dans cette phase.
+1. contrôler la ou les pages sources dans la colonne de gauche ;
+2. modifier le type, le titre, l’énoncé, les propositions, les réponses correctes et le feedback dans la colonne de droite ;
+3. vérifier les illustrations associées ;
+4. cocher **Question validée** lorsque les contrôles bloquants sont résolus ;
+5. utiliser **Précédente** et **Suivante** pour parcourir les questions.
 
-Les pages sont rendues séquentiellement à une largeur cible de 2400 pixels, avec une limite mémoire de 18 millions de pixels par page. Plusieurs zones situées sur la même page réutilisent un seul rendu. Les sorties sont des PNG avec fond blanc et des avertissements sont produits lorsque la découpe est trop petite ou anormalement volumineuse.
+Sur la dernière question, le bouton **Exporter le JSON** devient actif lorsque toutes les questions sont validées. Le fichier produit respecte `schemas/export.schema.json`. Les illustrations sont référencées sous la forme `assets/nom-du-fichier.png`; la constitution d’une archive ZIP complète reste prévue pour la phase d’export dédiée.
 
 ## Vérifications
 
@@ -54,6 +55,7 @@ python tests/validate_phase3.py
 python tests/validate_phase4.py
 python tests/validate_phase5.py
 python tests/validate_phase6.py
+python tests/validate_phase7.py
 python tests/validate_deployment.py
 ```
 

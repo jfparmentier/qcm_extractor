@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BatchSettings } from "../domain/batchPlan";
 import type {
   BatchPreparationState,
@@ -16,14 +16,35 @@ import {
   type NormalizedBoundingBox,
   type PageRegionRole
 } from "../domain/documentMap";
+import {
+  mergeExtractionResults,
+  type CompletedBatchExtraction
+} from "../domain/extraction";
+import {
+  createReviewExport,
+  createReviewQuestions,
+  downloadJson,
+  exportFileName,
+  reviewSourceFingerprint,
+  type ReviewQuestion
+} from "../domain/review";
 import { formatFileSize } from "../pdf/formatFileSize";
-import { CloseIcon, FileIcon, ImageIcon, LayersIcon, SelectionIcon, SparklesIcon } from "./Icons";
+import {
+  CheckIcon,
+  CloseIcon,
+  FileIcon,
+  ImageIcon,
+  LayersIcon,
+  SelectionIcon,
+  SparklesIcon
+} from "./Icons";
 import { ExtractionPanel } from "./ExtractionPanel";
 import { IllustrationPanel } from "./IllustrationPanel";
 import { BatchPanel } from "./BatchPanel";
 import { MappingPanel } from "./MappingPanel";
 import { PdfPageCanvas, type PdfOverlayRegion } from "./PdfPageCanvas";
 import { PdfToolbar } from "./PdfToolbar";
+import { QuestionReview } from "./QuestionReview";
 
 interface PdfViewerProps {
   readonly pdf: LoadedPdf;
@@ -78,6 +99,8 @@ interface PdfViewerProps {
   readonly onClose: () => void;
 }
 
+type ActivePanel = "mapping" | "batches" | "extraction" | "illustrations" | "review";
+
 function isEditableElement(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement ||
     target instanceof HTMLTextAreaElement ||
@@ -127,22 +150,62 @@ export function PdfViewer({
   const [renderError, setRenderError] = useState<string | null>(null);
   const [drawingRole, setDrawingRole] = useState<PageRegionRole>("question");
   const [isDrawing, setIsDrawing] = useState(false);
-  const [activePanel, setActivePanel] = useState<"mapping" | "batches" | "extraction" | "illustrations">("mapping");
+  const [activePanel, setActivePanel] = useState<ActivePanel>("mapping");
+  const [reviewQuestions, setReviewQuestions] = useState<readonly ReviewQuestion[]>([]);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const reviewFingerprintRef = useRef("");
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
-  const showSidePanel = mapping.status !== "idle";
+  const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
 
-  const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
-    if (mapping.data === null) {
-      return [];
+  const completedExtractions = useMemo<CompletedBatchExtraction[]>(() =>
+    Object.entries(extraction.batches).flatMap(([batchId, batchState]) =>
+      batchState.status === "completed" && batchState.result !== null && batchState.meta !== null
+        ? [{ batchId, result: batchState.result, meta: batchState.meta }]
+        : []
+    ), [extraction.batches]);
+
+  const mergedExtraction = useMemo(() =>
+    mapping.data === null
+      ? null
+      : mergeExtractionResults(mapping.data, completedExtractions),
+  [completedExtractions, mapping.data]);
+
+  const extractedQuestions = mergedExtraction?.questions ?? [];
+  const extractedFingerprint = useMemo(
+    () => reviewSourceFingerprint(extractedQuestions),
+    [extractedQuestions]
+  );
+
+  useEffect(() => {
+    if (extractedQuestions.length === 0) {
+      reviewFingerprintRef.current = "";
+      setReviewQuestions([]);
+      setReviewIndex(0);
+      if (activePanel === "review") setActivePanel("extraction");
+      return;
     }
 
+    if (extraction.runStatus !== "completed" || reviewFingerprintRef.current === extractedFingerprint) {
+      return;
+    }
+
+    reviewFingerprintRef.current = extractedFingerprint;
+    const nextQuestions = createReviewQuestions(extractedQuestions);
+    setReviewQuestions(nextQuestions);
+    setReviewIndex(0);
+    const firstPage = nextQuestions[0]?.sourcePages[0];
+    if (firstPage !== undefined) onPageChange(firstPage);
+    setIsDrawing(false);
+    setActivePanel("review");
+  }, [activePanel, extractedFingerprint, extractedQuestions, extraction.runStatus, onPageChange]);
+
+  const overlays = useMemo<readonly PdfOverlayRegion[]>(() => {
+    if (mapping.data === null) return [];
     const regions: PdfOverlayRegion[] = [];
     mapping.data.question_segments.forEach((segment, segmentIndex) => {
       segment.page_regions.forEach((region) => {
-        if (region.page !== currentPage) {
-          return;
-        }
-
+        if (region.page !== currentPage) return;
         regions.push({
           id: region.client_id,
           regionId: region.client_id,
@@ -155,21 +218,16 @@ export function PdfViewer({
         });
       });
     });
-
     return regions;
   }, [currentPage, mapping.data, mapping.selectedRegionId, mapping.selectedSegmentId]);
 
   const selectedRegionOwner = useMemo(() => {
-    if (mapping.data === null || mapping.selectedRegionId === null) {
-      return null;
-    }
-
+    if (mapping.data === null || mapping.selectedRegionId === null) return null;
     for (const segment of mapping.data.question_segments) {
       if (segment.page_regions.some((region) => region.client_id === mapping.selectedRegionId)) {
         return segment.temporary_id;
       }
     }
-
     return null;
   }, [mapping.data, mapping.selectedRegionId]);
 
@@ -207,10 +265,7 @@ export function PdfViewer({
         mapping.selectedRegionId === null ||
         selectedRegionOwner === null ||
         activePanel !== "mapping"
-      ) {
-        return;
-      }
-
+      ) return;
       event.preventDefault();
       onDeleteRegion(selectedRegionOwner, mapping.selectedRegionId);
     };
@@ -220,13 +275,43 @@ export function PdfViewer({
   }, [activePanel, mapping.selectedRegionId, onDeleteRegion, selectedRegionOwner]);
 
   const handleRegionAdd = useCallback((bbox: NormalizedBoundingBox): void => {
-    if (mapping.selectedSegmentId === null) {
-      return;
-    }
-
+    if (mapping.selectedSegmentId === null) return;
     onAddRegion(mapping.selectedSegmentId, currentPage, drawingRole, bbox);
     setIsDrawing(false);
   }, [currentPage, drawingRole, mapping.selectedSegmentId, onAddRegion]);
+
+  const handleReviewIndexChange = useCallback((index: number): void => {
+    const nextIndex = Math.min(Math.max(0, index), Math.max(0, reviewQuestions.length - 1));
+    setReviewIndex(nextIndex);
+    const page = reviewQuestions[nextIndex]?.sourcePages[0];
+    if (page !== undefined) onPageChange(page);
+  }, [onPageChange, reviewQuestions]);
+
+  const handleReviewQuestionChange = useCallback((question: ReviewQuestion): void => {
+    setReviewQuestions((current) => current.map((entry) => entry.id === question.id ? question : entry));
+  }, []);
+
+  const handleReviewExport = useCallback(async (): Promise<void> => {
+    if (mapping.data === null || reviewQuestions.length === 0 || reviewQuestions.some((question) => !question.validated)) {
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const value = await createReviewExport(
+        pdf,
+        mapping.data,
+        reviewQuestions,
+        illustrationPlan,
+        illustrationGeneration.assets
+      );
+      downloadJson(value, exportFileName(pdf.fileName));
+    } catch (error: unknown) {
+      window.alert(`L’export JSON a échoué : ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setExporting(false);
+    }
+  }, [illustrationGeneration.assets, illustrationPlan, mapping.data, pdf, reviewQuestions]);
 
   const completedMap = mapping.status === "completed" ? mapping.data : null;
   const mappingCompleted = completedMap !== null;
@@ -268,150 +353,179 @@ export function PdfViewer({
         </div>
       </header>
 
-      <PdfToolbar
-        currentPage={currentPage}
-        onPageChange={onPageChange}
-        onResetZoom={onResetZoom}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-        pageCount={pdf.pageCount}
-        zoom={zoom}
-      />
+      {activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (
+        <QuestionReview
+          currentIndex={reviewIndex}
+          currentPage={currentPage}
+          documentMap={completedMap}
+          exporting={exporting}
+          illustrationAssets={illustrationGeneration.assets}
+          illustrationPlan={illustrationPlan}
+          onCurrentIndexChange={handleReviewIndexChange}
+          onCurrentPageChange={onPageChange}
+          onExit={() => setActivePanel(illustrationPlan.candidates.length > 0 ? "illustrations" : "extraction")}
+          onExport={() => void handleReviewExport()}
+          onQuestionChange={handleReviewQuestionChange}
+          onResetZoom={onResetZoom}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
+          pdf={pdf}
+          questions={reviewQuestions}
+          zoom={zoom}
+        />
+      ) : (
+        <>
+          <PdfToolbar
+            currentPage={currentPage}
+            onPageChange={onPageChange}
+            onResetZoom={onResetZoom}
+            onZoomIn={onZoomIn}
+            onZoomOut={onZoomOut}
+            pageCount={pdf.pageCount}
+            zoom={zoom}
+          />
 
-      <div className={`viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`}>
-        <main className="page-workspace">
-          {renderError !== null && (
-            <div className="inline-error" role="alert">
-              Une erreur est survenue pendant le rendu de la page : {renderError}
-            </div>
-          )}
-          <div className="page-stage">
-            <PdfPageCanvas
-              document={pdf.document}
-              drawRole={isDrawing && activePanel === "mapping" ? drawingRole : null}
-              onOverlaySelect={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion}
-              onRegionAdd={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd}
-              onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined}
-              onRenderError={handleRenderError}
-              overlays={overlays}
-              pageNumber={currentPage}
-              scale={zoom}
-            />
-          </div>
-        </main>
+          <div className={`viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`}>
+            <main className="page-workspace">
+              {renderError !== null && (
+                <div className="inline-error" role="alert">
+                  Une erreur est survenue pendant le rendu de la page : {renderError}
+                </div>
+              )}
+              <div className="page-stage">
+                <PdfPageCanvas
+                  document={pdf.document}
+                  drawRole={isDrawing && activePanel === "mapping" ? drawingRole : null}
+                  onOverlaySelect={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion}
+                  onRegionAdd={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd}
+                  onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined}
+                  onRenderError={handleRenderError}
+                  overlays={overlays}
+                  pageNumber={currentPage}
+                  scale={zoom}
+                />
+              </div>
+            </main>
 
-        {showSidePanel && (
-          <div className="side-panel-shell">
-            {mappingCompleted && (
-              <nav className="side-panel-tabs" aria-label="Étapes du traitement">
-                <button
-                  aria-current={activePanel === "mapping" ? "page" : undefined}
-                  className={activePanel === "mapping" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
-                  onClick={() => setActivePanel("mapping")}
-                  type="button"
-                >
-                  <SelectionIcon /> Zones
-                </button>
-                <button
-                  aria-current={activePanel === "batches" ? "page" : undefined}
-                  className={activePanel === "batches" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
-                  onClick={() => {
-                    setIsDrawing(false);
-                    setActivePanel("batches");
-                  }}
-                  type="button"
-                >
-                  <LayersIcon /> Lots
-                  {batching.plan !== null && <span>{batching.plan.batches.length}</span>}
-                </button>
-                <button
-                  aria-current={activePanel === "extraction" ? "page" : undefined}
-                  className={activePanel === "extraction" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={batching.plan === null}
-                  onClick={() => {
-                    setIsDrawing(false);
-                    setActivePanel("extraction");
-                  }}
-                  type="button"
-                >
-                  <SparklesIcon /> Extraction
-                  {Object.values(extraction.batches).some((batch) => batch.status === "completed") && (
-                    <span>{Object.values(extraction.batches).filter((batch) => batch.status === "completed").length}</span>
-                  )}
-                </button>
-                <button
-                  aria-current={activePanel === "illustrations" ? "page" : undefined}
-                  className={activePanel === "illustrations" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
-                  disabled={illustrationPlan.candidates.length === 0 || extraction.runStatus === "running"}
-                  onClick={() => {
-                    setIsDrawing(false);
-                    setActivePanel("illustrations");
-                  }}
-                  type="button"
-                >
-                  <ImageIcon /> Images
-                  {illustrationPlan.candidates.length > 0 && <span>{illustrationPlan.candidates.length}</span>}
-                </button>
-              </nav>
+            {showSidePanel && (
+              <div className="side-panel-shell">
+                {mappingCompleted && (
+                  <nav className="side-panel-tabs" aria-label="Étapes du traitement">
+                    <button
+                      aria-current={activePanel === "mapping" ? "page" : undefined}
+                      className={activePanel === "mapping" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                      disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
+                      onClick={() => setActivePanel("mapping")}
+                      type="button"
+                    >
+                      <SelectionIcon /> Zones
+                    </button>
+                    <button
+                      aria-current={activePanel === "batches" ? "page" : undefined}
+                      className={activePanel === "batches" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                      disabled={extraction.runStatus === "running" || illustrationGeneration.status === "running"}
+                      onClick={() => { setIsDrawing(false); setActivePanel("batches"); }}
+                      type="button"
+                    >
+                      <LayersIcon /> Lots
+                      {batching.plan !== null && <span>{batching.plan.batches.length}</span>}
+                    </button>
+                    <button
+                      aria-current={activePanel === "extraction" ? "page" : undefined}
+                      className={activePanel === "extraction" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                      disabled={batching.plan === null}
+                      onClick={() => { setIsDrawing(false); setActivePanel("extraction"); }}
+                      type="button"
+                    >
+                      <SparklesIcon /> Extraction
+                      {Object.values(extraction.batches).some((batch) => batch.status === "completed") && (
+                        <span>{Object.values(extraction.batches).filter((batch) => batch.status === "completed").length}</span>
+                      )}
+                    </button>
+                    <button
+                      aria-current={activePanel === "illustrations" ? "page" : undefined}
+                      className={activePanel === "illustrations" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                      disabled={illustrationPlan.candidates.length === 0 || extraction.runStatus === "running"}
+                      onClick={() => { setIsDrawing(false); setActivePanel("illustrations"); }}
+                      type="button"
+                    >
+                      <ImageIcon /> Images
+                      {illustrationPlan.candidates.length > 0 && <span>{illustrationPlan.candidates.length}</span>}
+                    </button>
+                    <button
+                      aria-current={activePanel === "review" ? "page" : undefined}
+                      className={activePanel === "review" ? "side-panel-tab side-panel-tab--active" : "side-panel-tab"}
+                      disabled={reviewQuestions.length === 0 || extraction.runStatus === "running"}
+                      onClick={() => {
+                        setIsDrawing(false);
+                        setActivePanel("review");
+                        handleReviewIndexChange(reviewIndex);
+                      }}
+                      type="button"
+                    >
+                      <CheckIcon /> Révision
+                      {reviewQuestions.length > 0 && <span>{reviewQuestions.filter((question) => question.validated).length}/{reviewQuestions.length}</span>}
+                    </button>
+                  </nav>
+                )}
+
+                {activePanel === "batches" && mappingCompleted ? (
+                  <BatchPanel
+                    batching={batching}
+                    documentMap={completedMap}
+                    onClear={onClearBatches}
+                    onDownloadBatch={onDownloadBatch}
+                    onGenerateAll={onGenerateAllBatches}
+                    onGenerateBatch={onGenerateBatch}
+                    onPlan={onPlanBatches}
+                    onSelectSegment={onSelectSegment}
+                    onSettingsChange={onUpdateBatchSettings}
+                  />
+                ) : activePanel === "extraction" && mappingCompleted ? (
+                  <ExtractionPanel
+                    documentMap={completedMap}
+                    extraction={extraction}
+                    onCancel={onCancelExtraction}
+                    onClear={onClearExtraction}
+                    onExtractAll={onExtractAll}
+                    onExtractBatch={onExtractBatch}
+                    onSelectSegment={onSelectSegment}
+                    onSettingsChange={onUpdateExtractionSettings}
+                    plan={batching.plan}
+                  />
+                ) : activePanel === "illustrations" && mappingCompleted ? (
+                  <IllustrationPanel
+                    generation={illustrationGeneration}
+                    onCancel={onCancelIllustrationGeneration}
+                    onClear={onClearIllustrations}
+                    onDownload={onDownloadIllustration}
+                    onGenerateAll={onGenerateAllIllustrations}
+                    onGenerateOne={onGenerateIllustration}
+                    onPageChange={onPageChange}
+                    onSelectSegment={onSelectSegment}
+                    plan={illustrationPlan}
+                  />
+                ) : (
+                  <MappingPanel
+                    currentPage={currentPage}
+                    drawingRole={drawingRole}
+                    isDrawing={isDrawing}
+                    mapping={mapping}
+                    onAnalyze={onAnalyze}
+                    onCancel={onCancelMapping}
+                    onDeleteRegion={onDeleteRegion}
+                    onDrawingRoleChange={setDrawingRole}
+                    onSelectRegion={onSelectRegion}
+                    onSelectSegment={onSelectSegment}
+                    onToggleDrawing={() => setIsDrawing((active) => !active)}
+                    onUpdateRegionRole={onUpdateRegionRole}
+                  />
+                )}
+              </div>
             )}
-
-            {activePanel === "batches" && mappingCompleted ? (
-              <BatchPanel
-                batching={batching}
-                documentMap={completedMap}
-                onClear={onClearBatches}
-                onDownloadBatch={onDownloadBatch}
-                onGenerateAll={onGenerateAllBatches}
-                onGenerateBatch={onGenerateBatch}
-                onPlan={onPlanBatches}
-                onSelectSegment={onSelectSegment}
-                onSettingsChange={onUpdateBatchSettings}
-              />
-            ) : activePanel === "extraction" && mappingCompleted ? (
-              <ExtractionPanel
-                documentMap={completedMap}
-                extraction={extraction}
-                onCancel={onCancelExtraction}
-                onClear={onClearExtraction}
-                onExtractAll={onExtractAll}
-                onExtractBatch={onExtractBatch}
-                onSelectSegment={onSelectSegment}
-                onSettingsChange={onUpdateExtractionSettings}
-                plan={batching.plan}
-              />
-            ) : activePanel === "illustrations" && mappingCompleted ? (
-              <IllustrationPanel
-                generation={illustrationGeneration}
-                onCancel={onCancelIllustrationGeneration}
-                onClear={onClearIllustrations}
-                onDownload={onDownloadIllustration}
-                onGenerateAll={onGenerateAllIllustrations}
-                onGenerateOne={onGenerateIllustration}
-                onPageChange={onPageChange}
-                onSelectSegment={onSelectSegment}
-                plan={illustrationPlan}
-              />
-            ) : (
-              <MappingPanel
-                currentPage={currentPage}
-                drawingRole={drawingRole}
-                isDrawing={isDrawing}
-                mapping={mapping}
-                onAnalyze={onAnalyze}
-                onCancel={onCancelMapping}
-                onDeleteRegion={onDeleteRegion}
-                onDrawingRoleChange={setDrawingRole}
-                onSelectRegion={onSelectRegion}
-                onSelectSegment={onSelectSegment}
-                onToggleDrawing={() => setIsDrawing((active) => !active)}
-                onUpdateRegionRole={onUpdateRegionRole}
-              />
-            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </section>
   );
 }
