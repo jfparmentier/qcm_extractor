@@ -107,12 +107,12 @@ assert.equal(exportFileName("Mon document.pdf"), "Mon-document-qcm.zip");
 const moodleXml = await createMoodleXml(exported, generatedAssets);
 assert.match(moodleXml, /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<quiz>/);
 assert.match(moodleXml, /<question type="multichoice">/);
-assert.match(moodleXml, /<single>false<\/single>/);
+assert.match(moodleXml, /<single>true<\/single>/);
 assert.match(moodleXml, /<shuffleanswers>false<\/shuffleanswers>/);
 assert.match(moodleXml, /<answernumbering>none<\/answernumbering>/);
 assert.match(moodleXml, /<answer fraction="100" format="html">[\s\S]*Réponse A/);
 assert.match(moodleXml, /<answer fraction="-100" format="html">[\s\S]*Réponse B/);
-assert.match(moodleXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png" alt="Circuit" \/>/);
+assert.match(moodleXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png" alt="Circuit" style="max-width: 450px; max-height: 300px; width: auto; height: auto;" \/>/);
 assert.doesNotMatch(moodleXml, /<img[^>]+\/>\s*\)/);
 assert.match(moodleXml, /<file name="q-001-01\.png" path="\/" encoding="base64">iVBORw0KGgo=<\/file>/);
 assert.doesNotMatch(moodleXml, /!\[[^\]]*\]\([^)]*\)/);
@@ -131,10 +131,21 @@ assert.equal(
   "L’image doit être intégrée une seule fois même si son Markdown est invalide."
 );
 
+const orphanImageDescriptionXml = await createMoodleXml({
+  ...exported,
+  questions: [{
+    ...exported.questions[0],
+    statement: "Observer le circuit. ![description de l'image] ![Circuit](assets/q-001-01.png)"
+  }]
+}, generatedAssets);
+assert.doesNotMatch(orphanImageDescriptionXml, /!\[description de l'image\]/);
+assert.match(orphanImageDescriptionXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png"/);
+
 const multipleAnswersXml = await createMoodleXml({
   ...exported,
   questions: [{
     ...exported.questions[0],
+    type: "multiple_choice",
     choices: [
       { id: "choice-a", content: "Première" },
       { id: "choice-b", content: "Deuxième" },
@@ -143,6 +154,7 @@ const multipleAnswersXml = await createMoodleXml({
     correct_choice_ids: ["choice-a", "choice-c"]
   }]
 }, generatedAssets);
+assert.match(multipleAnswersXml, /<single>false<\/single>/);
 assert.deepEqual(
   [...multipleAnswersXml.matchAll(/<answer fraction="([^"]+)" format="html">[\s\S]*?<text><!\[CDATA\[([^<]+)\]\]><\/text>/g)]
     .map((match) => [match[1], match[2]]),

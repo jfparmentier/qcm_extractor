@@ -351,6 +351,7 @@ function moodleQuestionHtml(question: ReviewExportDocument["questions"][number])
       return markers[assetIndex]?.marker ?? "";
     }
   );
+  statement = statement.replace(/!\[[^\]]*\]/g, "");
   markers.forEach(({ marker }) => {
     statement = statement.replace(new RegExp(`\\(\\s*${marker}\\s*\\)`, "g"), marker);
   });
@@ -362,7 +363,7 @@ function moodleQuestionHtml(question: ReviewExportDocument["questions"][number])
   let html = textAsHtml(statement);
   markers.forEach(({ asset, marker }) => {
     const fileName = asset.path.split("/").pop() ?? asset.path;
-    const image = `<img src="@@PLUGINFILE@@/${escapeXml(fileName)}" alt="${escapeXml(asset.alt_text)}" />`;
+    const image = `<img src="@@PLUGINFILE@@/${escapeXml(fileName)}" alt="${escapeXml(asset.alt_text)}" style="max-width: 450px; max-height: 300px; width: auto; height: auto;" />`;
     html = html.split(marker).join(image);
   });
   return `<div>${html}</div>`;
@@ -433,7 +434,7 @@ export async function createMoodleXml(
       "    <defaultgrade>1</defaultgrade>",
       "    <penalty>0</penalty>",
       "    <hidden>0</hidden>",
-      "    <single>false</single>",
+      `    <single>${question.type === "multiple_choice" ? "false" : "true"}</single>`,
       "    <shuffleanswers>false</shuffleanswers>",
       "    <answernumbering>none</answernumbering>",
       ...answers,

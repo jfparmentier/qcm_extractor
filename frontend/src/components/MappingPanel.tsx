@@ -144,7 +144,7 @@ export function MappingPanel({
     );
   }
 
-  const { document, question_segments: segments } = mapping.data;
+  const { question_segments: segments } = mapping.data;
   const selectedSegment = selectedIndex >= 0 ? segments[selectedIndex] ?? null : null;
   const regionsOnCurrentPage = selectedSegment?.page_regions.filter(
     (region) => region.page === currentPage
@@ -216,13 +216,6 @@ export function MappingPanel({
             <span>Les cadres du PDF doivent contenir toute la question, sans contenu voisin.</span>
           </div>
         </div>
-
-        {document.warnings.length > 0 && (
-        <details className="mapping-warnings">
-          <summary>{document.warnings.length} avertissement{document.warnings.length > 1 ? "s" : ""} sur le document</summary>
-          <ul>{document.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
-        </details>
-        )}
 
         <section className="region-editor" aria-label="Éditeur géométrique des zones">
         <div className="region-editor__heading">
