@@ -25,6 +25,8 @@
     "mandatory-llm-feedback",
     "feedback-provenance-display",
     "json-inside-zip",
+    "moodle-xml-inside-zip",
+    "base64-images-in-moodle-xml",
     "zip-export-with-images",
     "dependency-free-zip-writer",
     "sequential-single-panel-workflow",

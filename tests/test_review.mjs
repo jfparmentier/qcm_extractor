@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  createMoodleXml,
   createReviewArchive,
   createReviewExport,
   createReviewQuestions,
@@ -103,6 +104,35 @@ assert.equal(exported.questions[0].validation_status, "validated");
 assert.match(exported.document.source_sha256, /^[a-f0-9]{64}$/);
 assert.equal(exportFileName("Mon document.pdf"), "Mon-document-qcm.zip");
 
+const moodleXml = await createMoodleXml(exported, generatedAssets);
+assert.match(moodleXml, /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<quiz>/);
+assert.match(moodleXml, /<question type="multichoice">/);
+assert.match(moodleXml, /<single>false<\/single>/);
+assert.match(moodleXml, /<shuffleanswers>false<\/shuffleanswers>/);
+assert.match(moodleXml, /<answernumbering>none<\/answernumbering>/);
+assert.match(moodleXml, /<answer fraction="100" format="html">[\s\S]*Réponse A/);
+assert.match(moodleXml, /<answer fraction="-100" format="html">[\s\S]*Réponse B/);
+assert.match(moodleXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png" alt="Circuit" \/>/);
+assert.match(moodleXml, /<file name="q-001-01\.png" path="\/" encoding="base64">iVBORw0KGgo=<\/file>/);
+
+const multipleAnswersXml = await createMoodleXml({
+  ...exported,
+  questions: [{
+    ...exported.questions[0],
+    choices: [
+      { id: "choice-a", content: "Première" },
+      { id: "choice-b", content: "Deuxième" },
+      { id: "choice-c", content: "Troisième" }
+    ],
+    correct_choice_ids: ["choice-a", "choice-c"]
+  }]
+}, generatedAssets);
+assert.deepEqual(
+  [...multipleAnswersXml.matchAll(/<answer fraction="([^"]+)" format="html">[\s\S]*?<text><!\[CDATA\[([^<]+)\]\]><\/text>/g)]
+    .map((match) => [match[1], match[2]]),
+  [["50", "Première"], ["-100", "Deuxième"], ["50", "Troisième"]]
+);
+
 const archive = await createReviewArchive(exported, plan, generatedAssets);
 assert.equal(archive.type, "application/zip");
 const archiveBytes = new Uint8Array(await archive.arrayBuffer());
@@ -115,6 +145,8 @@ try {
   execFileSync("unzip", ["-t", archivePath], { stdio: "pipe" });
   const jsonText = execFileSync("unzip", ["-p", archivePath, "questions.json"], { encoding: "utf8" });
   assert.deepEqual(JSON.parse(jsonText), exported);
+  const xmlText = execFileSync("unzip", ["-p", archivePath, "moodle.xml"], { encoding: "utf8" });
+  assert.equal(xmlText, moodleXml);
   const extractedPng = execFileSync("unzip", ["-p", archivePath, "assets/q-001-01.png"]);
   assert.deepEqual([...extractedPng], [...pngBytes]);
   assert.ok(readFileSync(archivePath).byteLength > pngBytes.byteLength);

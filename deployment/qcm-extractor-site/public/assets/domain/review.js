@@ -180,10 +180,16 @@ export async function createReviewExport(pdf, documentMap, questions, illustrati
     };
 }
 export async function createReviewArchive(value, illustrationPlan, generatedAssets) {
-    const entries = [{
+    const entries = [
+        {
             name: "questions.json",
             data: JSON.stringify(value, null, 2)
-        }];
+        },
+        {
+            name: "moodle.xml",
+            data: await createMoodleXml(value, generatedAssets)
+        }
+    ];
     const usedPaths = new Set();
     for (const candidate of illustrationPlan.candidates) {
         const asset = generatedAssets[candidate.id];
@@ -198,6 +204,106 @@ export async function createReviewArchive(value, illustrationPlan, generatedAsse
         entries.push({ name: path, data: asset.blob });
     }
     return createZipBlob(entries);
+}
+function escapeXml(value) {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&apos;");
+}
+function cdata(value) {
+    return `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`;
+}
+function textAsHtml(value) {
+    return escapeXml(value).replaceAll("\n", "<br />\n");
+}
+function moodleQuestionHtml(question) {
+    let statement = question.statement;
+    const markers = question.assets.map((asset, index) => {
+        const marker = `\uE000QCM_IMAGE_${index}\uE001`;
+        const markdown = `![${asset.alt_text}](${asset.path})`;
+        statement = statement.split(markdown).join(marker);
+        return { asset, marker };
+    });
+    let html = textAsHtml(statement);
+    markers.forEach(({ asset, marker }) => {
+        const fileName = asset.path.split("/").pop() ?? asset.path;
+        const image = `<img src="@@PLUGINFILE@@/${escapeXml(fileName)}" alt="${escapeXml(asset.alt_text)}" />`;
+        html = html.split(marker).join(image);
+    });
+    return `<div>${html}</div>`;
+}
+function answerFraction(question, choiceId) {
+    if (!question.correct_choice_ids.includes(choiceId))
+        return "-100";
+    const correctCount = question.correct_choice_ids.length;
+    if (correctCount === 0) {
+        throw new Error(`La question ${question.id} ne possède aucune réponse correcte.`);
+    }
+    return (100 / correctCount).toFixed(12).replace(/\.?0+$/, "");
+}
+function bytesToBase64(bytes) {
+    const chunkSize = 0x8000;
+    let binary = "";
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return btoa(binary);
+}
+export async function createMoodleXml(value, generatedAssets) {
+    const assetsByFileName = new Map(Object.values(generatedAssets).map((asset) => [asset.fileName, asset]));
+    const questions = [];
+    for (const question of value.questions) {
+        if (question.correct_choice_ids.length === 0) {
+            throw new Error(`La question ${question.id} ne possède aucune réponse correcte.`);
+        }
+        const files = [];
+        for (const exportedAsset of question.assets) {
+            const fileName = exportedAsset.path.split("/").pop() ?? exportedAsset.path;
+            const generatedAsset = assetsByFileName.get(fileName);
+            if (generatedAsset === undefined) {
+                throw new Error(`L’illustration ${fileName} n’a pas été générée.`);
+            }
+            const base64 = bytesToBase64(new Uint8Array(await generatedAsset.blob.arrayBuffer()));
+            files.push(`      <file name="${escapeXml(fileName)}" path="/" encoding="base64">${base64}</file>`);
+        }
+        const answers = question.choices.map((choice) => [
+            `    <answer fraction="${answerFraction(question, choice.id)}" format="html">`,
+            `      <text>${cdata(textAsHtml(choice.content))}</text>`,
+            "      <feedback format=\"html\"><text></text></feedback>",
+            "    </answer>"
+        ].join("\n"));
+        questions.push([
+            "  <question type=\"multichoice\">",
+            "    <name>",
+            `      <text>${escapeXml(question.title)}</text>`,
+            "    </name>",
+            "    <questiontext format=\"html\">",
+            `      <text>${cdata(moodleQuestionHtml(question))}</text>`,
+            ...files,
+            "    </questiontext>",
+            "    <generalfeedback format=\"html\">",
+            `      <text>${cdata(textAsHtml(question.feedback))}</text>`,
+            "    </generalfeedback>",
+            "    <defaultgrade>1</defaultgrade>",
+            "    <penalty>0</penalty>",
+            "    <hidden>0</hidden>",
+            "    <single>false</single>",
+            "    <shuffleanswers>false</shuffleanswers>",
+            "    <answernumbering>none</answernumbering>",
+            ...answers,
+            "  </question>"
+        ].join("\n"));
+    }
+    return [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        "<quiz>",
+        ...questions,
+        "</quiz>",
+        ""
+    ].join("\n");
 }
 export function downloadBlob(blob, fileName) {
     const url = URL.createObjectURL(blob);
