@@ -129,6 +129,10 @@ summary:focus-visible {
   line-height: 1.06;
 }
 
+.welcome-copy h1 {
+  letter-spacing: 0.02em;
+}
+
 .welcome-copy p {
   max-width: 630px;
   margin: 1.25rem auto 0;

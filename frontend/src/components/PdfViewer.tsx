@@ -448,9 +448,7 @@ export function PdfViewer({
           onCurrentPageChange={onPageChange}
           onExport={() => void handleReviewExport()}
           onQuestionChange={handleReviewQuestionChange}
-          onResetZoom={onResetZoom}
-          onZoomIn={onZoomIn}
-          onZoomOut={onZoomOut}
+          onZoomChange={onZoomChange}
           pdf={pdf}
           questions={reviewQuestions}
           zoom={zoom}

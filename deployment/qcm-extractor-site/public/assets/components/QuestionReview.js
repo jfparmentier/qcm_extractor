@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "../domain/projectState.js?v=7.5.5";
 import { nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.5.5";
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.5.5";
 import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.5";
@@ -35,8 +36,9 @@ function focusForRegions(regions) {
         height: Math.min(1, bottom + margin) - y
     };
 }
-export function QuestionReview({ pdf, documentMap, questions, currentIndex, currentPage, zoom, illustrationPlan, illustrationAssets, exporting, onCurrentIndexChange, onCurrentPageChange, onQuestionChange, onZoomIn, onZoomOut, onResetZoom, onExport }) {
+export function QuestionReview({ pdf, documentMap, questions, currentIndex, currentPage, zoom, illustrationPlan, illustrationAssets, exporting, onCurrentIndexChange, onCurrentPageChange, onQuestionChange, onZoomChange, onExport }) {
     const [renderError, setRenderError] = useState(null);
+    const [maximumSourceZoom, setMaximumSourceZoom] = useState(MAX_ZOOM);
     const reviewRootRef = useRef(null);
     const sourceStageRef = useRef(null);
     const editorColumnRef = useRef(null);
@@ -65,6 +67,36 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
         setRenderError(null);
     }, [currentPage, onCurrentPageChange, question, sourcePages]);
     const focusBbox = useMemo(() => focusForRegions(segmentInfo?.page_regions.filter((region) => region.page === currentPage) ?? []), [currentPage, segmentInfo]);
+    useEffect(() => {
+        const stage = sourceStageRef.current;
+        if (stage === null)
+            return;
+        let disposed = false;
+        const fitPdfToStage = async () => {
+            const page = await pdf.document.getPage(currentPage);
+            if (disposed)
+                return;
+            const styles = window.getComputedStyle(stage);
+            const horizontalPadding = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
+            const availableWidth = Math.max(1, stage.clientWidth - horizontalPadding);
+            const visiblePageWidth = page.getViewport({ scale: 1 }).width * (focusBbox?.width ?? 1);
+            const maximumZoom = Math.min(MAX_ZOOM, availableWidth / visiblePageWidth);
+            setMaximumSourceZoom(maximumZoom);
+            if (maximumZoom >= MIN_ZOOM && zoom > maximumZoom)
+                onZoomChange(maximumZoom);
+        };
+        const updatePdfFit = () => {
+            void fitPdfToStage().catch(() => undefined);
+        };
+        const resizeObserver = new ResizeObserver(updatePdfFit);
+        resizeObserver.observe(stage);
+        updatePdfFit();
+        return () => {
+            disposed = true;
+            resizeObserver.disconnect();
+        };
+    }, [currentPage, focusBbox?.width, onZoomChange, pdf.document, zoom]);
+    const effectiveZoom = Math.min(zoom, maximumSourceZoom);
     const questionAssets = useMemo(() => {
         if (question === undefined)
             return [];
@@ -141,7 +173,7 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
     if (question === undefined) {
         return _jsx("div", { className: "review-empty-state", children: _jsx("strong", { children: "Aucune question extraite" }) });
     }
-    return (_jsxs("section", { ref: reviewRootRef, className: "question-review", "aria-label": "R\u00E9vision des questions", children: [_jsxs("div", { className: "question-review__columns", children: [_jsxs("section", { className: "question-source-column", "aria-label": "Document PDF source", children: [_jsxs("header", { className: "question-column-header", children: [_jsxs("div", { className: "question-source-heading", children: [_jsx("span", { className: "eyebrow", children: "Source" }), _jsxs("span", { children: ["Page ", currentPage] })] }), _jsxs("div", { className: "review-zoom-controls", children: [_jsx("button", { "aria-label": "R\u00E9duire", className: "icon-button", onClick: onZoomOut, type: "button", children: _jsx(MinusIcon, {}) }), _jsxs("button", { className: "review-zoom-value", onClick: onResetZoom, type: "button", children: [Math.round(zoom * 100), " %"] }), _jsx("button", { "aria-label": "Agrandir", className: "icon-button", onClick: onZoomIn, type: "button", children: _jsx(PlusIcon, {}) })] })] }), renderError !== null && _jsx("div", { className: "inline-error", role: "alert", children: renderError }), _jsx("div", { ref: sourceStageRef, className: "question-source-stage", children: _jsx(PdfPageCanvas, { className: "question-source-canvas", document: pdf.document, focusBbox: focusBbox, onRenderError: setRenderError, pageNumber: currentPage, scale: zoom }) })] }), _jsxs("section", { ref: editorColumnRef, className: "question-editor-column", "aria-label": "Contenu \u00E9ditable de la question", children: [_jsx("header", { className: "question-column-header", children: _jsxs("div", { children: [_jsx("span", { className: "eyebrow", children: "Contenu extrait" }), _jsxs("h3", { children: ["Question ", currentIndex + 1] })] }) }), _jsxs("div", { className: "question-form", children: [_jsxs("label", { className: "question-field question-field--compact", children: [_jsx("span", { children: "Type de question" }), _jsxs("select", { onChange: (event) => {
+    return (_jsxs("section", { ref: reviewRootRef, className: "question-review", "aria-label": "R\u00E9vision des questions", children: [_jsxs("div", { className: "question-review__columns", children: [_jsxs("section", { className: "question-source-column", "aria-label": "Document PDF source", children: [_jsxs("header", { className: "question-column-header", children: [_jsxs("div", { className: "question-source-heading", children: [_jsx("span", { className: "eyebrow", children: "Source" }), _jsxs("span", { children: ["Page ", currentPage] })] }), _jsxs("div", { className: "review-zoom-controls", children: [_jsx("button", { "aria-label": "R\u00E9duire", className: "icon-button", onClick: () => onZoomChange(effectiveZoom - ZOOM_STEP), type: "button", children: _jsx(MinusIcon, {}) }), _jsxs("button", { className: "review-zoom-value", onClick: () => onZoomChange(Math.min(1, maximumSourceZoom)), type: "button", children: [Math.round(effectiveZoom * 100), " %"] }), _jsx("button", { "aria-label": "Agrandir", className: "icon-button", onClick: () => onZoomChange(Math.min(maximumSourceZoom, effectiveZoom + ZOOM_STEP)), type: "button", children: _jsx(PlusIcon, {}) })] })] }), renderError !== null && _jsx("div", { className: "inline-error", role: "alert", children: renderError }), _jsx("div", { ref: sourceStageRef, className: "question-source-stage", children: _jsx(PdfPageCanvas, { className: "question-source-canvas", document: pdf.document, focusBbox: focusBbox, onRenderError: setRenderError, pageNumber: currentPage, scale: effectiveZoom }) })] }), _jsxs("section", { ref: editorColumnRef, className: "question-editor-column", "aria-label": "Contenu \u00E9ditable de la question", children: [_jsx("header", { className: "question-column-header", children: _jsxs("div", { children: [_jsx("span", { className: "eyebrow", children: "Contenu extrait" }), _jsxs("h3", { children: ["Question ", currentIndex + 1] })] }) }), _jsxs("div", { className: "question-form", children: [_jsxs("label", { className: "question-field question-field--compact", children: [_jsx("span", { children: "Type de question" }), _jsxs("select", { onChange: (event) => {
                                                     const type = event.target.value;
                                                     const correctChoiceIds = isSingleAnswer(type)
                                                         ? question.correctChoiceIds.slice(0, 1)

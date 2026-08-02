@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DocumentMap, NormalizedBoundingBox, PageRegion } from "../domain/documentMap";
 import type { GeneratedIllustrationAsset, IllustrationPlan } from "../domain/illustration";
-import type { LoadedPdf } from "../domain/projectState";
+import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP, type LoadedPdf } from "../domain/projectState";
 import {
   nextChoiceId,
   reviewQuestionIssues,
@@ -33,9 +33,7 @@ interface QuestionReviewProps {
   readonly onCurrentIndexChange: (index: number) => void;
   readonly onCurrentPageChange: (page: number) => void;
   readonly onQuestionChange: (question: ReviewQuestion) => void;
-  readonly onZoomIn: () => void;
-  readonly onZoomOut: () => void;
-  readonly onResetZoom: () => void;
+  readonly onZoomChange: (zoom: number) => void;
   readonly onExport: () => void;
 }
 
@@ -87,12 +85,11 @@ export function QuestionReview({
   onCurrentIndexChange,
   onCurrentPageChange,
   onQuestionChange,
-  onZoomIn,
-  onZoomOut,
-  onResetZoom,
+  onZoomChange,
   onExport
 }: QuestionReviewProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
+  const [maximumSourceZoom, setMaximumSourceZoom] = useState(MAX_ZOOM);
   const reviewRootRef = useRef<HTMLElement>(null);
   const sourceStageRef = useRef<HTMLDivElement>(null);
   const editorColumnRef = useRef<HTMLElement>(null);
@@ -128,6 +125,38 @@ export function QuestionReview({
     ),
     [currentPage, segmentInfo]
   );
+
+  useEffect(() => {
+    const stage = sourceStageRef.current;
+    if (stage === null) return;
+
+    let disposed = false;
+    const fitPdfToStage = async (): Promise<void> => {
+      const page = await pdf.document.getPage(currentPage);
+      if (disposed) return;
+
+      const styles = window.getComputedStyle(stage);
+      const horizontalPadding = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
+      const availableWidth = Math.max(1, stage.clientWidth - horizontalPadding);
+      const visiblePageWidth = page.getViewport({ scale: 1 }).width * (focusBbox?.width ?? 1);
+      const maximumZoom = Math.min(MAX_ZOOM, availableWidth / visiblePageWidth);
+      setMaximumSourceZoom(maximumZoom);
+      if (maximumZoom >= MIN_ZOOM && zoom > maximumZoom) onZoomChange(maximumZoom);
+    };
+    const updatePdfFit = (): void => {
+      void fitPdfToStage().catch(() => undefined);
+    };
+    const resizeObserver = new ResizeObserver(updatePdfFit);
+    resizeObserver.observe(stage);
+    updatePdfFit();
+
+    return () => {
+      disposed = true;
+      resizeObserver.disconnect();
+    };
+  }, [currentPage, focusBbox?.width, onZoomChange, pdf.document, zoom]);
+
+  const effectiveZoom = Math.min(zoom, maximumSourceZoom);
 
   const questionAssets = useMemo(() => {
     if (question === undefined) return [];
@@ -217,9 +246,9 @@ export function QuestionReview({
               <span>Page {currentPage}</span>
             </div>
             <div className="review-zoom-controls">
-              <button aria-label="Réduire" className="icon-button" onClick={onZoomOut} type="button"><MinusIcon /></button>
-              <button className="review-zoom-value" onClick={onResetZoom} type="button">{Math.round(zoom * 100)} %</button>
-              <button aria-label="Agrandir" className="icon-button" onClick={onZoomIn} type="button"><PlusIcon /></button>
+              <button aria-label="Réduire" className="icon-button" onClick={() => onZoomChange(effectiveZoom - ZOOM_STEP)} type="button"><MinusIcon /></button>
+              <button className="review-zoom-value" onClick={() => onZoomChange(Math.min(1, maximumSourceZoom))} type="button">{Math.round(effectiveZoom * 100)} %</button>
+              <button aria-label="Agrandir" className="icon-button" onClick={() => onZoomChange(Math.min(maximumSourceZoom, effectiveZoom + ZOOM_STEP))} type="button"><PlusIcon /></button>
             </div>
           </header>
 
@@ -231,7 +260,7 @@ export function QuestionReview({
               focusBbox={focusBbox}
               onRenderError={setRenderError}
               pageNumber={currentPage}
-              scale={zoom}
+              scale={effectiveZoom}
             />
           </div>
         </section>
