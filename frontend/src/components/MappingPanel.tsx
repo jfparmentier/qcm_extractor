@@ -184,54 +184,96 @@ export function MappingPanel({
 
   const previousSegment = segments[selectedIndex - 1];
   const nextSegment = segments[selectedIndex + 1];
+  const progressPercentage = Math.round(((selectedIndex + 1) / segments.length) * 100);
+  const totalRegions = selectedSegment.page_regions.length;
 
   return (
     <aside className="mapping-panel" aria-label="Validation de la cartographie question par question">
-      <div className="mapping-panel__header mapping-panel__header--question">
-        <div>
-          <span className="eyebrow">Cartographie terminée</span>
-          <h2>QCM {selectedIndex + 1} sur {segments.length}</h2>
+      <header className="mapping-review-header">
+        <div className="mapping-review-header__topline">
+          <div>
+            <span className="eyebrow">Vérification des zones</span>
+            <h2>Question {selectedIndex + 1} <span>sur {segments.length}</span></h2>
+          </div>
+          <span className="mapping-position-badge" aria-label={`${progressPercentage} % du parcours`}>
+            {progressPercentage} %
+          </span>
         </div>
-        <span className="mapping-complete-badge"><CheckIcon /> Détecté</span>
-      </div>
 
-      <section className="mapping-question-summary" aria-label="Question cartographiée">
-        <div className="mapping-question-summary__title">
-          <strong>{getSegmentDisplayName(selectedSegment, selectedIndex)}</strong>
-          <span>{getQuestionTypeLabel(selectedSegment.question_type_hint)}</span>
-        </div>
-        <div className="mapping-question-summary__meta">
-          <span>Page{selectedSegment.question_pages.length > 1 ? "s" : ""} {selectedSegment.question_pages.join(", ")}</span>
-          {selectedSegment.contains_essential_image && <span><ImageIcon /> Illustration</span>}
-          <span>Confiance {Math.round(selectedSegment.confidence * 100)} %</span>
-        </div>
-        <button
-          className="button button--danger button--small"
-          onClick={() => onDeleteSegment(selectedSegment.temporary_id)}
-          type="button"
+        <div
+          aria-label={`Progression : question ${selectedIndex + 1} sur ${segments.length}`}
+          aria-valuemax={segments.length}
+          aria-valuemin={1}
+          aria-valuenow={selectedIndex + 1}
+          className="mapping-review-progress"
+          role="progressbar"
         >
-          <TrashIcon /> Supprimer ce QCM
-        </button>
-      </section>
+          <span style={{ width: `${progressPercentage}%` }} />
+        </div>
 
-      {document.warnings.length > 0 && (
+        <label className="mapping-question-picker">
+          <span>Aller à une question</span>
+          <select
+            aria-label="Choisir la question à vérifier"
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onSelectSegment(event.target.value)}
+            value={selectedSegment.temporary_id}
+          >
+            {segments.map((segment, index) => (
+              <option key={segment.temporary_id} value={segment.temporary_id}>
+                {index + 1}. {getSegmentDisplayName(segment, index)} — page{segment.question_pages.length > 1 ? "s" : ""} {segment.question_pages.join(", ")}
+              </option>
+            ))}
+          </select>
+        </label>
+      </header>
+
+      <div className="mapping-review-body">
+        <div className="mapping-task-cue" role="note">
+          <SelectionIcon />
+          <div>
+            <strong>À vérifier maintenant</strong>
+            <span>Les cadres du PDF doivent contenir toute la question, sans contenu voisin.</span>
+          </div>
+        </div>
+
+        <section className="mapping-question-summary" aria-label="Question cartographiée">
+          <div className="mapping-question-summary__title">
+            <strong>{getSegmentDisplayName(selectedSegment, selectedIndex)}</strong>
+            <span>{getQuestionTypeLabel(selectedSegment.question_type_hint)}</span>
+          </div>
+          <div className="mapping-question-summary__meta">
+            <span>Page{selectedSegment.question_pages.length > 1 ? "s" : ""} {selectedSegment.question_pages.join(", ")}</span>
+            <span>{totalRegions} zone{totalRegions > 1 ? "s" : ""} au total</span>
+            {selectedSegment.contains_essential_image && <span><ImageIcon /> Illustration</span>}
+            <span>Confiance {Math.round(selectedSegment.confidence * 100)} %</span>
+          </div>
+          <button
+            className="mapping-delete-question"
+            onClick={() => onDeleteSegment(selectedSegment.temporary_id)}
+            type="button"
+          >
+            <TrashIcon /> Retirer cette question
+          </button>
+        </section>
+
+        {document.warnings.length > 0 && (
         <details className="mapping-warnings">
           <summary>{document.warnings.length} avertissement{document.warnings.length > 1 ? "s" : ""} sur le document</summary>
           <ul>{document.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
         </details>
-      )}
+        )}
 
-      {selectedSegment.warnings.length > 0 && (
+        {selectedSegment.warnings.length > 0 && (
         <section className="mapping-warnings" aria-label="Avertissements de la question">
           <strong><WarningIcon /> Points à vérifier</strong>
           <ul>{selectedSegment.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
         </section>
-      )}
+        )}
 
-      <section className="region-editor" aria-label="Éditeur géométrique des zones">
+        <section className="region-editor" aria-label="Éditeur géométrique des zones">
         <div className="region-editor__heading">
           <div>
-            <span className="eyebrow">Éditeur de zones</span>
+            <span className="eyebrow">Zones visibles sur le PDF</span>
             <strong>Page {currentPage}</strong>
           </div>
           <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
@@ -239,7 +281,7 @@ export function MappingPanel({
 
         <div className="region-editor__add-row">
           <label>
-            <span>Nouvelle zone</span>
+            <span>Type de contenu à encadrer</span>
             <select
               disabled={isDrawing}
               onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onDrawingRoleChange(event.target.value as PageRegionRole)}
@@ -256,7 +298,7 @@ export function MappingPanel({
             type="button"
           >
             {isDrawing ? <StopIcon /> : <PlusIcon />}
-            {isDrawing ? "Annuler" : "Tracer"}
+            {isDrawing ? "Annuler" : "Ajouter une zone"}
           </button>
         </div>
 
@@ -313,13 +355,13 @@ export function MappingPanel({
             </button>
           </div>
         )}
-      </section>
+        </section>
+      </div>
 
       <footer className="mapping-panel__footer mapping-question-navigation">
-        <div className="mapping-usage">
-          <span>Modèle : {mapping.meta?.model ?? "—"}</span>
-          <span>Jetons : {formatTokens(mapping.meta?.usage.total_tokens ?? null)}</span>
-        </div>
+        <span className="mapping-navigation-status" aria-live="polite">
+          {isLast ? "Dernière question : validez pour continuer" : `${segments.length - selectedIndex - 1} question${segments.length - selectedIndex - 1 > 1 ? "s" : ""} après celle-ci`}
+        </span>
         <div className="mapping-question-navigation__buttons">
           <button
             className="button button--secondary"
@@ -344,9 +386,15 @@ export function MappingPanel({
             </button>
           )}
         </div>
-        <button className="mapping-reanalyze-button" onClick={onAnalyze} type="button">
-          <SparklesIcon /> Relancer l’analyse
-        </button>
+        <details className="mapping-secondary-actions">
+          <summary>Options de la cartographie</summary>
+          <div className="mapping-secondary-actions__content">
+            <span>Modèle : {mapping.meta?.model ?? "—"} · {formatTokens(mapping.meta?.usage.total_tokens ?? null)} jetons</span>
+            <button className="mapping-reanalyze-button" onClick={onAnalyze} type="button">
+              <SparklesIcon /> Relancer toute l’analyse
+            </button>
+          </div>
+        </details>
       </footer>
     </aside>
   );
