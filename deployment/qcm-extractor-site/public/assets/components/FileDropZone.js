@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useRef, useState } from "react";
-import { MAX_PDF_SIZE_BYTES } from "../pdf/loadPdf.js?v=7.5.1";
-import { FileIcon, ShieldIcon, UploadIcon } from "./Icons.js?v=7.5.1";
+import { MAX_PDF_SIZE_BYTES } from "../pdf/loadPdf.js?v=7.5.5";
+import { FileIcon, ShieldIcon, UploadIcon } from "./Icons.js?v=7.5.5";
 export function FileDropZone({ disabled = false, onFileSelected }) {
     const inputRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -11,7 +11,7 @@ export function FileDropZone({ disabled = false, onFileSelected }) {
             onFileSelected(file);
         }
     };
-    return (_jsxs("section", { className: "welcome-panel", "aria-labelledby": "welcome-title", children: [_jsxs("div", { className: "welcome-copy", children: [_jsx("span", { className: "eyebrow", children: "Phase 3 \u00B7 Cartographie globale" }), _jsx("h1", { id: "welcome-title", children: "Pr\u00E9parer un PDF pour l\u2019extraction de QCM" }), _jsx("p", { children: "Le document est d\u2019abord charg\u00E9 localement. Il n\u2019est transmis au proxy PHP et au LLM qu\u2019apr\u00E8s un clic explicite sur \u00AB Cartographier \u00BB." })] }), _jsxs("button", { className: `drop-zone${isDragging ? " drop-zone--active" : ""}`, disabled: disabled, onClick: () => inputRef.current?.click(), onDragEnter: (event) => {
+    return (_jsxs("section", { className: "welcome-panel", "aria-labelledby": "welcome-title", children: [_jsxs("div", { className: "welcome-copy", children: [_jsx("h1", { id: "welcome-title", children: "Extraction de QCM" }), _jsx("p", { children: "Extrait les QCM d'un PDF et les convertit en format Moodle XML." })] }), _jsxs("button", { className: `drop-zone${isDragging ? " drop-zone--active" : ""}`, disabled: disabled, onClick: () => inputRef.current?.click(), onDragEnter: (event) => {
                     event.preventDefault();
                     if (!disabled) {
                         setIsDragging(true);

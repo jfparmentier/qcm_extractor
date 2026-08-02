@@ -5,6 +5,7 @@ import type {
   LoadedPdf,
   MappingState
 } from "../domain/projectState";
+import { MAX_ZOOM } from "../domain/projectState";
 import type {
   IllustrationGenerationState,
   IllustrationPlan
@@ -78,6 +79,7 @@ interface PdfViewerProps {
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
   readonly onResetZoom: () => void;
+  readonly onZoomChange: (zoom: number) => void;
   readonly onClose: () => void;
 }
 
@@ -119,7 +121,8 @@ export function PdfViewer({
   onPageChange,
   onZoomIn,
   onZoomOut,
-  onResetZoom
+  onResetZoom,
+  onZoomChange
 }: PdfViewerProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
   const [drawingRole, setDrawingRole] = useState<PageRegionRole>("question");
@@ -130,8 +133,37 @@ export function PdfViewer({
   const [exporting, setExporting] = useState(false);
   const [preparationError, setPreparationError] = useState<string | null>(null);
   const reviewFingerprintRef = useRef("");
+  const pageWorkspaceRef = useRef<HTMLElement>(null);
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
   const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
+
+  useEffect(() => {
+    const workspace = pageWorkspaceRef.current;
+    if (workspace === null || activePanel !== "mapping" || !showSidePanel) return;
+
+    let disposed = false;
+
+    const ensureMappingPageWidth = async (): Promise<void> => {
+      const page = await pdf.document.getPage(currentPage);
+      if (disposed) return;
+
+      const pageWidth = page.getViewport({ scale: 1 }).width;
+      const minimumZoom = Math.min(MAX_ZOOM, (workspace.clientWidth * 0.75 + 1) / pageWidth);
+      if (zoom < minimumZoom) onZoomChange(minimumZoom);
+    };
+
+    const updateMinimumZoom = (): void => {
+      void ensureMappingPageWidth().catch(() => undefined);
+    };
+    const resizeObserver = new ResizeObserver(updateMinimumZoom);
+    resizeObserver.observe(workspace);
+    updateMinimumZoom();
+
+    return () => {
+      disposed = true;
+      resizeObserver.disconnect();
+    };
+  }, [activePanel, currentPage, onZoomChange, pdf.document, showSidePanel, zoom]);
 
   const completedExtractions = useMemo<CompletedBatchExtraction[]>(() =>
     Object.entries(extraction.batches).flatMap(([batchId, batchState]) =>
@@ -437,7 +469,7 @@ export function PdfViewer({
           />
 
           <div className={`viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`}>
-            <main className="page-workspace">
+            <main ref={pageWorkspaceRef} className="page-workspace">
               {renderError !== null && (
                 <div className="inline-error" role="alert">
                   Une erreur est survenue pendant le rendu de la page : {renderError}

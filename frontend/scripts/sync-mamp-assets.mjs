@@ -6,6 +6,8 @@ const frontendRoot = path.resolve(import.meta.dirname, "..");
 const publicRoot = path.resolve(frontendRoot, "../deployment/qcm-extractor-site/public");
 const version = "7.5.5";
 const modules = [
+  { source: "App.tsx", destination: "App.js" },
+  { source: "components/FileDropZone.tsx", destination: "components/FileDropZone.js" },
   { source: "components/MappingPanel.tsx", destination: "components/MappingPanel.js" },
   { source: "components/PdfPageCanvas.tsx", destination: "components/PdfPageCanvas.js" },
   { source: "components/PdfToolbar.tsx", destination: "components/PdfToolbar.js" },
@@ -26,10 +28,12 @@ for (const module of modules) {
     },
     fileName: sourcePath
   });
-  const browserModule = result.outputText.replace(
-    /(from\s+["'])(\.\.?\/[^"']+)(["'])/g,
-    (_match, before, modulePath, after) => `${before}${modulePath}.js?v=${version}${after}`
-  );
+  const browserModule = result.outputText
+    .replace(
+      /(from\s+["'])(\.\.?\/[^"']+)(["'])/g,
+      (_match, before, modulePath, after) => `${before}${modulePath}.js?v=${version}${after}`
+    )
+    .replace(/^import\s+["'][^"']+\.css["'];\s*$/gm, "");
   fs.writeFileSync(destinationPath, browserModule);
 }
 

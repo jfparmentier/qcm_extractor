@@ -743,6 +743,10 @@ export default function App(): React.ReactElement {
     dispatch({ type: "SET_ZOOM", zoom: 1 });
   }, []);
 
+  const setZoom = useCallback((zoom: number): void => {
+    dispatch({ type: "SET_ZOOM", zoom });
+  }, []);
+
   const previousPage = useCallback((): void => {
     setPage(state.currentPage - 1);
   }, [setPage, state.currentPage]);
@@ -797,6 +801,7 @@ export default function App(): React.ReactElement {
           onUpdateRegionRole={updateRegionRole}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
+          onZoomChange={setZoom}
           pdf={state.pdf}
           zoom={state.zoom}
         />

@@ -15,6 +15,7 @@ import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.5";
 import { FileDropZone } from "./components/FileDropZone.js?v=7.5.5";
 import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.5";
 import { PdfViewer } from "./components/PdfViewer.js?v=7.5.5";
+
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
         return {
@@ -588,6 +589,9 @@ export default function App() {
     const resetZoom = useCallback(() => {
         dispatch({ type: "SET_ZOOM", zoom: 1 });
     }, []);
+    const setZoom = useCallback((zoom) => {
+        dispatch({ type: "SET_ZOOM", zoom });
+    }, []);
     const previousPage = useCallback(() => {
         setPage(state.currentPage - 1);
     }, [setPage, state.currentPage]);
@@ -602,5 +606,5 @@ export default function App() {
         onZoomOut: zoomOut,
         onResetZoom: resetZoom
     });
-    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
+    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, onZoomChange: setZoom, pdf: state.pdf, zoom: state.zoom }))] }));
 }

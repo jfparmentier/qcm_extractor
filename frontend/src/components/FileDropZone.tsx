@@ -24,12 +24,8 @@ export function FileDropZone({
   return (
     <section className="welcome-panel" aria-labelledby="welcome-title">
       <div className="welcome-copy">
-        <span className="eyebrow">Phase 3 · Cartographie globale</span>
-        <h1 id="welcome-title">Préparer un PDF pour l’extraction de QCM</h1>
-        <p>
-          Le document est d’abord chargé localement. Il n’est transmis au proxy PHP et au LLM
-          qu’après un clic explicite sur « Cartographier ».
-        </p>
+        <h1 id="welcome-title">Extraction de QCM</h1>
+        <p>Extrait les QCM d'un PDF et les convertit en format Moodle XML.</p>
       </div>
 
       <button
