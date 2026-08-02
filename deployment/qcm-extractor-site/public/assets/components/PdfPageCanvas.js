@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.5.1";
+import { PAGE_REGION_ROLES, clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.5.5";
+import { TrashIcon } from "./Icons.js?v=7.5.5";
 const MIN_REGION_SIZE = 0.015;
 const RESIZE_HANDLES = ["se"];
 function normalizedPointerPosition(clientX, clientY, layer) {
@@ -51,7 +52,7 @@ function drawnBbox(startX, startY, currentX, currentY) {
         height: Math.abs(currentY - startY)
     };
 }
-export function PdfPageCanvas({ document, pageNumber, scale, className, overlays = [], focusBbox = null, drawRole = null, onOverlaySelect, onRegionChange, onRegionAdd, onRenderError }) {
+export function PdfPageCanvas({ document, pageNumber, scale, className, overlays = [], focusBbox = null, drawRole = null, onOverlaySelect, onRegionChange, onRegionAdd, onRegionRoleChange, onRegionDelete, onRenderError }) {
     const canvasRef = useRef(null);
     const layerRef = useRef(null);
     const renderTaskRef = useRef(null);
@@ -233,17 +234,28 @@ export function PdfPageCanvas({ document, pageNumber, scale, className, overlays
             initialBbox: overlay.bbox
         };
     }, [drawRole, onOverlaySelect]);
-    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" }), !isRendering && (overlays.length > 0 || drawRole !== null) && (_jsxs("div", { ref: layerRef, "aria-label": "R\u00E9gions d\u00E9tect\u00E9es et \u00E9ditables sur cette page", className: `pdf-region-layer${drawRole !== null ? " pdf-region-layer--drawing" : ""}`, onPointerDown: startDrawing, children: [overlays.map((overlay) => (_jsxs("button", { "aria-label": `${overlay.label} — ${getPageRegionRoleLabel(overlay.role)}`, className: [
+    return (_jsxs("div", { className: `pdf-canvas-frame${className !== undefined ? ` ${className}` : ""}`, children: [isRendering && _jsx("span", { className: "canvas-loader", "aria-label": "Rendu de la page" }), _jsx("canvas", { ref: canvasRef, "aria-label": `Page ${pageNumber} du document PDF`, className: "pdf-canvas" }), !isRendering && (overlays.length > 0 || drawRole !== null) && (_jsxs("div", { ref: layerRef, "aria-label": "R\u00E9gions d\u00E9tect\u00E9es et \u00E9ditables sur cette page", className: `pdf-region-layer${drawRole !== null ? " pdf-region-layer--drawing" : ""}`, onPointerDown: startDrawing, children: [overlays.map((overlay) => (_jsxs("div", { "aria-label": `${overlay.label} — ${getPageRegionRoleLabel(overlay.role)}`, className: [
                             "pdf-region",
                             `pdf-region--${overlay.role}`,
                             overlay.segmentSelected ? "pdf-region--segment-selected" : "",
                             overlay.selected ? "pdf-region--selected" : ""
-                        ].filter(Boolean).join(" "), onClick: () => onOverlaySelect?.(overlay.segmentId, overlay.regionId), onPointerDown: (event) => startMoving(event, overlay), style: {
+                        ].filter(Boolean).join(" "), onClick: () => onOverlaySelect?.(overlay.segmentId, overlay.regionId), onKeyDown: (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+                            }
+                        }, onPointerDown: (event) => startMoving(event, overlay), role: "button", style: {
                             left: `${overlay.bbox.x * 100}%`,
                             top: `${overlay.bbox.y * 100}%`,
                             width: `${overlay.bbox.width * 100}%`,
                             height: `${overlay.bbox.height * 100}%`
-                        }, title: `${overlay.label} · ${getPageRegionRoleLabel(overlay.role)}`, type: "button", children: [_jsx("span", { className: "pdf-region__label", children: getPageRegionRoleLabel(overlay.role) }), overlay.selected && RESIZE_HANDLES.map((handle) => (_jsx("span", { "aria-hidden": "true", className: `pdf-region__handle pdf-region__handle--${handle}`, onPointerDown: (event) => startResizing(event, overlay, handle) }, handle)))] }, overlay.id))), draftBbox !== null && (_jsx("div", { "aria-hidden": "true", className: `pdf-region pdf-region--${drawRole ?? "question"} pdf-region--draft`, style: {
+                        }, tabIndex: 0, title: `${overlay.label} · ${getPageRegionRoleLabel(overlay.role)}`, children: [_jsxs("div", { className: "pdf-region__controls", onPointerDown: (event) => event.stopPropagation(), children: [_jsx("select", { "aria-label": `Type de la zone : ${getPageRegionRoleLabel(overlay.role)}`, onChange: (event) => {
+                                            onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+                                            onRegionRoleChange?.(overlay.segmentId, overlay.regionId, event.target.value);
+                                        }, onClick: (event) => event.stopPropagation(), value: overlay.role, children: PAGE_REGION_ROLES.map((role) => (_jsx("option", { value: role, children: getPageRegionRoleLabel(role) }, role))) }), _jsx("button", { "aria-label": "Supprimer cette zone", className: "pdf-region__delete", onClick: (event) => {
+                                            event.stopPropagation();
+                                            onRegionDelete?.(overlay.segmentId, overlay.regionId);
+                                        }, title: "Supprimer cette zone", type: "button", children: _jsx(TrashIcon, {}) })] }), overlay.selected && RESIZE_HANDLES.map((handle) => (_jsx("span", { "aria-hidden": "true", className: `pdf-region__handle pdf-region__handle--${handle}`, onPointerDown: (event) => startResizing(event, overlay, handle) }, handle)))] }, overlay.id))), draftBbox !== null && (_jsx("div", { "aria-hidden": "true", className: `pdf-region pdf-region--${drawRole ?? "question"} pdf-region--draft`, style: {
                             left: `${draftBbox.x * 100}%`,
                             top: `${draftBbox.y * 100}%`,
                             width: `${draftBbox.width * 100}%`,

@@ -309,7 +309,7 @@ summary:focus-visible {
 .viewer-shell {
   display: grid;
   min-height: 100vh;
-  grid-template-rows: 64px 54px minmax(0, 1fr);
+  grid-template-rows: 54px minmax(0, 1fr);
   background: var(--workspace);
 }
 
@@ -388,10 +388,19 @@ summary:focus-visible {
 }
 
 .pdf-toolbar {
+  position: relative;
   z-index: 2;
   justify-content: center;
   gap: 0.9rem;
   padding: 0 1rem;
+}
+
+.pdf-toolbar__primary-action {
+  position: absolute;
+  right: 1rem;
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.76rem;
 }
 
 .toolbar-group {
@@ -610,7 +619,7 @@ summary:focus-visible {
 
 @media (max-width: 720px) {
   .viewer-shell {
-    grid-template-rows: 62px 54px minmax(0, 1fr);
+    grid-template-rows: 54px minmax(0, 1fr);
   }
 
   .document-header__text strong {
@@ -637,6 +646,14 @@ summary:focus-visible {
   .pdf-toolbar {
     justify-content: space-between;
     gap: 0.2rem;
+  }
+
+  .pdf-toolbar__primary-action {
+    position: static;
+    min-width: 36px;
+    width: 36px;
+    padding: 0;
+    font-size: 0;
   }
 
   .toolbar-divider {
@@ -1227,6 +1244,12 @@ select:focus-visible {
   gap: 0.45rem;
 }
 
+.region-editor__add-row {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+}
+
 .region-editor label {
   display: grid;
   min-width: 0;
@@ -1246,8 +1269,7 @@ select:focus-visible {
 
 .region-editor__draw-button {
   min-height: 36px;
-  padding: 0.45rem 0.58rem;
-  font-size: 0.7rem;
+  padding: 0;
 }
 
 .region-editor__drawing-notice {
@@ -1363,6 +1385,62 @@ select:focus-visible {
 .pdf-region--selected {
   z-index: 5;
   cursor: move;
+}
+
+.pdf-region > .pdf-region__controls {
+  position: absolute;
+  z-index: 8;
+  top: -30px;
+  right: -2px;
+  left: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  pointer-events: auto;
+}
+
+.pdf-region__controls select {
+  width: auto;
+  max-width: calc(100% - 34px);
+  min-height: 28px;
+  padding: 0.2rem 1.35rem 0.2rem 0.4rem;
+  color: #fff;
+  background-color: var(--primary);
+  border: 1px solid #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgb(20 31 55 / 24%);
+  font-size: 0.6rem;
+  font-weight: 750;
+}
+
+.pdf-region__controls select option {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.pdf-region__delete {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+  place-items: center;
+  color: #fff;
+  background: var(--danger);
+  border: 1px solid #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgb(20 31 55 / 24%);
+  cursor: pointer;
+}
+
+.pdf-region__delete:hover {
+  filter: brightness(0.92);
+}
+
+.pdf-region__delete svg {
+  width: 15px;
+  height: 15px;
 }
 
 .pdf-region--draft {
@@ -2308,6 +2386,24 @@ summary:focus-visible {
   font-size: 1rem;
 }
 
+.question-source-heading {
+  display: flex;
+  min-width: 150px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.question-source-heading .eyebrow {
+  margin-bottom: 0;
+}
+
+.question-source-heading > span:last-child {
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
 .review-zoom-controls {
   display: flex;
   align-items: center;
@@ -2614,7 +2710,11 @@ summary:focus-visible {
 }
 
 .question-review__navigation > :last-child {
-  justify-self: end;
+  justify-self: stretch;
+}
+
+.question-review__navigation > .button {
+  width: 100%;
 }
 
 
@@ -2904,6 +3004,10 @@ summary:focus-visible {
   font-size: 0.63rem;
 }
 
+.region-editor > .mapping-delete-question {
+  margin-top: 0.65rem;
+}
+
 .mapping-delete-question:hover {
   color: var(--danger);
 }
@@ -2929,7 +3033,7 @@ summary:focus-visible {
 
 .mapping-question-navigation__buttons {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
 }
 

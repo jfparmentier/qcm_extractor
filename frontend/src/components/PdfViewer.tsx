@@ -27,12 +27,6 @@ import {
   reviewSourceFingerprint,
   type ReviewQuestion
 } from "../domain/review";
-import { formatFileSize } from "../pdf/formatFileSize";
-import {
-  CloseIcon,
-  FileIcon,
-  SparklesIcon
-} from "./Icons";
 import { ExtractionPanel } from "./ExtractionPanel";
 import { IllustrationPanel } from "./IllustrationPanel";
 import { MappingPanel } from "./MappingPanel";
@@ -125,8 +119,7 @@ export function PdfViewer({
   onPageChange,
   onZoomIn,
   onZoomOut,
-  onResetZoom,
-  onClose
+  onResetZoom
 }: PdfViewerProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
   const [drawingRole, setDrawingRole] = useState<PageRegionRole>("question");
@@ -411,42 +404,6 @@ export function PdfViewer({
 
   return (
     <section className={`viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`} aria-label="Visualiseur PDF">
-      <header className="document-header">
-        <div className="document-header__identity">
-          <span className="document-header__icon"><FileIcon /></span>
-          <div className="document-header__text">
-            <strong title={pdf.fileName}>{pdf.title ?? pdf.fileName}</strong>
-            <span>
-              {pdf.pageCount} page{pdf.pageCount > 1 ? "s" : ""} · {formatFileSize(pdf.fileSize)}
-              {pdf.author !== null ? ` · ${pdf.author}` : ""}
-            </span>
-          </div>
-        </div>
-
-        <div className="document-header__actions">
-          {activePanel === "mapping" && (
-            <button
-              className="button button--primary analysis-header-button"
-              disabled={mapping.status === "running"}
-              onClick={onAnalyze}
-              type="button"
-            >
-              <SparklesIcon />
-              {mapping.status === "completed" ? "Recartographier" : "Cartographier"}
-            </button>
-          )}
-          <button
-            aria-label="Fermer le document"
-            className="icon-button icon-button--quiet"
-            onClick={onClose}
-            title="Fermer le document"
-            type="button"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-      </header>
-
       {activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (
         <QuestionReview
           currentIndex={reviewIndex}
@@ -470,6 +427,7 @@ export function PdfViewer({
         <>
           <PdfToolbar
             currentPage={currentPage}
+            onAnalyze={mapping.status === "idle" ? onAnalyze : undefined}
             onPageChange={onPageChange}
             onResetZoom={onResetZoom}
             onZoomIn={onZoomIn}
@@ -492,6 +450,8 @@ export function PdfViewer({
                   onOverlaySelect={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion}
                   onRegionAdd={extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd}
                   onRegionChange={activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined}
+                  onRegionDelete={activePanel === "mapping" ? onDeleteRegion : undefined}
+                  onRegionRoleChange={activePanel === "mapping" ? onUpdateRegionRole : undefined}
                   onRenderError={handleRenderError}
                   overlays={overlays}
                   pageNumber={currentPage}
@@ -537,13 +497,11 @@ export function PdfViewer({
                     mapping={mapping}
                     onAnalyze={onAnalyze}
                     onCancel={onCancelMapping}
-                    onDeleteRegion={onDeleteRegion}
                     onDeleteSegment={onDeleteSegment}
                     onDrawingRoleChange={setDrawingRole}
                     onSelectRegion={onSelectRegion}
                     onSelectSegment={onSelectSegment}
                     onToggleDrawing={() => setIsDrawing((active) => !active)}
-                    onUpdateRegionRole={onUpdateRegionRole}
                     onValidate={() => void handleValidateMapping()}
                   />
                 )}

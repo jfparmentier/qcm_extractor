@@ -1,5 +1,5 @@
 import Ajv2020 from "ajv/dist/2020";
-import mappingSchema from "../schemas/mappingSchema.js?v=7.5.1";
+import mappingSchema from "../schemas/mappingSchema.js?v=7.5.5";
 export const PAGE_REGION_ROLES = [
     "question",
     "essential_image"
@@ -205,6 +205,6 @@ export function getPageRegionRoleLabel(role) {
         case "question":
             return "Énoncé";
         case "essential_image":
-            return "Illustration essentielle";
+            return "Illustration";
     }
 }

@@ -3,7 +3,7 @@
   "generated_at": "2026-08-02T10:36:15Z",
   "application_version": "0.13.0",
   "phase": 7,
-  "version": "7.5.1",
+  "version": "7.5.5",
   "features": [
     "pdf-local",
     "mapping-background",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DocumentMap, NormalizedBoundingBox, PageRegion } from "../domain/documentMap";
 import type { GeneratedIllustrationAsset, IllustrationPlan } from "../domain/illustration";
 import type { LoadedPdf } from "../domain/projectState";
@@ -93,6 +93,9 @@ export function QuestionReview({
   onExport
 }: QuestionReviewProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
+  const reviewRootRef = useRef<HTMLElement>(null);
+  const sourceStageRef = useRef<HTMLDivElement>(null);
+  const editorColumnRef = useRef<HTMLElement>(null);
   const question = questions[currentIndex];
   const total = questions.length;
   const validationIssues = question === undefined ? [] : reviewQuestionIssues(question);
@@ -191,18 +194,27 @@ export function QuestionReview({
     changeQuestion({ choices });
   }, [changeQuestion, question]);
 
+  const moveToQuestion = useCallback((index: number): void => {
+    onCurrentIndexChange(index);
+    window.requestAnimationFrame(() => {
+      editorColumnRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      sourceStageRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      reviewRootRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+    });
+  }, [onCurrentIndexChange]);
+
   if (question === undefined) {
     return <div className="review-empty-state"><strong>Aucune question extraite</strong></div>;
   }
 
   return (
-    <section className="question-review" aria-label="Révision des questions">
+    <section ref={reviewRootRef} className="question-review" aria-label="Révision des questions">
       <div className="question-review__columns">
         <section className="question-source-column" aria-label="Document PDF source">
           <header className="question-column-header">
-            <div>
+            <div className="question-source-heading">
               <span className="eyebrow">Source</span>
-              <h3>PDF de la question</h3>
+              <span>Page {currentPage}</span>
             </div>
             <div className="review-zoom-controls">
               <button aria-label="Réduire" className="icon-button" onClick={onZoomOut} type="button"><MinusIcon /></button>
@@ -211,22 +223,8 @@ export function QuestionReview({
             </div>
           </header>
 
-          <div className="review-page-tabs" aria-label="Pages sources">
-            {sourcePages.map((page) => (
-              <button
-                aria-current={page === currentPage ? "page" : undefined}
-                className={page === currentPage ? "review-page-tab review-page-tab--active" : "review-page-tab"}
-                key={page}
-                onClick={() => onCurrentPageChange(page)}
-                type="button"
-              >
-                Page {page}
-              </button>
-            ))}
-          </div>
-
           {renderError !== null && <div className="inline-error" role="alert">{renderError}</div>}
-          <div className="question-source-stage">
+          <div ref={sourceStageRef} className="question-source-stage">
             <PdfPageCanvas
               className="question-source-canvas"
               document={pdf.document}
@@ -238,13 +236,12 @@ export function QuestionReview({
           </div>
         </section>
 
-        <section className="question-editor-column" aria-label="Contenu éditable de la question">
+        <section ref={editorColumnRef} className="question-editor-column" aria-label="Contenu éditable de la question">
           <header className="question-column-header">
             <div>
               <span className="eyebrow">Contenu extrait</span>
-              <h3>{question.id}</h3>
+              <h3>Question {currentIndex + 1}</h3>
             </div>
-            <span className="review-confidence">Confiance {Math.round(question.confidence * 100)} %</span>
           </header>
 
           <div className="question-form">
@@ -268,7 +265,6 @@ export function QuestionReview({
               >
                 <option value="single_choice">Choix unique</option>
                 <option value="multiple_choice">Choix multiples</option>
-                <option value="true_false">Vrai ou faux</option>
               </select>
             </label>
 
@@ -372,12 +368,6 @@ export function QuestionReview({
               </section>
             )}
 
-            {question.warnings.length > 0 && (
-              <section className="review-warnings" aria-label="Avertissements">
-                <h4><WarningIcon /> Avertissements du modèle</h4>
-                <ul>{question.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
-              </section>
-            )}
           </div>
         </section>
       </div>
@@ -386,7 +376,7 @@ export function QuestionReview({
         <button
           className="button button--secondary"
           disabled={currentIndex === 0}
-          onClick={() => onCurrentIndexChange(currentIndex - 1)}
+          onClick={() => moveToQuestion(currentIndex - 1)}
           type="button"
         >
           <ChevronLeftIcon /> Précédente
@@ -394,7 +384,7 @@ export function QuestionReview({
         {!isLast ? (
           <button
             className="button button--primary"
-            onClick={() => onCurrentIndexChange(currentIndex + 1)}
+            onClick={() => moveToQuestion(currentIndex + 1)}
             type="button"
           >
             Suivante <ChevronRightIcon />

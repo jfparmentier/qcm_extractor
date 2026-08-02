@@ -1,20 +1,20 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.1";
-import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.1";
-import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.1";
-import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.1";
-import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.1";
-import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.1";
-import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.1";
-import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.1";
-import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.1";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.1";
-import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.1";
-import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.1";
-import { FileDropZone } from "./components/FileDropZone.js?v=7.5.1";
-import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.1";
-import { PdfViewer } from "./components/PdfViewer.js?v=7.5.1";
+import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.5";
+import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.5";
+import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.5";
+import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.5";
+import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.5";
+import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.5";
+import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.5";
+import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.5";
+import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.5";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.5";
+import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.5";
+import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.5";
+import { FileDropZone } from "./components/FileDropZone.js?v=7.5.5";
+import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.5";
+import { PdfViewer } from "./components/PdfViewer.js?v=7.5.5";
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
         return {

@@ -111,7 +111,7 @@ export function createReviewQuestions(questions: readonly ExtractedQuestion[]): 
     return {
       id: question.id,
       segmentId: question.segment_id,
-      type: question.type,
+      type: question.type === "true_false" ? "single_choice" : question.type,
       title: question.title.content,
       titleOrigin: question.title.origin,
       statement: question.statement,

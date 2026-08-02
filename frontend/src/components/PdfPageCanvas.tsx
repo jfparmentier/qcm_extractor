@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import {
+  PAGE_REGION_ROLES,
   clampNormalizedBoundingBox,
   getPageRegionRoleLabel,
   type NormalizedBoundingBox,
   type PageRegionRole
 } from "../domain/documentMap";
+import { TrashIcon } from "./Icons";
 
 export interface PdfOverlayRegion {
   readonly id: string;
@@ -62,6 +64,12 @@ interface PdfPageCanvasProps {
     bbox: NormalizedBoundingBox
   ) => void;
   readonly onRegionAdd?: (bbox: NormalizedBoundingBox) => void;
+  readonly onRegionRoleChange?: (
+    segmentId: string,
+    regionId: string,
+    role: PageRegionRole
+  ) => void;
+  readonly onRegionDelete?: (segmentId: string, regionId: string) => void;
   readonly onRenderError?: (message: string) => void;
 }
 
@@ -154,6 +162,8 @@ export function PdfPageCanvas({
   onOverlaySelect,
   onRegionChange,
   onRegionAdd,
+  onRegionRoleChange,
+  onRegionDelete,
   onRenderError
 }: PdfPageCanvasProps): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -322,7 +332,7 @@ export function PdfPageCanvas({
   }, [drawRole]);
 
   const startMoving = useCallback((
-    event: React.PointerEvent<HTMLButtonElement>,
+    event: React.PointerEvent<HTMLDivElement>,
     overlay: PdfOverlayRegion
   ): void => {
     if (drawRole !== null || layerRef.current === null || event.button !== 0) {
@@ -385,7 +395,7 @@ export function PdfPageCanvas({
           onPointerDown={startDrawing}
         >
           {overlays.map((overlay) => (
-            <button
+            <div
               key={overlay.id}
               aria-label={`${overlay.label} — ${getPageRegionRoleLabel(overlay.role)}`}
               className={[
@@ -395,17 +405,54 @@ export function PdfPageCanvas({
                 overlay.selected ? "pdf-region--selected" : ""
               ].filter(Boolean).join(" ")}
               onClick={() => onOverlaySelect?.(overlay.segmentId, overlay.regionId)}
-              onPointerDown={(event: React.PointerEvent<HTMLButtonElement>) => startMoving(event, overlay)}
+              onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+                }
+              }}
+              onPointerDown={(event: React.PointerEvent<HTMLDivElement>) => startMoving(event, overlay)}
+              role="button"
               style={{
                 left: `${overlay.bbox.x * 100}%`,
                 top: `${overlay.bbox.y * 100}%`,
                 width: `${overlay.bbox.width * 100}%`,
                 height: `${overlay.bbox.height * 100}%`
               }}
+              tabIndex={0}
               title={`${overlay.label} · ${getPageRegionRoleLabel(overlay.role)}`}
-              type="button"
             >
-              <span className="pdf-region__label">{getPageRegionRoleLabel(overlay.role)}</span>
+              <div className="pdf-region__controls" onPointerDown={(event) => event.stopPropagation()}>
+                <select
+                  aria-label={`Type de la zone : ${getPageRegionRoleLabel(overlay.role)}`}
+                  onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                    onOverlaySelect?.(overlay.segmentId, overlay.regionId);
+                    onRegionRoleChange?.(
+                      overlay.segmentId,
+                      overlay.regionId,
+                      event.target.value as PageRegionRole
+                    );
+                  }}
+                  onClick={(event) => event.stopPropagation()}
+                  value={overlay.role}
+                >
+                  {PAGE_REGION_ROLES.map((role) => (
+                    <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
+                  ))}
+                </select>
+                <button
+                  aria-label="Supprimer cette zone"
+                  className="pdf-region__delete"
+                  onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                    event.stopPropagation();
+                    onRegionDelete?.(overlay.segmentId, overlay.regionId);
+                  }}
+                  title="Supprimer cette zone"
+                  type="button"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
               {overlay.selected && RESIZE_HANDLES.map((handle) => (
                 <span
                   key={handle}
@@ -414,7 +461,7 @@ export function PdfPageCanvas({
                   onPointerDown={(event: React.PointerEvent<HTMLSpanElement>) => startResizing(event, overlay, handle)}
                 />
               ))}
-            </button>
+            </div>
           ))}
           {draftBbox !== null && (
             <div

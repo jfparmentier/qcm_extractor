@@ -4,7 +4,8 @@ import {
   ChevronRightIcon,
   MinusIcon,
   PlusIcon,
-  ResetIcon
+  ResetIcon,
+  SparklesIcon
 } from "./Icons";
 
 interface PdfToolbarProps {
@@ -15,6 +16,7 @@ interface PdfToolbarProps {
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
   readonly onResetZoom: () => void;
+  readonly onAnalyze?: () => void;
 }
 
 export function PdfToolbar({
@@ -24,7 +26,8 @@ export function PdfToolbar({
   onPageChange,
   onZoomIn,
   onZoomOut,
-  onResetZoom
+  onResetZoom,
+  onAnalyze
 }: PdfToolbarProps): React.ReactElement {
   const [pageInput, setPageInput] = useState(String(currentPage));
 
@@ -121,6 +124,16 @@ export function PdfToolbar({
           <ResetIcon />
         </button>
       </div>
+
+      {onAnalyze !== undefined && (
+        <button
+          className="button button--primary pdf-toolbar__primary-action"
+          onClick={onAnalyze}
+          type="button"
+        >
+          <SparklesIcon /> Cartographier
+        </button>
+      )}
     </div>
   );
 }

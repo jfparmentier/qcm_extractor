@@ -3,7 +3,6 @@ import type { MappingState } from "../domain/projectState";
 import {
   PAGE_REGION_ROLES,
   getPageRegionRoleLabel,
-  getQuestionTypeLabel,
   getSegmentDisplayName,
   type PageRegionRole
 } from "../domain/documentMap";
@@ -11,7 +10,6 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ImageIcon,
   PlusIcon,
   SelectionIcon,
   SparklesIcon,
@@ -33,12 +31,6 @@ interface MappingPanelProps {
   readonly onSelectRegion: (segmentId: string, regionId: string) => void;
   readonly onDrawingRoleChange: (role: PageRegionRole) => void;
   readonly onToggleDrawing: () => void;
-  readonly onUpdateRegionRole: (
-    segmentId: string,
-    regionId: string,
-    role: PageRegionRole
-  ) => void;
-  readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
 }
 
 function formatElapsed(startedAt: number | null, now: number): string {
@@ -49,10 +41,6 @@ function formatElapsed(startedAt: number | null, now: number): string {
   return minutes > 0
     ? `${minutes} min ${remainingSeconds.toString().padStart(2, "0")} s`
     : `${seconds} s`;
-}
-
-function formatTokens(value: number | null): string {
-  return value === null ? "—" : new Intl.NumberFormat("fr-FR").format(value);
 }
 
 function getRunningStatusLabel(mapping: MappingState): string {
@@ -76,9 +64,7 @@ export function MappingPanel({
   onDeleteSegment,
   onSelectRegion,
   onDrawingRoleChange,
-  onToggleDrawing,
-  onUpdateRegionRole,
-  onDeleteRegion
+  onToggleDrawing
 }: MappingPanelProps): React.ReactElement {
   const [now, setNow] = useState(Date.now());
 
@@ -160,9 +146,6 @@ export function MappingPanel({
 
   const { document, question_segments: segments } = mapping.data;
   const selectedSegment = selectedIndex >= 0 ? segments[selectedIndex] ?? null : null;
-  const selectedRegion = selectedSegment?.page_regions.find(
-    (region) => region.client_id === mapping.selectedRegionId
-  ) ?? null;
   const regionsOnCurrentPage = selectedSegment?.page_regions.filter(
     (region) => region.page === currentPage
   ) ?? [];
@@ -185,8 +168,6 @@ export function MappingPanel({
   const previousSegment = segments[selectedIndex - 1];
   const nextSegment = segments[selectedIndex + 1];
   const progressPercentage = Math.round(((selectedIndex + 1) / segments.length) * 100);
-  const totalRegions = selectedSegment.page_regions.length;
-
   return (
     <aside className="mapping-panel" aria-label="Validation de la cartographie question par question">
       <header className="mapping-review-header">
@@ -236,38 +217,11 @@ export function MappingPanel({
           </div>
         </div>
 
-        <section className="mapping-question-summary" aria-label="Question cartographiée">
-          <div className="mapping-question-summary__title">
-            <strong>{getSegmentDisplayName(selectedSegment, selectedIndex)}</strong>
-            <span>{getQuestionTypeLabel(selectedSegment.question_type_hint)}</span>
-          </div>
-          <div className="mapping-question-summary__meta">
-            <span>Page{selectedSegment.question_pages.length > 1 ? "s" : ""} {selectedSegment.question_pages.join(", ")}</span>
-            <span>{totalRegions} zone{totalRegions > 1 ? "s" : ""} au total</span>
-            {selectedSegment.contains_essential_image && <span><ImageIcon /> Illustration</span>}
-            <span>Confiance {Math.round(selectedSegment.confidence * 100)} %</span>
-          </div>
-          <button
-            className="mapping-delete-question"
-            onClick={() => onDeleteSegment(selectedSegment.temporary_id)}
-            type="button"
-          >
-            <TrashIcon /> Retirer cette question
-          </button>
-        </section>
-
         {document.warnings.length > 0 && (
         <details className="mapping-warnings">
           <summary>{document.warnings.length} avertissement{document.warnings.length > 1 ? "s" : ""} sur le document</summary>
           <ul>{document.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
         </details>
-        )}
-
-        {selectedSegment.warnings.length > 0 && (
-        <section className="mapping-warnings" aria-label="Avertissements de la question">
-          <strong><WarningIcon /> Points à vérifier</strong>
-          <ul>{selectedSegment.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
-        </section>
         )}
 
         <section className="region-editor" aria-label="Éditeur géométrique des zones">
@@ -277,29 +231,6 @@ export function MappingPanel({
             <strong>Page {currentPage}</strong>
           </div>
           <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
-        </div>
-
-        <div className="region-editor__add-row">
-          <label>
-            <span>Type de contenu à encadrer</span>
-            <select
-              disabled={isDrawing}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onDrawingRoleChange(event.target.value as PageRegionRole)}
-              value={drawingRole}
-            >
-              {PAGE_REGION_ROLES.map((role) => (
-                <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
-              ))}
-            </select>
-          </label>
-          <button
-            className={`button ${isDrawing ? "button--secondary" : "button--primary"} region-editor__draw-button`}
-            onClick={onToggleDrawing}
-            type="button"
-          >
-            {isDrawing ? <StopIcon /> : <PlusIcon />}
-            {isDrawing ? "Annuler" : "Ajouter une zone"}
-          </button>
         </div>
 
         {isDrawing && (
@@ -327,34 +258,36 @@ export function MappingPanel({
           ))}
         </div>
 
-        {selectedRegion !== null && selectedRegion.page === currentPage && (
-          <div className="region-editor__selection">
-            <label>
-              <span>Rôle de la zone sélectionnée</span>
-              <select
-                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onUpdateRegionRole(
-                  selectedSegment.temporary_id,
-                  selectedRegion.client_id,
-                  event.target.value as PageRegionRole
-                )}
-                value={selectedRegion.role}
-              >
-                {PAGE_REGION_ROLES.map((role) => (
-                  <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              aria-label="Supprimer la zone sélectionnée"
-              className="button button--danger button--icon"
-              onClick={() => onDeleteRegion(selectedSegment.temporary_id, selectedRegion.client_id)}
-              title="Supprimer la zone"
-              type="button"
+        <div className="region-editor__add-row">
+          <label>
+            <span>Type de la nouvelle zone</span>
+            <select
+              disabled={isDrawing}
+              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onDrawingRoleChange(event.target.value as PageRegionRole)}
+              value={drawingRole}
             >
-              <TrashIcon />
-            </button>
-          </div>
-        )}
+              {PAGE_REGION_ROLES.map((role) => (
+                <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
+              ))}
+            </select>
+          </label>
+          <button
+            aria-label={isDrawing ? "Annuler le tracé" : "Tracer une nouvelle zone"}
+            className={`button ${isDrawing ? "button--secondary" : "button--primary"} button--icon region-editor__draw-button`}
+            onClick={onToggleDrawing}
+            title={isDrawing ? "Annuler le tracé" : "Tracer une nouvelle zone"}
+            type="button"
+          >
+            {isDrawing ? <StopIcon /> : <PlusIcon />}
+          </button>
+        </div>
+        <button
+          className="mapping-delete-question"
+          onClick={() => onDeleteSegment(selectedSegment.temporary_id)}
+          type="button"
+        >
+          <TrashIcon /> Retirer cette question
+        </button>
         </section>
       </div>
 
@@ -386,15 +319,6 @@ export function MappingPanel({
             </button>
           )}
         </div>
-        <details className="mapping-secondary-actions">
-          <summary>Options de la cartographie</summary>
-          <div className="mapping-secondary-actions__content">
-            <span>Modèle : {mapping.meta?.model ?? "—"} · {formatTokens(mapping.meta?.usage.total_tokens ?? null)} jetons</span>
-            <button className="mapping-reanalyze-button" onClick={onAnalyze} type="button">
-              <SparklesIcon /> Relancer toute l’analyse
-            </button>
-          </div>
-        </details>
       </footer>
     </aside>
   );

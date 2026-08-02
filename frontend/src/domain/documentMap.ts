@@ -360,6 +360,6 @@ export function getPageRegionRoleLabel(role: PageRegionRole): string {
     case "question":
       return "Énoncé";
     case "essential_image":
-      return "Illustration essentielle";
+      return "Illustration";
   }
 }

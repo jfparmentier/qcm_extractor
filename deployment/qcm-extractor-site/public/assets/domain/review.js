@@ -1,4 +1,4 @@
-import { createZipBlob } from "../export/createZip.js?v=7.5.1";
+import { createZipBlob } from "../export/createZip.js?v=7.5.5";
 function exportChoiceId(id) {
     const clean = id.replace(/^choice-/, "").replace(/[^A-Za-z0-9._-]+/g, "-") || "option";
     return `choice-${clean}`;
@@ -31,7 +31,7 @@ export function createReviewQuestions(questions) {
         return {
             id: question.id,
             segmentId: question.segment_id,
-            type: question.type,
+            type: question.type === "true_false" ? "single_choice" : question.type,
             title: question.title.content,
             titleOrigin: question.title.origin,
             statement: question.statement,
