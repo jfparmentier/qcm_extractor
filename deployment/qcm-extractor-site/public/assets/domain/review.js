@@ -120,7 +120,12 @@ function replaceAssetTokens(statement, candidates) {
     const append = [];
     candidates.forEach((candidate) => {
         const markdown = `![${candidate.altText}](assets/${candidate.fileName})`;
-        if (result.includes(candidate.insertionToken)) {
+        const escapedToken = candidate.insertionToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const wrappedToken = new RegExp(`\\(\\s*${escapedToken}\\s*\\)`);
+        if (wrappedToken.test(result)) {
+            result = result.replace(new RegExp(wrappedToken.source, "g"), markdown);
+        }
+        else if (result.includes(candidate.insertionToken)) {
             result = result.split(candidate.insertionToken).join(markdown);
         }
         else if (candidate.role === "essential") {
@@ -186,7 +191,7 @@ export async function createReviewArchive(value, illustrationPlan, generatedAsse
             data: JSON.stringify(value, null, 2)
         },
         {
-            name: "moodle.xml",
+            name: "questions.xml",
             data: await createMoodleXml(value, generatedAssets)
         }
     ];
@@ -220,13 +225,26 @@ function textAsHtml(value) {
     return escapeXml(value).replaceAll("\n", "<br />\n");
 }
 function moodleQuestionHtml(question) {
-    let statement = question.statement;
     const markers = question.assets.map((asset, index) => {
-        const marker = `\uE000QCM_IMAGE_${index}\uE001`;
-        const markdown = `![${asset.alt_text}](${asset.path})`;
-        statement = statement.split(markdown).join(marker);
-        return { asset, marker };
+        return { asset, marker: `\uE000QCM_IMAGE_${index}\uE001` };
     });
+    const insertedAssets = new Set();
+    let statement = question.statement.replace(/!\[[^\]]*\]\(\s*([^)]*?)\s*\)/g, (_markdown, rawTarget) => {
+        const target = rawTarget.trim().replace(/^<|>$/g, "");
+        const targetFileName = target.split("/").pop();
+        const assetIndex = question.assets.findIndex((asset) => asset.path === target || asset.path.split("/").pop() === targetFileName);
+        if (assetIndex < 0 || insertedAssets.has(assetIndex))
+            return "";
+        insertedAssets.add(assetIndex);
+        return markers[assetIndex]?.marker ?? "";
+    });
+    markers.forEach(({ marker }) => {
+        statement = statement.replace(new RegExp(`\\(\\s*${marker}\\s*\\)`, "g"), marker);
+    });
+    const missingImageMarkers = markers
+        .filter((_entry, index) => !insertedAssets.has(index))
+        .map((entry) => entry.marker);
+    statement = [statement.trim(), ...missingImageMarkers].filter(Boolean).join("\n\n");
     let html = textAsHtml(statement);
     markers.forEach(({ asset, marker }) => {
         const fileName = asset.path.split("/").pop() ?? asset.path;

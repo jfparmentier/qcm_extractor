@@ -14,7 +14,8 @@ const modules = [
   { source: "components/PdfViewer.tsx", destination: "components/PdfViewer.js" },
   { source: "components/QuestionReview.tsx", destination: "components/QuestionReview.js" },
   { source: "domain/documentMap.ts", destination: "domain/documentMap.js" },
-  { source: "domain/review.ts", destination: "domain/review.js" }
+  { source: "domain/review.ts", destination: "domain/review.js" },
+  { source: "pdf/extractIllustrations.ts", destination: "pdf/extractIllustrations.js" }
 ];
 
 for (const module of modules) {

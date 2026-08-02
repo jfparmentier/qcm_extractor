@@ -32,20 +32,21 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
     useEffect(() => {
         const workspace = pageWorkspaceRef.current;
-        if (workspace === null || activePanel !== "mapping" || !showSidePanel)
+        if (workspace === null || activePanel !== "mapping")
             return;
         let disposed = false;
-        const ensureMappingPageWidth = async () => {
+        const ensurePageWidth = async () => {
             const page = await pdf.document.getPage(currentPage);
             if (disposed)
                 return;
             const pageWidth = page.getViewport({ scale: 1 }).width;
-            const minimumZoom = Math.min(MAX_ZOOM, (workspace.clientWidth * 0.75 + 1) / pageWidth);
+            const minimumCoverage = showSidePanel ? 0.75 : 0.5;
+            const minimumZoom = Math.min(MAX_ZOOM, (workspace.clientWidth * minimumCoverage + 1) / pageWidth);
             if (zoom < minimumZoom)
                 onZoomChange(minimumZoom);
         };
         const updateMinimumZoom = () => {
-            void ensureMappingPageWidth().catch(() => undefined);
+            void ensurePageWidth().catch(() => undefined);
         };
         const resizeObserver = new ResizeObserver(updateMinimumZoom);
         resizeObserver.observe(workspace);

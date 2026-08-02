@@ -2,6 +2,7 @@ const TARGET_PAGE_WIDTH_PX = 2400;
 const MAX_PAGE_PIXELS = 18_000_000;
 const MIN_USEFUL_WIDTH_PX = 160;
 const MIN_USEFUL_HEIGHT_PX = 100;
+const WHITE_THRESHOLD = 250;
 export class IllustrationGenerationError extends Error {
     candidateId;
     constructor(message, candidateId = null) {
@@ -15,12 +16,28 @@ function assertNotAborted(signal) {
         throw new DOMException("Génération annulée", "AbortError");
     }
 }
-function canvasContext(canvas) {
-    const context = canvas.getContext("2d", { alpha: false });
+function canvasContext(canvas, alpha = false) {
+    const context = canvas.getContext("2d", { alpha });
     if (context === null) {
         throw new IllustrationGenerationError("Le navigateur ne permet pas de créer le contexte graphique nécessaire.");
     }
     return context;
+}
+function isWhitePixel(data, offset) {
+    return (data[offset] ?? 0) >= WHITE_THRESHOLD &&
+        (data[offset + 1] ?? 0) >= WHITE_THRESHOLD &&
+        (data[offset + 2] ?? 0) >= WHITE_THRESHOLD;
+}
+export function makeWhitePixelsTransparent(data) {
+    for (let offset = 0; offset < data.length; offset += 4) {
+        if (isWhitePixel(data, offset))
+            data[offset + 3] = 0;
+    }
+}
+function makeWhiteTransparent(context, width, height) {
+    const image = context.getImageData(0, 0, width, height);
+    makeWhitePixelsTransparent(image.data);
+    context.putImageData(image, 0, 0);
 }
 function computeScale(page) {
     const base = page.getViewport({ scale: 1 });
@@ -85,12 +102,11 @@ async function cropCandidate(candidate, sourceCanvas, signal) {
     const cropCanvas = window.document.createElement("canvas");
     cropCanvas.width = bounds.width;
     cropCanvas.height = bounds.height;
-    const context = canvasContext(cropCanvas);
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, bounds.width, bounds.height);
+    const context = canvasContext(cropCanvas, true);
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = "high";
     context.drawImage(sourceCanvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+    makeWhiteTransparent(context, bounds.width, bounds.height);
     const blob = await canvasToPng(cropCanvas, candidate.id);
     assertNotAborted(signal);
     const generationWarnings = [];

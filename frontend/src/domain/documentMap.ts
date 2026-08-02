@@ -238,9 +238,10 @@ export function validateAndNormalizeDocumentMap(
     );
   }
 
+  const documentMap = value as RawDocumentMap;
   const diagnostics: string[] = [];
   const ids = new Set<string>();
-  const segments = value.question_segments.map((segment) => {
+  const segments = documentMap.question_segments.map((segment) => {
     if (ids.has(segment.temporary_id)) {
       throw new DocumentMapValidationError(
         "La cartographie contient des identifiants dupliqués.",
@@ -297,9 +298,9 @@ export function validateAndNormalizeDocumentMap(
       : left.temporary_id.localeCompare(right.temporary_id, "fr");
   });
 
-  if (value.document.page_count !== actualPageCount) {
+  if (documentMap.document.page_count !== actualPageCount) {
     diagnostics.push(
-      `Le LLM a indiqué ${value.document.page_count} pages, tandis que le lecteur PDF en compte ${actualPageCount}. La valeur locale a été retenue.`
+      `Le LLM a indiqué ${documentMap.document.page_count} pages, tandis que le lecteur PDF en compte ${actualPageCount}. La valeur locale a été retenue.`
     );
   }
 
@@ -307,11 +308,11 @@ export function validateAndNormalizeDocumentMap(
 
   return {
     documentMap: {
-      ...value,
+      ...documentMap,
       document: {
-        ...value.document,
+        ...documentMap.document,
         page_count: actualPageCount,
-        warnings: [...new Set([...value.document.warnings, ...diagnostics])]
+        warnings: [...new Set([...documentMap.document.warnings, ...diagnostics])]
       },
       question_segments: segments
     },

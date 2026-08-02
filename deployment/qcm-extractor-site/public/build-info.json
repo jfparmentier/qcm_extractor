@@ -27,6 +27,8 @@
     "json-inside-zip",
     "moodle-xml-inside-zip",
     "base64-images-in-moodle-xml",
+    "questions-xml-inside-zip",
+    "transparent-white-png-background",
     "zip-export-with-images",
     "dependency-free-zip-writer",
     "sequential-single-panel-workflow",

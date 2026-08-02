@@ -18,7 +18,7 @@ const extracted = [{
   type: "single_choice",
   title: { content: "Ampoule", origin: "explicit_in_document" },
   content_format: "markdown-latex",
-  statement: "Observer le circuit. asset:001",
+  statement: "Observer le circuit. (asset:001)",
   choices: [{ id: "a", content: "Réponse A" }, { id: "b", content: "Réponse B" }],
   correct_choice_ids: ["a"],
   correct_answer_origin: "explicit_in_document",
@@ -113,7 +113,23 @@ assert.match(moodleXml, /<answernumbering>none<\/answernumbering>/);
 assert.match(moodleXml, /<answer fraction="100" format="html">[\s\S]*Réponse A/);
 assert.match(moodleXml, /<answer fraction="-100" format="html">[\s\S]*Réponse B/);
 assert.match(moodleXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png" alt="Circuit" \/>/);
+assert.doesNotMatch(moodleXml, /<img[^>]+\/>\s*\)/);
 assert.match(moodleXml, /<file name="q-001-01\.png" path="\/" encoding="base64">iVBORw0KGgo=<\/file>/);
+assert.doesNotMatch(moodleXml, /!\[[^\]]*\]\([^)]*\)/);
+
+const malformedImageMarkdownXml = await createMoodleXml({
+  ...exported,
+  questions: [{
+    ...exported.questions[0],
+    statement: "Observer le circuit. ![ancienne légende]( image )"
+  }]
+}, generatedAssets);
+assert.doesNotMatch(malformedImageMarkdownXml, /!\[[^\]]*\]\([^)]*\)/);
+assert.equal(
+  [...malformedImageMarkdownXml.matchAll(/<img src="@@PLUGINFILE@@\/q-001-01\.png"/g)].length,
+  1,
+  "L’image doit être intégrée une seule fois même si son Markdown est invalide."
+);
 
 const multipleAnswersXml = await createMoodleXml({
   ...exported,
@@ -145,7 +161,7 @@ try {
   execFileSync("unzip", ["-t", archivePath], { stdio: "pipe" });
   const jsonText = execFileSync("unzip", ["-p", archivePath, "questions.json"], { encoding: "utf8" });
   assert.deepEqual(JSON.parse(jsonText), exported);
-  const xmlText = execFileSync("unzip", ["-p", archivePath, "moodle.xml"], { encoding: "utf8" });
+  const xmlText = execFileSync("unzip", ["-p", archivePath, "questions.xml"], { encoding: "utf8" });
   assert.equal(xmlText, moodleXml);
   const extractedPng = execFileSync("unzip", ["-p", archivePath, "assets/q-001-01.png"]);
   assert.deepEqual([...extractedPng], [...pngBytes]);

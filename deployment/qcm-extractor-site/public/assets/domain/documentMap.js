@@ -103,9 +103,10 @@ export function validateAndNormalizeDocumentMap(value, actualPageCount) {
     if (!validateSchema(value)) {
         throw new DocumentMapValidationError("La réponse du LLM ne respecte pas le schéma de cartographie.", formatAjvErrors(validateSchema.errors));
     }
+    const documentMap = value;
     const diagnostics = [];
     const ids = new Set();
-    const segments = value.question_segments.map((segment) => {
+    const segments = documentMap.question_segments.map((segment) => {
         if (ids.has(segment.temporary_id)) {
             throw new DocumentMapValidationError("La cartographie contient des identifiants dupliqués.", [segment.temporary_id]);
         }
@@ -151,17 +152,17 @@ export function validateAndNormalizeDocumentMap(value, actualPageCount) {
             ? pageDifference
             : left.temporary_id.localeCompare(right.temporary_id, "fr");
     });
-    if (value.document.page_count !== actualPageCount) {
-        diagnostics.push(`Le LLM a indiqué ${value.document.page_count} pages, tandis que le lecteur PDF en compte ${actualPageCount}. La valeur locale a été retenue.`);
+    if (documentMap.document.page_count !== actualPageCount) {
+        diagnostics.push(`Le LLM a indiqué ${documentMap.document.page_count} pages, tandis que le lecteur PDF en compte ${actualPageCount}. La valeur locale a été retenue.`);
     }
     diagnostics.push(...detectStrongOverlaps(segments));
     return {
         documentMap: {
-            ...value,
+            ...documentMap,
             document: {
-                ...value.document,
+                ...documentMap.document,
                 page_count: actualPageCount,
-                warnings: [...new Set([...value.document.warnings, ...diagnostics])]
+                warnings: [...new Set([...documentMap.document.warnings, ...diagnostics])]
             },
             question_segments: segments
         },

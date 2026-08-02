@@ -1,5 +1,18 @@
 import assert from "node:assert/strict";
 import { createIllustrationPlan } from "../deployment/qcm-extractor-site/public/assets/domain/illustration.js";
+import { makeWhitePixelsTransparent } from "../deployment/qcm-extractor-site/public/assets/pdf/extractIllustrations.js";
+
+const rgbaPixels = new Uint8ClampedArray([
+  255, 255, 255, 255,
+  249, 250, 255, 255,
+  20, 30, 40, 255
+]);
+makeWhitePixelsTransparent(rgbaPixels);
+assert.deepEqual(
+  [rgbaPixels[3], rgbaPixels[7], rgbaPixels[11]],
+  [0, 255, 255],
+  "Seuls les pixels blancs ou presque blancs doivent devenir transparents."
+);
 
 const documentMap = {
   schema_version: "1.0.0",

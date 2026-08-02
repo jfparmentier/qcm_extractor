@@ -315,7 +315,7 @@ export function MappingPanel({
             </button>
           ) : (
             <button className="button button--primary" onClick={onValidate} type="button">
-              <CheckIcon /> Valider les zones
+              <CheckIcon /> Valider
             </button>
           )}
         </div>
