@@ -151,8 +151,7 @@
         },
         "role": {
           "enum": [
-            "essential",
-            "decorative"
+            "essential"
           ]
         },
         "source_page": {

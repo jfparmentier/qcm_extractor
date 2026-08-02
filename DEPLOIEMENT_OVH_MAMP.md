@@ -1,4 +1,4 @@
-# Déploiement sur OVH Hosting Perso et MAMP — version 7.3.1
+# Déploiement sur OVH Hosting Perso et MAMP — version 7.4.0
 
 Le dossier à copier est `deployment/qcm-extractor-site/`.
 
@@ -52,6 +52,10 @@ Le LLM génère un titre descriptif lorsqu’aucun titre n’est présent dans l
 
 L’archive finale contient `questions.json` et les illustrations PNG sous `assets/`.
 
-## Workflow 7.3.1
+## Workflow 7.4.0
 
 Les paramètres de lots et d’extraction se configurent dans `deployment/qcm-extractor-site/private/config/runtime.php`. L’interface ne les expose plus. Après validation des zones, les sous-PDF sont préparés automatiquement, puis l’interface affiche uniquement l’étape d’extraction. Les illustrations sont générées automatiquement lorsque tous les lots ont été extraits.
+
+## Cartographie 7.4.0
+
+L’éditeur géométrique propose uniquement **Énoncé** et **Illustration essentielle**. Plusieurs zones **Énoncé** peuvent appartenir à un même QCM et couvrir plusieurs pages.

@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.3.1";
+import { clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.4.0";
 const MIN_REGION_SIZE = 0.015;
 const RESIZE_HANDLES = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 function normalizedPointerPosition(clientX, clientY, layer) {

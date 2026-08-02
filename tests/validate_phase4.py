@@ -24,7 +24,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 4 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.11.1"
+assert package["version"] == "0.12.0"
 assert package["dependencies"]["pdf-lib"] == "1.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -110,8 +110,8 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.3.1"
-assert build_info["application_version"] == "0.11.1"
+assert build_info["version"] == "7.4.0"
+assert build_info["application_version"] == "0.12.0"
 assert build_info["dependencies"]["pdf_lib"] == "1.17.1"
 
 subprocess.run(

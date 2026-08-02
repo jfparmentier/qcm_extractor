@@ -238,7 +238,9 @@ export function MappingPanel({
         </div>
 
         <p className="region-editor__help">
-          Faites glisser une zone pour la déplacer. Utilisez ses poignées pour la redimensionner.
+          Une zone « Énoncé » regroupe tout le texte du QCM : consigne, propositions, réponse correcte et feedback.
+          Plusieurs zones « Énoncé » peuvent appartenir à la même question, y compris sur plusieurs pages.
+          Faites glisser une zone pour la déplacer et utilisez ses poignées pour la redimensionner.
         </p>
 
         <div className="region-editor__add-row">

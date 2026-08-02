@@ -43,8 +43,8 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
 assert "Phase 7" in index
-assert "?v=7.3.1" in index
-assert 'name="application-version" content="7.3.1"' in index
+assert "?v=7.4.0" in index
+assert 'name="application-version" content="7.4.0"' in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
@@ -117,4 +117,4 @@ for marker in ("region-editor", "Tracer", "Supprimer la zone", "Supprimer ce QCM
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION", "DELETE_SEGMENT"):
     assert marker in state
 
-print("OK déploiement 7.3.1 : ressources anti-cache et révision simplifiée")
+print("OK déploiement 7.4.0 : ressources anti-cache et révision simplifiée")

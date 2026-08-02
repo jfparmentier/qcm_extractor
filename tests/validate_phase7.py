@@ -27,7 +27,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 7 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.11.1"
+assert package["version"] == "0.12.0"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -99,8 +99,8 @@ for marker in (
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.3.1"
-assert build_info["application_version"] == "0.11.1"
+assert build_info["version"] == "7.4.0"
+assert build_info["application_version"] == "0.12.0"
 assert "question-by-question-review" in build_info["features"]
 assert "zip-export-with-images" in build_info["features"]
 assert "json-inside-zip" in build_info["features"]
@@ -183,8 +183,8 @@ assert "not_available" not in title_schema["properties"]["origin"]["enum"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 7" in index
-assert "?v=7.3.1" in index
-assert 'name="application-version" content="7.3.1"' in index
+assert "?v=7.4.0" in index
+assert 'name="application-version" content="7.4.0"' in index
 
 for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     subprocess.run(["node", "--check", str(js_file)], check=True, capture_output=True, text=True)
@@ -194,4 +194,4 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.3.1 : cache explicite et révision sans indicateur central")
+print("OK phase 7.4.0 : cache explicite et révision sans indicateur central")

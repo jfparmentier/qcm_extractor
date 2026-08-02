@@ -1,4 +1,4 @@
-# Déploiement QCM Extractor 7.3.1
+# Déploiement QCM Extractor 7.4.0
 
 Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit une seule étape visible à la fois.
 
@@ -36,3 +36,7 @@ nom-du-document-qcm.zip
     ├── q-001-01.png
     └── ...
 ```
+
+## Cartographie des zones
+
+La cartographie propose uniquement les catégories **Énoncé** et **Illustration essentielle**. La catégorie **Énoncé** couvre l’ensemble du texte du QCM et peut être utilisée plusieurs fois sur plusieurs pages.

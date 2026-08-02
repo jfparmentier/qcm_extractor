@@ -127,7 +127,7 @@ $context = [
             'regions' => [[
                 'source_page' => 4,
                 'local_page' => 2,
-                'role' => 'choices',
+                'role' => 'question',
                 'bbox' => [0.05, 0.45, 0.75, 0.45],
             ]],
         ],

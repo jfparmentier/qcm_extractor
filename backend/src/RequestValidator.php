@@ -189,7 +189,7 @@ final class RequestValidator
         }
 
         $allowedHints = ['single_choice', 'multiple_choice', 'true_false', 'unknown'];
-        $allowedRoles = ['question', 'choices', 'answer', 'feedback', 'essential_image', 'decorative_image', 'context'];
+        $allowedRoles = ['question', 'essential_image'];
         $result = [];
         $seen = [];
 

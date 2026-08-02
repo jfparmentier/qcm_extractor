@@ -1,5 +1,5 @@
 import { getDocument } from "pdfjs-dist";
-import "./pdfWorker.js?v=7.3.1";
+import "./pdfWorker.js?v=7.4.0";
 export const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024;
 function isPdfSignature(bytes) {
     if (bytes.byteLength < 5) {

@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.11.1"
+assert package["version"] == "0.12.0"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -138,9 +138,29 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         target = (js_file.parent / relative.split("?", 1)[0]).resolve()
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
+
+# La cartographie 7.4 ne conserve que les zones textuelles unifiées et les illustrations essentielles.
+assert 'export type PageRegionRole =\n  | "question"\n  | "essential_image";' in mapping
+for obsolete_role in ('"choices"', '"answer"', '"feedback"', '"decorative_image"', '"context"'):
+    assert obsolete_role not in mapping, f"Rôle de cartographie obsolète : {obsolete_role}"
+assert 'return "Énoncé"' in mapping
+
+mapping_prompt = (ROOT / "backend/prompts/mapping.txt").read_text(encoding="utf-8")
+for marker in (
+    "page_regions ne peut utiliser que deux rôles",
+    "énoncé, propositions, réponse correcte",
+    "Un même QCM peut avoir plusieurs zones question",
+    "N’ajoute aucune zone pour les éléments purement décoratifs",
+):
+    assert marker in mapping_prompt, marker
+
+openai_mapping_schema = json.loads((ROOT / "backend/schemas/mapping.openai.schema.json").read_text(encoding="utf-8"))
+role_enum = openai_mapping_schema["properties"]["question_segments"]["items"]["properties"]["page_regions"]["items"]["properties"]["role"]["enum"]
+assert role_enum == ["question", "essential_image"]
+
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.3.1"
-assert build_info["application_version"] == "0.11.1"
+assert build_info["version"] == "7.4.0"
+assert build_info["application_version"] == "0.12.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
 print("OK phase 3 : cartographie et éditeur géométrique préservés")

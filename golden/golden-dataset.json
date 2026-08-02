@@ -546,7 +546,7 @@
           },
           {
             "page": 16,
-            "role": "choices",
+            "role": "question",
             "bbox": {
               "x": 0.28,
               "y": 0.65,
@@ -649,16 +649,6 @@
               "y": 0.18,
               "width": 0.93,
               "height": 0.68
-            }
-          },
-          {
-            "page": 17,
-            "role": "decorative_image",
-            "bbox": {
-              "x": 0.58,
-              "y": 0.43,
-              "width": 0.33,
-              "height": 0.31
             }
           }
         ],
@@ -1004,7 +994,7 @@
           },
           {
             "page": 1,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.22,
@@ -1014,7 +1004,7 @@
           },
           {
             "page": 1,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.22,
@@ -1099,7 +1089,7 @@
           },
           {
             "page": 1,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.37,
@@ -1109,7 +1099,7 @@
           },
           {
             "page": 1,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.37,
@@ -1191,7 +1181,7 @@
           },
           {
             "page": 2,
-            "role": "choices",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.03,
@@ -1201,7 +1191,7 @@
           },
           {
             "page": 2,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.17,
@@ -1211,7 +1201,7 @@
           },
           {
             "page": 2,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.21,
@@ -1301,7 +1291,7 @@
           },
           {
             "page": 3,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.7,
@@ -1311,7 +1301,7 @@
           },
           {
             "page": 3,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.7,
@@ -1412,7 +1402,7 @@
           },
           {
             "page": 5,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.62,
@@ -1422,7 +1412,7 @@
           },
           {
             "page": 5,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.69,
@@ -1525,7 +1515,7 @@
           },
           {
             "page": 10,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.37,
@@ -1535,7 +1525,7 @@
           },
           {
             "page": 10,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.42,
@@ -1635,7 +1625,7 @@
           },
           {
             "page": 16,
-            "role": "choices",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.03,
@@ -1645,7 +1635,7 @@
           },
           {
             "page": 16,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.11,
@@ -1655,7 +1645,7 @@
           },
           {
             "page": 16,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.15,
@@ -1766,7 +1756,7 @@
           },
           {
             "page": 17,
-            "role": "choices",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.24,
@@ -1776,7 +1766,7 @@
           },
           {
             "page": 17,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.52,
@@ -1786,7 +1776,7 @@
           },
           {
             "page": 17,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.58,
@@ -1900,7 +1890,7 @@
           },
           {
             "page": 27,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.86,
@@ -1910,7 +1900,7 @@
           },
           {
             "page": 27,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.9,
@@ -2020,7 +2010,7 @@
           },
           {
             "page": 37,
-            "role": "choices",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.03,
@@ -2030,7 +2020,7 @@
           },
           {
             "page": 37,
-            "role": "answer",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.21,
@@ -2040,7 +2030,7 @@
           },
           {
             "page": 37,
-            "role": "feedback",
+            "role": "question",
             "bbox": {
               "x": 0.08,
               "y": 0.25,

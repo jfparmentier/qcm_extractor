@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { LayersIcon, ResetIcon, WarningIcon } from "./Icons.js?v=7.3.1";
+import { LayersIcon, ResetIcon, WarningIcon } from "./Icons.js?v=7.4.0";
 export function PreparationPanel({ batching, error, onRetry }) {
     const total = batching.plan?.batches.length ?? 0;
     const generated = Object.keys(batching.artifacts).length;

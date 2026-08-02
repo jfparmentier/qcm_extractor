@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.3.1";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.4.0";
 export function PdfThumbnail({ document, pageNumber, selected, onSelect }) {
     const itemRef = useRef(null);
     const [isVisible, setIsVisible] = useState(pageNumber <= 4);

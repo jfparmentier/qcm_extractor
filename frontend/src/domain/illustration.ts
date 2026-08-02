@@ -1,7 +1,7 @@
 import type { DocumentMap, NormalizedBoundingBox, PageRegionOrigin, PageRegionRole } from "./documentMap";
 import type { ExtractedImage, ExtractedQuestion } from "./extraction";
 
-export type IllustrationRole = "essential" | "decorative";
+export type IllustrationRole = "essential";
 export type IllustrationGenerationStatus = "idle" | "running" | "completed" | "failed" | "cancelled";
 
 export interface IllustrationCandidate {
@@ -64,9 +64,7 @@ export const INITIAL_ILLUSTRATION_GENERATION_STATE: IllustrationGenerationState 
 };
 
 function imageRoleFromRegion(role: PageRegionRole): IllustrationRole | null {
-  if (role === "essential_image") return "essential";
-  if (role === "decorative_image") return "decorative";
-  return null;
+  return role === "essential_image" ? "essential" : null;
 }
 
 function safeFilePart(value: string): string {
@@ -242,8 +240,8 @@ export function createIllustrationPlan(
   };
 }
 
-export function illustrationRoleLabel(role: IllustrationRole): string {
-  return role === "essential" ? "Illustration essentielle" : "Illustration décorative";
+export function illustrationRoleLabel(_role: IllustrationRole): string {
+  return "Illustration essentielle";
 }
 
 export function revokeIllustrationAssets(

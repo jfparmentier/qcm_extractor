@@ -1,17 +1,17 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.3.1";
-import { mergeExtractionResults } from "../domain/extraction.js?v=7.3.1";
-import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.3.1";
-import { formatFileSize } from "../pdf/formatFileSize.js?v=7.3.1";
-import { CloseIcon, FileIcon, SparklesIcon } from "./Icons.js?v=7.3.1";
-import { ExtractionPanel } from "./ExtractionPanel.js?v=7.3.1";
-import { IllustrationPanel } from "./IllustrationPanel.js?v=7.3.1";
-import { MappingPanel } from "./MappingPanel.js?v=7.3.1";
-import { PreparationPanel } from "./PreparationPanel.js?v=7.3.1";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.3.1";
-import { PdfToolbar } from "./PdfToolbar.js?v=7.3.1";
-import { QuestionReview } from "./QuestionReview.js?v=7.3.1";
+import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.4.0";
+import { mergeExtractionResults } from "../domain/extraction.js?v=7.4.0";
+import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.4.0";
+import { formatFileSize } from "../pdf/formatFileSize.js?v=7.4.0";
+import { CloseIcon, FileIcon, SparklesIcon } from "./Icons.js?v=7.4.0";
+import { ExtractionPanel } from "./ExtractionPanel.js?v=7.4.0";
+import { IllustrationPanel } from "./IllustrationPanel.js?v=7.4.0";
+import { MappingPanel } from "./MappingPanel.js?v=7.4.0";
+import { PreparationPanel } from "./PreparationPanel.js?v=7.4.0";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.4.0";
+import { PdfToolbar } from "./PdfToolbar.js?v=7.4.0";
+import { QuestionReview } from "./QuestionReview.js?v=7.4.0";
 function isEditableElement(target) {
     return target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||

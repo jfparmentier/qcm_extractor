@@ -1,4 +1,4 @@
-# Déploiement du dossier public — Phase 7.3.1
+# Déploiement du dossier public — Phase 7.4.0
 
 Le contenu de ce dossier constitue la racine HTTP. Il comprend le frontend portable et les endpoints PHP de cartographie et d’extraction.
 

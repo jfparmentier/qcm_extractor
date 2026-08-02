@@ -17,23 +17,13 @@ export type QuestionTypeHint =
 
 export type PageRegionRole =
   | "question"
-  | "choices"
-  | "answer"
-  | "feedback"
-  | "essential_image"
-  | "decorative_image"
-  | "context";
+  | "essential_image";
 
 export type PageRegionOrigin = "llm" | "user";
 
 export const PAGE_REGION_ROLES: readonly PageRegionRole[] = [
   "question",
-  "choices",
-  "answer",
-  "feedback",
-  "essential_image",
-  "decorative_image",
-  "context"
+  "essential_image"
 ];
 
 export interface NormalizedBoundingBox {
@@ -208,12 +198,8 @@ function detectStrongOverlaps(segments: readonly QuestionSegment[]): string[] {
         continue;
       }
 
-      const firstRegions = first.page_regions.filter(
-        (region) => region.role === "question" || region.role === "choices"
-      );
-      const secondRegions = second.page_regions.filter(
-        (region) => region.role === "question" || region.role === "choices"
-      );
+      const firstRegions = first.page_regions.filter((region) => region.role === "question");
+      const secondRegions = second.page_regions.filter((region) => region.role === "question");
 
       const stronglyOverlapping = firstRegions.some((firstRegion) =>
         secondRegions.some(
@@ -263,9 +249,16 @@ export function validateAndNormalizeDocumentMap(
     }
     ids.add(segment.temporary_id);
 
-    const questionPages = uniqueSortedPages(segment.question_pages);
     const answerPages = uniqueSortedPages(segment.answer_pages);
     const feedbackPages = uniqueSortedPages(segment.feedback_pages);
+    const questionPages = uniqueSortedPages([
+      ...segment.question_pages,
+      ...answerPages,
+      ...feedbackPages,
+      ...segment.page_regions
+        .filter((region) => region.role === "question")
+        .map((region) => region.page)
+    ]);
     assertPagesExist(questionPages, actualPageCount, "question_pages", segment.temporary_id);
     assertPagesExist(answerPages, actualPageCount, "answer_pages", segment.temporary_id);
     assertPagesExist(feedbackPages, actualPageCount, "feedback_pages", segment.temporary_id);
@@ -281,9 +274,9 @@ export function validateAndNormalizeDocumentMap(
       } satisfies PageRegion;
     });
 
-    if (!pageRegions.some((region) => region.role === "question" || region.role === "choices")) {
+    if (!pageRegions.some((region) => region.role === "question")) {
       diagnostics.push(
-        `${segment.temporary_id} : aucune région d’énoncé ou de propositions n’a été localisée.`
+        `${segment.temporary_id} : aucune région « Énoncé » n’a été localisée.`
       );
     }
 
@@ -366,17 +359,7 @@ export function getPageRegionRoleLabel(role: PageRegionRole): string {
   switch (role) {
     case "question":
       return "Énoncé";
-    case "choices":
-      return "Propositions";
-    case "answer":
-      return "Réponse";
-    case "feedback":
-      return "Feedback";
     case "essential_image":
       return "Illustration essentielle";
-    case "decorative_image":
-      return "Illustration décorative";
-    case "context":
-      return "Contexte";
   }
 }

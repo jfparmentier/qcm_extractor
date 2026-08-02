@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo } from "react";
-import { mergeExtractionResults } from "../domain/extraction.js?v=7.3.1";
-import { CheckIcon, LayersIcon, ResetIcon, SparklesIcon, StopIcon, WarningIcon } from "./Icons.js?v=7.3.1";
+import { mergeExtractionResults } from "../domain/extraction.js?v=7.4.0";
+import { CheckIcon, LayersIcon, ResetIcon, SparklesIcon, StopIcon, WarningIcon } from "./Icons.js?v=7.4.0";
 function statusLabel(status) {
     switch (status) {
         case "preparing": return "Préparation…";

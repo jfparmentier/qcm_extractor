@@ -59,7 +59,7 @@ export interface ReviewExportDocument {
     readonly feedback_origin: ContentOrigin;
     readonly assets: readonly {
       readonly id: string;
-      readonly role: "essential" | "decorative";
+      readonly role: "essential";
       readonly path: string;
       readonly mime_type: "image/png";
       readonly alt_text: string;

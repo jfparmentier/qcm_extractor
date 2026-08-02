@@ -248,30 +248,28 @@ function addPage(pages: readonly number[], page: number): readonly number[] {
   return [...new Set([...pages, page])].sort((left, right) => left - right);
 }
 
-function enrichSegmentMetadata(segment: QuestionSegment, region: PageRegion): QuestionSegment {
-  const questionPages =
-    region.role === "question" ||
-    region.role === "choices" ||
-    region.role === "essential_image" ||
-    region.role === "decorative_image" ||
-    region.role === "context"
-      ? addPage(segment.question_pages, region.page)
-      : segment.question_pages;
-  const answerPages = region.role === "answer"
-    ? addPage(segment.answer_pages, region.page)
-    : segment.answer_pages;
-  const feedbackPages = region.role === "feedback"
-    ? addPage(segment.feedback_pages, region.page)
-    : segment.feedback_pages;
+function refreshSegmentMetadata(segment: QuestionSegment): QuestionSegment {
+  const regionPages = segment.page_regions.map((region) => region.page);
+  const questionPages = [...new Set([
+    ...regionPages,
+    ...segment.answer_pages,
+    ...segment.feedback_pages
+  ])].sort((left, right) => left - right);
 
   return {
     ...segment,
-    question_pages: questionPages,
-    answer_pages: answerPages,
-    feedback_pages: feedbackPages,
-    contains_essential_image:
-      segment.contains_essential_image || region.role === "essential_image"
+    question_pages: questionPages.length > 0 ? questionPages : segment.question_pages,
+    contains_essential_image: segment.page_regions.some(
+      (region) => region.role === "essential_image"
+    )
   };
+}
+
+function enrichSegmentMetadata(segment: QuestionSegment, region: PageRegion): QuestionSegment {
+  const withPage = region.role === "question" || region.role === "essential_image"
+    ? { ...segment, question_pages: addPage(segment.question_pages, region.page) }
+    : segment;
+  return refreshSegmentMetadata(withPage);
 }
 
 function updateSegment(
@@ -588,12 +586,7 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         const withMetadata = updatedRegion === undefined
           ? segment
           : enrichSegmentMetadata({ ...segment, page_regions: updatedRegions }, updatedRegion);
-        return {
-          ...withMetadata,
-          contains_essential_image: updatedRegions.some(
-            (region) => region.role === "essential_image"
-          )
-        };
+        return refreshSegmentMetadata(withMetadata);
       });
 
       return {
@@ -664,13 +657,7 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         const pageRegions = segment.page_regions.filter(
           (region) => region.client_id !== action.regionId
         );
-        return {
-          ...segment,
-          page_regions: pageRegions,
-          contains_essential_image: pageRegions.some(
-            (region) => region.role === "essential_image"
-          )
-        };
+        return refreshSegmentMetadata({ ...segment, page_regions: pageRegions });
       });
 
       return {

@@ -90,12 +90,7 @@ export interface ExtractionContextRegion {
   readonly local_page: number;
   readonly role:
     | "question"
-    | "choices"
-    | "answer"
-    | "feedback"
-    | "essential_image"
-    | "decorative_image"
-    | "context";
+    | "essential_image";
   readonly bbox: readonly [number, number, number, number];
 }
 

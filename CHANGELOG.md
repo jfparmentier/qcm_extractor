@@ -1,3 +1,13 @@
+# Version 7.4.0 — cartographie textuelle unifiée
+
+- la cartographie ne propose plus que deux catégories de zones : `Énoncé` et `Illustration essentielle` ;
+- une zone `Énoncé` regroupe tout le texte du QCM : consigne, propositions, réponse correcte et feedback ;
+- un même QCM peut comporter plusieurs zones `Énoncé`, y compris sur plusieurs pages ;
+- les pages de réponse et de feedback sont intégrées aux pages textuelles du QCM tout en restant disponibles comme métadonnées ;
+- les illustrations décoratives et les anciennes catégories `Propositions`, `Réponse`, `Feedback` et `Contexte` ont été supprimées de la cartographie ;
+- la seconde passe et l’extraction locale des images acceptent uniquement les régions textuelles unifiées et les illustrations essentielles ;
+- les schémas JSON, prompts, validations PHP, sources TypeScript et dossier OVH/MAMP ont été synchronisés.
+
 # Version 7.3.1
 
 - Correction du paquet de déploiement : les modules JavaScript et la feuille de style utilisent désormais une version de cache explicite.

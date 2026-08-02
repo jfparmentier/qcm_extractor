@@ -125,8 +125,7 @@
         },
         "role": {
           "enum": [
-            "essential",
-            "decorative"
+            "essential"
           ]
         },
         "path": {

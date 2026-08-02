@@ -111,12 +111,7 @@ const mappingSchema = {
         "role": {
           "enum": [
             "question",
-            "choices",
-            "answer",
-            "feedback",
-            "essential_image",
-            "decorative_image",
-            "context"
+            "essential_image"
           ]
         },
         "bbox": {

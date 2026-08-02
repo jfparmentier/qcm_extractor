@@ -1,13 +1,8 @@
 import Ajv2020 from "ajv/dist/2020";
-import mappingSchema from "../schemas/mappingSchema.js?v=7.3.1";
+import mappingSchema from "../schemas/mappingSchema.js?v=7.4.0";
 export const PAGE_REGION_ROLES = [
     "question",
-    "choices",
-    "answer",
-    "feedback",
-    "essential_image",
-    "decorative_image",
-    "context"
+    "essential_image"
 ];
 export class DocumentMapValidationError extends Error {
     issues;
@@ -87,8 +82,8 @@ function detectStrongOverlaps(segments) {
             if (second === undefined) {
                 continue;
             }
-            const firstRegions = first.page_regions.filter((region) => region.role === "question" || region.role === "choices");
-            const secondRegions = second.page_regions.filter((region) => region.role === "question" || region.role === "choices");
+            const firstRegions = first.page_regions.filter((region) => region.role === "question");
+            const secondRegions = second.page_regions.filter((region) => region.role === "question");
             const stronglyOverlapping = firstRegions.some((firstRegion) => secondRegions.some((secondRegion) => firstRegion.page === secondRegion.page &&
                 overlapRatio(firstRegion.bbox, secondRegion.bbox) >= 0.8));
             if (stronglyOverlapping) {
@@ -115,9 +110,16 @@ export function validateAndNormalizeDocumentMap(value, actualPageCount) {
             throw new DocumentMapValidationError("La cartographie contient des identifiants dupliqués.", [segment.temporary_id]);
         }
         ids.add(segment.temporary_id);
-        const questionPages = uniqueSortedPages(segment.question_pages);
         const answerPages = uniqueSortedPages(segment.answer_pages);
         const feedbackPages = uniqueSortedPages(segment.feedback_pages);
+        const questionPages = uniqueSortedPages([
+            ...segment.question_pages,
+            ...answerPages,
+            ...feedbackPages,
+            ...segment.page_regions
+                .filter((region) => region.role === "question")
+                .map((region) => region.page)
+        ]);
         assertPagesExist(questionPages, actualPageCount, "question_pages", segment.temporary_id);
         assertPagesExist(answerPages, actualPageCount, "answer_pages", segment.temporary_id);
         assertPagesExist(feedbackPages, actualPageCount, "feedback_pages", segment.temporary_id);
@@ -131,8 +133,8 @@ export function validateAndNormalizeDocumentMap(value, actualPageCount) {
                 origin: "llm"
             };
         });
-        if (!pageRegions.some((region) => region.role === "question" || region.role === "choices")) {
-            diagnostics.push(`${segment.temporary_id} : aucune région d’énoncé ou de propositions n’a été localisée.`);
+        if (!pageRegions.some((region) => region.role === "question")) {
+            diagnostics.push(`${segment.temporary_id} : aucune région « Énoncé » n’a été localisée.`);
         }
         return {
             ...segment,
@@ -202,17 +204,7 @@ export function getPageRegionRoleLabel(role) {
     switch (role) {
         case "question":
             return "Énoncé";
-        case "choices":
-            return "Propositions";
-        case "answer":
-            return "Réponse";
-        case "feedback":
-            return "Feedback";
         case "essential_image":
             return "Illustration essentielle";
-        case "decorative_image":
-            return "Illustration décorative";
-        case "context":
-            return "Contexte";
     }
 }

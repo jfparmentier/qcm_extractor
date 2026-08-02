@@ -30,7 +30,7 @@ export interface ExtractedChoice {
 
 export interface ExtractedImage {
   readonly id: string;
-  readonly role: "essential" | "decorative";
+  readonly role: "essential";
   readonly source_page: number;
   readonly bbox: NormalizedBoundingBox;
   readonly alt_text: string;

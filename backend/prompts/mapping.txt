@@ -11,7 +11,7 @@ RÈGLES DE SÉCURITÉ ET DE FIDÉLITÉ
 - Une question répartie sur plusieurs pages forme un seul segment.
 - Une page peut contenir plusieurs segments distincts.
 - N’interprète pas une page de titre, un sommaire, un exemple non interrogatif ou une simple explication comme un QCM.
-- Une correction ou un commentaire doit être rattaché à la question correspondante, même s’il apparaît sur une page suivante.
+- Une réponse correcte, une correction ou un commentaire doit être rattaché à la question correspondante, même s’il apparaît sur une page suivante.
 - Signale les ambiguïtés dans warnings plutôt que de les résoudre arbitrairement.
 
 IDENTIFIANTS ET ORDRE
@@ -19,20 +19,35 @@ IDENTIFIANTS ET ORDRE
 - question_number reproduit exactement le numéro visible dans le document ; utilise null lorsqu’il est absent.
 - Ne crée jamais deux segments pour la même question, sauf si le document présente réellement deux occurrences distinctes.
 
-PAGES ET RÔLES
-- question_pages : pages contenant l’énoncé et/ou les choix.
-- answer_pages : pages où la bonne réponse est explicitement indiquée.
-- feedback_pages : pages contenant une justification, une solution ou un commentaire associé.
-- contains_essential_image : true uniquement si une figure, un schéma, un graphique ou un tableau est nécessaire pour comprendre ou résoudre la question.
-- page_regions : localise les zones question, choices, answer, feedback, images et contexte utile.
-- Chaque segment doit comporter au moins une région question ou choices lorsque la mise en page le permet.
-- N’inclus pas les en-têtes, pieds de page, numéros de page ou décorations dans les régions, sauf s’ils sont indispensables.
+PAGES
+- question_pages contient toutes les pages où apparaît une partie textuelle du QCM : énoncé, propositions, réponse correcte, correction, solution ou feedback.
+- answer_pages identifie, à titre de métadonnée, les pages où la bonne réponse est explicitement indiquée. Ces pages doivent aussi appartenir à question_pages.
+- feedback_pages identifie, à titre de métadonnée, les pages contenant une justification, une solution ou un commentaire associé. Ces pages doivent aussi appartenir à question_pages.
+- contains_essential_image vaut true uniquement si une figure, un schéma, un graphique ou un tableau est nécessaire pour comprendre ou résoudre la question.
+
+RÉGIONS AUTORISÉES
+page_regions ne peut utiliser que deux rôles :
+1. question : zone « Énoncé » contenant du texte appartenant au QCM ;
+2. essential_image : illustration indispensable à la compréhension ou à la résolution.
+
+RÈGLES POUR LES ZONES « ÉNONCÉ »
+- Une zone question doit contenir tout le texte associé au QCM présent dans la zone : énoncé, consignes, propositions de réponse, indication de la bonne réponse et feedback éventuel.
+- Ne crée pas de zones séparées pour les propositions, la réponse ou le feedback : ces contenus appartiennent tous au rôle question.
+- Un même QCM peut avoir plusieurs zones question, sur une même page ou sur plusieurs pages.
+- Chaque segment doit comporter au moins une zone question.
+- Si le texte d’un QCM est réparti en blocs disjoints, crée plusieurs zones question plutôt qu’une zone immense contenant du contenu étranger.
+- N’inclus pas les en-têtes, pieds de page, numéros de page ou décorations, sauf s’ils sont indispensables au QCM.
+
+RÈGLES POUR LES ILLUSTRATIONS
+- Utilise essential_image uniquement pour une illustration nécessaire au QCM.
+- N’ajoute aucune zone pour les éléments purement décoratifs.
+- Le texte intégré à une figure peut rester dans essential_image ; ne crée une zone question supplémentaire que si ce texte constitue une partie autonome du QCM.
 
 COORDONNÉES
 - Les bbox sont normalisées dans [0,1], origine en haut à gauche.
 - x et y désignent le coin supérieur gauche ; width et height sont strictement positifs.
 - x + width et y + height ne doivent pas dépasser 1.
-- Les régions doivent être aussi serrées que possible tout en conservant les éléments nécessaires.
+- Les régions doivent être aussi serrées que possible tout en conservant tous les éléments nécessaires.
 - Si une localisation précise est incertaine, utilise une région plus large et ajoute un warning ; n’invente pas de précision.
 
 TYPE INDICATIF

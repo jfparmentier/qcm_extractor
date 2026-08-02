@@ -151,8 +151,7 @@ const extractionSchema = {
         },
         "role": {
           "enum": [
-            "essential",
-            "decorative"
+            "essential"
           ]
         },
         "source_page": {
@@ -368,6 +367,6 @@ const extractionSchema = {
       ]
     }
   }
-} as const;
+};
 
 export default extractionSchema;

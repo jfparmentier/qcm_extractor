@@ -1061,21 +1061,9 @@ summary:focus-visible {
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgb(49 86 211 / 42%);
 }
 
-.pdf-region--answer,
-.pdf-region--feedback {
-  border-color: rgb(29 118 87 / 72%);
-  background: rgb(29 118 87 / 9%);
-}
-
 .pdf-region--essential_image {
   border-color: rgb(181 112 27 / 78%);
   background: rgb(240 167 52 / 11%);
-}
-
-.pdf-region--context {
-  border-style: dashed;
-  border-color: rgb(102 116 138 / 70%);
-  background: rgb(102 116 138 / 8%);
 }
 
 .pdf-region > span {

@@ -6,11 +6,7 @@ export const INITIAL_ILLUSTRATION_GENERATION_STATE = {
     startedAt: null
 };
 function imageRoleFromRegion(role) {
-    if (role === "essential_image")
-        return "essential";
-    if (role === "decorative_image")
-        return "decorative";
-    return null;
+    return role === "essential_image" ? "essential" : null;
 }
 function safeFilePart(value) {
     const normalized = value
@@ -159,8 +155,8 @@ export function createIllustrationPlan(documentMap, questions) {
         fingerprint
     };
 }
-export function illustrationRoleLabel(role) {
-    return role === "essential" ? "Illustration essentielle" : "Illustration décorative";
+export function illustrationRoleLabel(_role) {
+    return "Illustration essentielle";
 }
 export function revokeIllustrationAssets(assets) {
     Object.values(assets).forEach((asset) => URL.revokeObjectURL(asset.previewUrl));

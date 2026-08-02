@@ -179,8 +179,7 @@
                 "role": {
                   "type": "string",
                   "enum": [
-                    "essential",
-                    "decorative"
+                    "essential"
                   ]
                 },
                 "source_page": {
