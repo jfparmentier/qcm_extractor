@@ -1,5 +1,5 @@
 import Ajv2020 from "ajv/dist/2020";
-import mappingSchema from "../schemas/mappingSchema.js?v=7.4.0";
+import mappingSchema from "../schemas/mappingSchema.js?v=7.5.1";
 export const PAGE_REGION_ROLES = [
     "question",
     "essential_image"

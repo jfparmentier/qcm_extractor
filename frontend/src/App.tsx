@@ -609,17 +609,6 @@ export default function App(): React.ReactElement {
     }
   }, [extractBatchWithRetries, prepareArtifact, state.batching.artifacts, state.batching.plan, state.extraction.batches, state.extraction.runStatus, state.extraction.settings.maxConcurrentBatches]);
 
-  const extractSingleBatch = useCallback(async (batchId: string): Promise<void> => {
-    if (state.extraction.runStatus === "running") return;
-    const sequence = extractionRunSequenceRef.current + 1;
-    extractionRunSequenceRef.current = sequence;
-    dispatch({ type: "EXTRACTION_RUN_STARTED", startedAt: Date.now() });
-    await extractBatchWithRetries(batchId, sequence);
-    if (extractionRunSequenceRef.current === sequence) {
-      dispatch({ type: "EXTRACTION_RUN_FINISHED" });
-    }
-  }, [extractBatchWithRetries, state.extraction.runStatus]);
-
   const cancelExtraction = useCallback((): void => {
     extractionRunSequenceRef.current += 1;
     const activeIds = [...extractionControllersRef.current.keys()];
@@ -627,13 +616,6 @@ export default function App(): React.ReactElement {
     extractionControllersRef.current.clear();
     activeIds.forEach((batchId) => dispatch({ type: "EXTRACTION_BATCH_CANCELLED", batchId }));
     dispatch({ type: "EXTRACTION_RUN_CANCELLED" });
-  }, []);
-
-  const clearExtraction = useCallback((): void => {
-    extractionRunSequenceRef.current += 1;
-    extractionControllersRef.current.forEach((controller) => controller.abort());
-    extractionControllersRef.current.clear();
-    dispatch({ type: "EXTRACTION_CLEARED" });
   }, []);
 
   const runIllustrationGeneration = useCallback(async (
@@ -798,9 +780,7 @@ export default function App(): React.ReactElement {
           onValidateMapping={prepareValidatedMapping}
           onClose={closeDocument}
           onExtractAll={() => void extractAllBatches()}
-          onExtractBatch={(batchId) => void extractSingleBatch(batchId)}
           onCancelExtraction={cancelExtraction}
-          onClearExtraction={clearExtraction}
           onGenerateAllIllustrations={generateAllIllustrations}
           onGenerateIllustration={generateOneIllustration}
           onCancelIllustrationGeneration={cancelIllustrationGeneration}

@@ -43,8 +43,8 @@ assert not missing, f"Fichiers de déploiement absents : {missing}"
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "./assets/" in index, "Le frontend doit utiliser des ressources relatives."
 assert "Phase 7" in index
-assert "?v=7.4.0" in index
-assert 'name="application-version" content="7.4.0"' in index
+assert "?v=7.5.1" in index
+assert 'name="application-version" content="7.5.1"' in index
 assert (PUBLIC / "assets" / "main.js").is_file()
 
 source = (PUBLIC / "api" / "analyze-map.php").read_text(encoding="utf-8")
@@ -112,9 +112,20 @@ panel = (PUBLIC / "assets" / "components" / "MappingPanel.js").read_text(encodin
 state = (PUBLIC / "assets" / "domain" / "projectState.js").read_text(encoding="utf-8")
 for marker in ("onRegionChange", "onRegionAdd", "pdf-region__handle"):
     assert marker in canvas
+assert 'const RESIZE_HANDLES = ["se"]' in canvas
+assert 'pdf-region__handle--${handle}' in canvas
+assert 'pdf-region__handle--ne' not in canvas
 for marker in ("region-editor", "Tracer", "Supprimer la zone", "Supprimer ce QCM"):
     assert marker in panel
+assert "Une zone « Énoncé » regroupe tout le texte du QCM" not in panel
+extraction_panel = (PUBLIC / "assets" / "components" / "ExtractionPanel.js").read_text(encoding="utf-8")
+for marker in (r"Temps \u00E9coul\u00E9", r"Lots trait\u00E9s", "Questions extraites", "mapping-progress", "Extraire les QCM"):
+    assert marker in extraction_panel, marker
+assert "Extraire ce lot" not in extraction_panel
+assert "extraction-card" not in extraction_panel
+viewer = (PUBLIC / "assets" / "components" / "PdfViewer.js").read_text(encoding="utf-8")
+assert "automaticExtractionPendingRef" in viewer
 for marker in ("UPDATE_REGION_BBOX", "UPDATE_REGION_ROLE", "ADD_REGION", "DELETE_REGION", "DELETE_SEGMENT"):
     assert marker in state
 
-print("OK déploiement 7.4.0 : ressources anti-cache et révision simplifiée")
+print("OK déploiement 7.5.1 : extraction automatique et interface agrégée")

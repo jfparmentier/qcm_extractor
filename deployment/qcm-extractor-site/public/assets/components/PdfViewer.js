@@ -1,24 +1,24 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.4.0";
-import { mergeExtractionResults } from "../domain/extraction.js?v=7.4.0";
-import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.4.0";
-import { formatFileSize } from "../pdf/formatFileSize.js?v=7.4.0";
-import { CloseIcon, FileIcon, SparklesIcon } from "./Icons.js?v=7.4.0";
-import { ExtractionPanel } from "./ExtractionPanel.js?v=7.4.0";
-import { IllustrationPanel } from "./IllustrationPanel.js?v=7.4.0";
-import { MappingPanel } from "./MappingPanel.js?v=7.4.0";
-import { PreparationPanel } from "./PreparationPanel.js?v=7.4.0";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.4.0";
-import { PdfToolbar } from "./PdfToolbar.js?v=7.4.0";
-import { QuestionReview } from "./QuestionReview.js?v=7.4.0";
+import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.5.1";
+import { mergeExtractionResults } from "../domain/extraction.js?v=7.5.1";
+import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.5.1";
+import { formatFileSize } from "../pdf/formatFileSize.js?v=7.5.1";
+import { CloseIcon, FileIcon, SparklesIcon } from "./Icons.js?v=7.5.1";
+import { ExtractionPanel } from "./ExtractionPanel.js?v=7.5.1";
+import { IllustrationPanel } from "./IllustrationPanel.js?v=7.5.1";
+import { MappingPanel } from "./MappingPanel.js?v=7.5.1";
+import { PreparationPanel } from "./PreparationPanel.js?v=7.5.1";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.1";
+import { PdfToolbar } from "./PdfToolbar.js?v=7.5.1";
+import { QuestionReview } from "./QuestionReview.js?v=7.5.1";
 function isEditableElement(target) {
     return target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
         target instanceof HTMLSelectElement ||
         (target instanceof HTMLElement && target.isContentEditable);
 }
-export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extraction, illustrationPlan, illustrationGeneration, onAnalyze, onCancelMapping, onValidateMapping, onSelectSegment, onSelectRegion, onUpdateRegionBbox, onUpdateRegionRole, onAddRegion, onDeleteRegion, onDeleteSegment, onExtractAll, onExtractBatch, onCancelExtraction, onClearExtraction, onGenerateAllIllustrations, onGenerateIllustration, onCancelIllustrationGeneration, onClearIllustrations, onDownloadIllustration, onPageChange, onZoomIn, onZoomOut, onResetZoom, onClose }) {
+export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extraction, illustrationPlan, illustrationGeneration, onAnalyze, onCancelMapping, onValidateMapping, onSelectSegment, onSelectRegion, onUpdateRegionBbox, onUpdateRegionRole, onAddRegion, onDeleteRegion, onDeleteSegment, onExtractAll, onCancelExtraction, onGenerateAllIllustrations, onGenerateIllustration, onCancelIllustrationGeneration, onClearIllustrations, onDownloadIllustration, onPageChange, onZoomIn, onZoomOut, onResetZoom, onClose }) {
     const [renderError, setRenderError] = useState(null);
     const [drawingRole, setDrawingRole] = useState("question");
     const [isDrawing, setIsDrawing] = useState(false);
@@ -44,6 +44,7 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
         return plannedBatches.length > 0 && plannedBatches.every((batch) => extraction.batches[batch.id]?.status === "completed");
     }, [batching.plan, extraction.batches]);
     const automaticIllustrationFingerprintRef = useRef("");
+    const automaticExtractionPendingRef = useRef(false);
     useEffect(() => {
         if (extractedQuestions.length === 0) {
             reviewFingerprintRef.current = "";
@@ -182,17 +183,38 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     const handleValidateMapping = useCallback(async () => {
         setIsDrawing(false);
         setPreparationError(null);
+        automaticExtractionPendingRef.current = true;
         setActivePanel("preparing");
         try {
             await onValidateMapping();
             setActivePanel("extraction");
         }
         catch (error) {
+            automaticExtractionPendingRef.current = false;
             if (error instanceof DOMException && error.name === "AbortError")
                 return;
             setPreparationError(error instanceof Error ? error.message : String(error));
         }
     }, [onValidateMapping]);
+    useEffect(() => {
+        if (!automaticExtractionPendingRef.current ||
+            activePanel !== "extraction" ||
+            batching.plan === null ||
+            extraction.runStatus === "running") {
+            return;
+        }
+        const artifactsReady = batching.plan.batches.every((batch) => batching.artifacts[batch.id] !== undefined);
+        if (!artifactsReady)
+            return;
+        automaticExtractionPendingRef.current = false;
+        onExtractAll();
+    }, [
+        activePanel,
+        batching.artifacts,
+        batching.plan,
+        extraction.runStatus,
+        onExtractAll
+    ]);
     const handleReviewIndexChange = useCallback((index) => {
         const nextIndex = Math.min(Math.max(0, index), Math.max(0, reviewQuestions.length - 1));
         if (nextIndex > reviewIndex) {
@@ -226,5 +248,5 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     }, [illustrationGeneration.assets, illustrationPlan, mapping.data, pdf, reviewIndex, reviewQuestions]);
     const completedMap = mapping.status === "completed" ? mapping.data : null;
     const mappingCompleted = completedMap !== null;
-    return (_jsxs("section", { className: `viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`, "aria-label": "Visualiseur PDF", children: [_jsxs("header", { className: "document-header", children: [_jsxs("div", { className: "document-header__identity", children: [_jsx("span", { className: "document-header__icon", children: _jsx(FileIcon, {}) }), _jsxs("div", { className: "document-header__text", children: [_jsx("strong", { title: pdf.fileName, children: pdf.title ?? pdf.fileName }), _jsxs("span", { children: [pdf.pageCount, " page", pdf.pageCount > 1 ? "s" : "", " \u00B7 ", formatFileSize(pdf.fileSize), pdf.author !== null ? ` · ${pdf.author}` : ""] })] })] }), _jsxs("div", { className: "document-header__actions", children: [activePanel === "mapping" && (_jsxs("button", { className: "button button--primary analysis-header-button", disabled: mapping.status === "running", onClick: onAnalyze, type: "button", children: [_jsx(SparklesIcon, {}), mapping.status === "completed" ? "Recartographier" : "Cartographier"] })), _jsx("button", { "aria-label": "Fermer le document", className: "icon-button icon-button--quiet", onClick: onClose, title: "Fermer le document", type: "button", children: _jsx(CloseIcon, {}) })] })] }), activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (_jsx(QuestionReview, { currentIndex: reviewIndex, currentPage: currentPage, documentMap: completedMap, exporting: exporting, illustrationAssets: illustrationGeneration.assets, illustrationPlan: illustrationPlan, onCurrentIndexChange: handleReviewIndexChange, onCurrentPageChange: onPageChange, onExport: () => void handleReviewExport(), onQuestionChange: handleReviewQuestionChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pdf: pdf, questions: reviewQuestions, zoom: zoom })) : (_jsxs(_Fragment, { children: [_jsx(PdfToolbar, { currentPage: currentPage, onPageChange: onPageChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pageCount: pdf.pageCount, zoom: zoom }), _jsxs("div", { className: `viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`, children: [_jsxs("main", { className: "page-workspace", children: [renderError !== null && (_jsxs("div", { className: "inline-error", role: "alert", children: ["Une erreur est survenue pendant le rendu de la page : ", renderError] })), _jsx("div", { className: "page-stage", children: _jsx(PdfPageCanvas, { document: pdf.document, drawRole: isDrawing && activePanel === "mapping" ? drawingRole : null, onOverlaySelect: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion, onRegionAdd: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd, onRegionChange: activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined, onRenderError: handleRenderError, overlays: overlays, pageNumber: currentPage, scale: zoom }) })] }), showSidePanel && (_jsx("div", { className: "side-panel-shell", children: activePanel === "preparing" ? (_jsx(PreparationPanel, { batching: batching, error: preparationError, onRetry: () => void handleValidateMapping() })) : activePanel === "extraction" && mappingCompleted ? (_jsx(ExtractionPanel, { documentMap: completedMap, extraction: extraction, onCancel: onCancelExtraction, onClear: onClearExtraction, onExtractAll: onExtractAll, onExtractBatch: onExtractBatch, onSelectSegment: onSelectSegment, plan: batching.plan })) : activePanel === "illustrations" && mappingCompleted ? (_jsx(IllustrationPanel, { generation: illustrationGeneration, onCancel: onCancelIllustrationGeneration, onClear: onClearIllustrations, onDownload: onDownloadIllustration, onGenerateAll: onGenerateAllIllustrations, onGenerateOne: onGenerateIllustration, onPageChange: onPageChange, onSelectSegment: onSelectSegment, plan: illustrationPlan })) : (_jsx(MappingPanel, { currentPage: currentPage, drawingRole: drawingRole, isDrawing: isDrawing, mapping: mapping, onAnalyze: onAnalyze, onCancel: onCancelMapping, onDeleteRegion: onDeleteRegion, onDeleteSegment: onDeleteSegment, onDrawingRoleChange: setDrawingRole, onSelectRegion: onSelectRegion, onSelectSegment: onSelectSegment, onToggleDrawing: () => setIsDrawing((active) => !active), onUpdateRegionRole: onUpdateRegionRole, onValidate: () => void handleValidateMapping() })) }))] })] }))] }));
+    return (_jsxs("section", { className: `viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`, "aria-label": "Visualiseur PDF", children: [_jsxs("header", { className: "document-header", children: [_jsxs("div", { className: "document-header__identity", children: [_jsx("span", { className: "document-header__icon", children: _jsx(FileIcon, {}) }), _jsxs("div", { className: "document-header__text", children: [_jsx("strong", { title: pdf.fileName, children: pdf.title ?? pdf.fileName }), _jsxs("span", { children: [pdf.pageCount, " page", pdf.pageCount > 1 ? "s" : "", " \u00B7 ", formatFileSize(pdf.fileSize), pdf.author !== null ? ` · ${pdf.author}` : ""] })] })] }), _jsxs("div", { className: "document-header__actions", children: [activePanel === "mapping" && (_jsxs("button", { className: "button button--primary analysis-header-button", disabled: mapping.status === "running", onClick: onAnalyze, type: "button", children: [_jsx(SparklesIcon, {}), mapping.status === "completed" ? "Recartographier" : "Cartographier"] })), _jsx("button", { "aria-label": "Fermer le document", className: "icon-button icon-button--quiet", onClick: onClose, title: "Fermer le document", type: "button", children: _jsx(CloseIcon, {}) })] })] }), activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (_jsx(QuestionReview, { currentIndex: reviewIndex, currentPage: currentPage, documentMap: completedMap, exporting: exporting, illustrationAssets: illustrationGeneration.assets, illustrationPlan: illustrationPlan, onCurrentIndexChange: handleReviewIndexChange, onCurrentPageChange: onPageChange, onExport: () => void handleReviewExport(), onQuestionChange: handleReviewQuestionChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pdf: pdf, questions: reviewQuestions, zoom: zoom })) : (_jsxs(_Fragment, { children: [_jsx(PdfToolbar, { currentPage: currentPage, onPageChange: onPageChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pageCount: pdf.pageCount, zoom: zoom }), _jsxs("div", { className: `viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`, children: [_jsxs("main", { className: "page-workspace", children: [renderError !== null && (_jsxs("div", { className: "inline-error", role: "alert", children: ["Une erreur est survenue pendant le rendu de la page : ", renderError] })), _jsx("div", { className: "page-stage", children: _jsx(PdfPageCanvas, { document: pdf.document, drawRole: isDrawing && activePanel === "mapping" ? drawingRole : null, onOverlaySelect: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion, onRegionAdd: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd, onRegionChange: activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined, onRenderError: handleRenderError, overlays: overlays, pageNumber: currentPage, scale: zoom }) })] }), showSidePanel && (_jsx("div", { className: "side-panel-shell", children: activePanel === "preparing" ? (_jsx(PreparationPanel, { batching: batching, error: preparationError, onRetry: () => void handleValidateMapping() })) : activePanel === "extraction" && mappingCompleted ? (_jsx(ExtractionPanel, { documentMap: completedMap, extraction: extraction, onCancel: onCancelExtraction, onExtractAll: onExtractAll, onSelectSegment: onSelectSegment, plan: batching.plan })) : activePanel === "illustrations" && mappingCompleted ? (_jsx(IllustrationPanel, { generation: illustrationGeneration, onCancel: onCancelIllustrationGeneration, onClear: onClearIllustrations, onDownload: onDownloadIllustration, onGenerateAll: onGenerateAllIllustrations, onGenerateOne: onGenerateIllustration, onPageChange: onPageChange, onSelectSegment: onSelectSegment, plan: illustrationPlan })) : (_jsx(MappingPanel, { currentPage: currentPage, drawingRole: drawingRole, isDrawing: isDrawing, mapping: mapping, onAnalyze: onAnalyze, onCancel: onCancelMapping, onDeleteRegion: onDeleteRegion, onDeleteSegment: onDeleteSegment, onDrawingRoleChange: setDrawingRole, onSelectRegion: onSelectRegion, onSelectSegment: onSelectSegment, onToggleDrawing: () => setIsDrawing((active) => !active), onUpdateRegionRole: onUpdateRegionRole, onValidate: () => void handleValidateMapping() })) }))] })] }))] }));
 }

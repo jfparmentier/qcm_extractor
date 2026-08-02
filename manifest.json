@@ -1,22 +1,22 @@
 {
   "artifact": "phase7_qcm_extractor",
-  "version": "7.4.0",
+  "version": "7.5.1",
   "phase": 7,
   "generated_files": [
     {
       "path": "CHANGELOG.md",
-      "sha256": "acefca8ac97d9a66f7e77bdc920308f4efe4f104dc26ca157146fcf91301f859",
-      "bytes": 14965
+      "sha256": "546ca2919c6b6632a3623370f50f3280a853b5d01e983789fb46a72c9402e24b",
+      "bytes": 16285
     },
     {
       "path": "DEPLOIEMENT_OVH_MAMP.md",
-      "sha256": "10ebf2166116c09c4cf4f45cbcfc33fa3052c27d5a30a26daf784cb86ce427d3",
+      "sha256": "da6f407250396566c43555f08401fdf6a1360563e62ab5540ee00ce567492f39",
       "bytes": 3304
     },
     {
       "path": "README.md",
-      "sha256": "89cadab1da60fc918d1e04307239fd90387188a063524c089721be5a72038cac",
-      "bytes": 4050
+      "sha256": "23a8240ef9a1a641b7f6627bed5e80a90fdd400fe4573a84a48bf984bf3e21ff",
+      "bytes": 4272
     },
     {
       "path": "backend/README.md",
@@ -250,7 +250,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/README.md",
-      "sha256": "ca31ca53911665f388653bf0679d1936dc7695551b846dcc2db69af1e66d49d3",
+      "sha256": "50d700c30bca6e69f0d75dd64a4afd94809712550ef32d368102911cd251ba60",
       "bytes": 2830
     },
     {
@@ -440,7 +440,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/DEPLOYMENT.md",
-      "sha256": "6cc5f9edd3769b95207a8f407c0b1fda5cf05076aebbbe23d450cf3178a66680",
+      "sha256": "0b1766b3c686ae6b21b674224e96fbec49d5c4cc88a03b964902fb98fcd3c744",
       "bytes": 1065
     },
     {
@@ -505,8 +505,8 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/App.js",
-      "sha256": "eb0a54fa065dc7e86a2b1793181acf2546cd6334487c411d67850f6b9303aa37",
-      "bytes": 29980
+      "sha256": "9e0d430d9d105863cb7c69e76bd352e084f95d7a4bef2e20fd5646a08cc60027",
+      "bytes": 29006
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/api/proxyClient.js",
@@ -515,27 +515,27 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/app.css",
-      "sha256": "e4237a1da8e07ee4860347e2151a773a1a0626272e6598570113e9023bcae1af",
-      "bytes": 51373
+      "sha256": "8f91d3d75b9fec150ddbb7b2913685018009efe32c9755eb9bab0d5fa09f86f7",
+      "bytes": 51100
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/BatchPanel.js",
-      "sha256": "044bf0614913ac3391931c4a6a7d48daf85ff117ddeabdf79df7604d08272f5d",
+      "sha256": "1a911e4d6d03a96b36163d525ab7dde60fb0dfa33baf5f70f55bf1ffdd188ba9",
       "bytes": 9442
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/ErrorPanel.js",
-      "sha256": "1d754ab867b25121fd9de9eeff7dd3b76d13aa9e8f205a8490e594b326257fe5",
+      "sha256": "181c70b5f6d1772f977593a02011a76915d4963faf71d9d947b8979229e9e9b7",
       "bytes": 806
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/ExtractionPanel.js",
-      "sha256": "5a5734732ee8d1be559384ccde0c8b63e16f8c5bea5e187c6fc6e984c917d7af",
-      "bytes": 8247
+      "sha256": "7d2f3dc64898956191eb15fa6046f1d9cce6b79d75653d2691d4fc0421561fc2",
+      "bytes": 8003
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/FileDropZone.js",
-      "sha256": "6f97ded3e6884e6d5114c55de1ea26ff8184f56b348606ff0e2c4cf6ef0ea846",
+      "sha256": "e9e503c8c8505c3a8d1de63a8e690db39102b3252c29e8e683745c1078d8f2ea",
       "bytes": 3363
     },
     {
@@ -545,7 +545,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/IllustrationPanel.js",
-      "sha256": "238b5c82e788f8574e4702e274bf2c4ca27ec70b188c221dce8e5203360281c1",
+      "sha256": "9a96006c7c4506cb14d2306cb5d42e6343126752d1e0d21de19029ed61017d84",
       "bytes": 7733
     },
     {
@@ -555,37 +555,37 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/MappingPanel.js",
-      "sha256": "1f6ae331ea8c67c939c1fda7832e49b42037eb6976a2b894608a7e5ea65c73c9",
-      "bytes": 13103
+      "sha256": "a48f5b498374544a37b83e3dfb7d57e4cea5cb4aa1d486baab2f5ca8e6ecba83",
+      "bytes": 12715
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PdfPageCanvas.js",
-      "sha256": "41509164dc30e49d572ffd0995e185e869c45977b495ea091e4e9806daa44596",
-      "bytes": 12383
+      "sha256": "a172723df86de457ca303476ee616012c0c3c10ed6c13d28fcae579d6a12ffe6",
+      "bytes": 12345
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PdfThumbnail.js",
-      "sha256": "6eb5b80066877dfbe9eb7d4ee0eb4eaae13d80c6d1300a516b084bf85fe5cc0c",
+      "sha256": "33ab71fa9486665665506cff9e3025772f1a81ca55cc39081c0718847e839010",
       "bytes": 1601
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PdfToolbar.js",
-      "sha256": "2edc1d2453645b7ae1e731e53b28481e314917558724dcdb53e3c6f59c52ae67",
+      "sha256": "f8426a9f819b70d5a6c94723a00d4b0ea8fb60ce75edc10f339e4726695d3749",
       "bytes": 2933
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PdfViewer.js",
-      "sha256": "da03183e575bd2e66ba5d409b973153ea7a40924dd0ab3314c89d61341d023e0",
-      "bytes": 16161
+      "sha256": "fb12cd81210ca0e9ee6e8408f13b02632bcc98dca4aebf9767f1834fe1fb9887",
+      "bytes": 16857
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/PreparationPanel.js",
-      "sha256": "b580af712b8a8757f6f8de8cb8607ddf3e0595813f1d91a75ba7b15ac2768f1f",
+      "sha256": "1d5012b4392c0f63568844928747087aa4d70339b87b75c7be4df615e586b295",
       "bytes": 2372
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/components/QuestionReview.js",
-      "sha256": "82379adcff08160923cc90efcda2847f4ff82a83a205915b69dc57395e422f1a",
+      "sha256": "752c4dc54ba6325f37bf014e885055191bbaf27d0096ddd3b5b6daa7f9e07947",
       "bytes": 15328
     },
     {
@@ -595,12 +595,12 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/domain/documentMap.js",
-      "sha256": "63c28d974c94bd6be4d7f26e3c8099f1952e51062636e18bb1bd0f4d4396bc82",
+      "sha256": "3f87e9fe54a8f6f8ded25b2316eaf199b4624df11a3ed57f97bd888be0bf9c2c",
       "bytes": 8799
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/domain/extraction.js",
-      "sha256": "fa6868067db2245cc1ed8033179f28538460d5c0be900aca3d378d7c04a9f3ce",
+      "sha256": "e8ab77e8eb386fdf28db10baba3ea4cc7940cf966102b0afecbce784c678cdb3",
       "bytes": 9861
     },
     {
@@ -615,12 +615,12 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/domain/projectState.js",
-      "sha256": "554fcffe16400253647a2db63250d7cba495ac95c47a9abd37a79dd171445717",
-      "bytes": 24368
+      "sha256": "3f08688f37fff0b93c8d1e962adae44c87d872a5927e2f2b5da93214bc5dbb6e",
+      "bytes": 24092
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/domain/review.js",
-      "sha256": "8aa5b3d4056fc4db5fa085eed97f050a275fef4077713835639e1df2c0a4e573",
+      "sha256": "5a62f276862bb53524c3ce8787a4af2583609614ed07d76947766c3eecfff041",
       "bytes": 9010
     },
     {
@@ -630,17 +630,17 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/hooks/useKeyboardNavigation.js",
-      "sha256": "6569e0ce5dac85bee1a661895f7296c134c8e4167b2ffc88e4ddda24f2c2a00d",
+      "sha256": "4d2081ad22b62bbbc4c836dffe7145a4a09538c4392127e45082e8047f590ff8",
       "bytes": 1874
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/main.js",
-      "sha256": "fd8a626e9eab1fa645c750f0a0849ba30401726935960ae422640f500361c96a",
+      "sha256": "b8d6d0dd7002e2951d7b51d86234c9703e59b81b35badec346b3de8c1ecbeb19",
       "bytes": 390
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/pdf/createSubPdf.js",
-      "sha256": "9e2df0fb7a87deeafed8ed1a4d774c44d72520bac70082901aa1698d06ac9cf8",
+      "sha256": "ee4ed0212f5a1db41f401781298c2ae189fea71a5f3974b0bb0f404695c4e8a9",
       "bytes": 1861
     },
     {
@@ -655,7 +655,7 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/pdf/loadPdf.js",
-      "sha256": "156a05652330ece5da9943bb125ec1ff1b3f53ca36b6826ea4a53f408048bdd4",
+      "sha256": "4457a671322c4900e49217f32c5e3f2db6e8337bff85374b7b947f36443e02d6",
       "bytes": 2874
     },
     {
@@ -665,22 +665,22 @@
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/schemas/extractionSchema.js",
-      "sha256": "fe8d9ad6d7dbd527e05fe2f2f034b2272f07690904e33e37bab3e3f979550bf6",
-      "bytes": 8286
+      "sha256": "ce56f94def91a9aab76d54a4bc10b9b8d6d635e4368a9aeb576be984fd040c1e",
+      "bytes": 11568
     },
     {
       "path": "deployment/qcm-extractor-site/public/assets/schemas/mappingSchema.js",
-      "sha256": "6040753617b325c9228c97a1c6486f1665902920ee51ae951429508cb1492e0f",
-      "bytes": 4599
+      "sha256": "c597a98037505739e2f5d8040ec6874fc62214205fee0673a212b816095c241c",
+      "bytes": 6245
     },
     {
       "path": "deployment/qcm-extractor-site/public/build-info.json",
-      "sha256": "a8cde47624876e651a6637349e05576c7b0d584ee36845ed0d423389172cd014",
-      "bytes": 1545
+      "sha256": "512c804b8c96fafd4c3cec9945f01e5d26904311b5e6602ec3a4a98a66a0de28",
+      "bytes": 1777
     },
     {
       "path": "deployment/qcm-extractor-site/public/index.html",
-      "sha256": "d4d6aa0af2db5fc93aad0e94a01ce33539071fc2a2c07aef370178a20830ca99",
+      "sha256": "f56215468a525a39d602467e3f717188aa514b6ae073c2095446a6ee2a15eed3",
       "bytes": 1211
     },
     {
@@ -720,18 +720,18 @@
     },
     {
       "path": "frontend/index.html",
-      "sha256": "d8ebc7e69a0d790de493104b310904d6a1f838dbf0bf6efe56bea1eabe8d160b",
+      "sha256": "f646d4f2347db04079227149becbe301143769dfd5ce1a243822615dc5b33869",
       "bytes": 508
     },
     {
       "path": "frontend/package.json",
-      "sha256": "c4d9e87d1cb4ba052a4256217eefe743a66aa406219c8b3facd73b3b5e68b23e",
+      "sha256": "bd85c0a3617213a8cb91515acc2ae5395405cfeacc36746a00a925a9a2393662",
       "bytes": 596
     },
     {
       "path": "frontend/src/App.tsx",
-      "sha256": "99c426b6be0bd12bbeb3bc3d29abd82c35eda07cc68765accace649243532170",
-      "bytes": 28805
+      "sha256": "40092783834b7f034a1ed2e37a9739233e286ae9d797066287bfc59f9e1b2ee3",
+      "bytes": 27850
     },
     {
       "path": "frontend/src/api/proxyClient.ts",
@@ -750,8 +750,8 @@
     },
     {
       "path": "frontend/src/components/ExtractionPanel.tsx",
-      "sha256": "01d85dd40a73960c2a4a5bf925102b2ec3681b410efce0c10f21dece55181c58",
-      "bytes": 9344
+      "sha256": "374126d6fab8a88a8697ff14856a71513e5a833814658c0a3e68017e8306ac4e",
+      "bytes": 8376
     },
     {
       "path": "frontend/src/components/FileDropZone.tsx",
@@ -775,13 +775,13 @@
     },
     {
       "path": "frontend/src/components/MappingPanel.tsx",
-      "sha256": "b8f599354f0145b55ec205029aaa84de4298299a3f666fbde3d706f3f1bb8c58",
-      "bytes": 14302
+      "sha256": "c98dc722c33e160a64bbc8d162dda48275a8db1ea9572f9fecfd90b62d4e9968",
+      "bytes": 13895
     },
     {
       "path": "frontend/src/components/PdfPageCanvas.tsx",
-      "sha256": "e3ce636539dce2fb0725bf6de80485cdbc1f03792846772ff6180d1b4304f80e",
-      "bytes": 14315
+      "sha256": "88f5701dd9d5a1e03ccfcae7c94fa3a3b684a939534a530b0142e5f876b24fbc",
+      "bytes": 14232
     },
     {
       "path": "frontend/src/components/PdfThumbnail.tsx",
@@ -795,8 +795,8 @@
     },
     {
       "path": "frontend/src/components/PdfViewer.tsx",
-      "sha256": "d9536fb36b46de72df3b7b1284b16b5430abe1dda3040f82b4959773a9db47ae",
-      "bytes": 19482
+      "sha256": "9b949ad02bac80fcedda55260e4c208b2679ea7999b685a7b80285905cddb9f3",
+      "bytes": 19967
     },
     {
       "path": "frontend/src/components/PreparationPanel.tsx",
@@ -895,8 +895,8 @@
     },
     {
       "path": "frontend/src/styles/app.css",
-      "sha256": "e4237a1da8e07ee4860347e2151a773a1a0626272e6598570113e9023bcae1af",
-      "bytes": 51373
+      "sha256": "8f91d3d75b9fec150ddbb7b2913685018009efe32c9755eb9bab0d5fa09f86f7",
+      "bytes": 51100
     },
     {
       "path": "frontend/src/vite-env.d.ts",
@@ -950,7 +950,7 @@
     },
     {
       "path": "tests/build_manifest.py",
-      "sha256": "61f3ee1dd10c05ea235d0acf7b779267e7022f9871ede376f043f3d98b59fbbf",
+      "sha256": "290220c8e875389ec5760a534fe46be251deff6cc6b6c2b765f39d47d771af51",
       "bytes": 1304
     },
     {
@@ -980,8 +980,8 @@
     },
     {
       "path": "tests/validate_deployment.py",
-      "sha256": "1469a57f7326ce465fa3cbed99574846fa34eeb717053d8ff2d9110cdb84a0fa",
-      "bytes": 5455
+      "sha256": "df09e6d6357a3e0dd337ffb5bbec95f0fec969f3dfad5ec16822f4927ad86220",
+      "bytes": 6189
     },
     {
       "path": "tests/validate_phase1.py",
@@ -990,33 +990,33 @@
     },
     {
       "path": "tests/validate_phase2.py",
-      "sha256": "33f55d08008ce1f7beb2134597667e46f5eb9bc9eb5d8711fa4861f2ac0045f0",
+      "sha256": "8905bf1cbd647b9405bdd5b7b9f888535088dad84e96313a78bbed5cda3d5b23",
       "bytes": 7279
     },
     {
       "path": "tests/validate_phase3.py",
-      "sha256": "0bd802b1cc16b537db73c26a8f512a89472dcee4094206f4d4bfa830163b2ec3",
+      "sha256": "bc34bd2cfb43d201022130155b38efe49fbf66bc33b68dc0e131c4f10f9a5ca2",
       "bytes": 7886
     },
     {
       "path": "tests/validate_phase4.py",
-      "sha256": "5e62d71a7c4c7848412373596fd6c3b70fcd41395f86ca250882193ae1fbeb58",
+      "sha256": "2962d28ff1cf6f67b7bfbce7ca1d13d1c595daf5790d40cc7aa17a7fe6bc3e69",
       "bytes": 4346
     },
     {
       "path": "tests/validate_phase5.py",
-      "sha256": "7a8243c3af2e7f3ca400068aabdee8581fc593d57bcfd7d77411928505a223e8",
+      "sha256": "e67c751998805e6a10edc1bd394aba42ddfc68c3f5508fc39d3e7d3b6a387001",
       "bytes": 5269
     },
     {
       "path": "tests/validate_phase6.py",
-      "sha256": "afea42ed8e3efc592f674901b4f93e68589193ee79c8c4a61bde3481100efdf1",
+      "sha256": "f222a54820981f55005ad32ed6407704f1175872076e0ef5f76915f95b51e464",
       "bytes": 3695
     },
     {
       "path": "tests/validate_phase7.py",
-      "sha256": "8f1e5395647ea759567a34ce0a53854a4b4e012e07378513dfe1a5d7f57f8cd0",
-      "bytes": 7529
+      "sha256": "b443cf5e2c4e1e8e2a97de254c423f87f09e4023441c0fbc0ca1870ac04ca396",
+      "bytes": 8890
     }
   ]
 }

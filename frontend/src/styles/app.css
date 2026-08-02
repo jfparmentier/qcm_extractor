@@ -1395,62 +1395,32 @@ select:focus-visible {
 .pdf-region > .pdf-region__handle {
   position: absolute;
   z-index: 6;
-  inset: auto;
-  display: block;
-  width: 11px;
-  height: 11px;
+  top: auto;
+  right: -11px;
+  bottom: -11px;
+  left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   padding: 0;
-  background: #fff;
-  border: 2px solid var(--primary);
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgb(20 31 55 / 25%);
+  color: #fff;
+  background: var(--primary);
+  border: 2px solid #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgb(20 31 55 / 32%);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.pdf-region__handle--n {
-  top: -7px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-
-.pdf-region__handle--ne {
-  top: -7px;
-  right: -7px;
-  cursor: nesw-resize;
-}
-
-.pdf-region__handle--e {
-  top: calc(50% - 5px);
-  right: -7px;
-  cursor: ew-resize;
+.pdf-region > .pdf-region__handle::before {
+  content: "↘";
+  transform: translateY(-1px);
 }
 
 .pdf-region__handle--se {
-  right: -7px;
-  bottom: -7px;
-  cursor: nwse-resize;
-}
-
-.pdf-region__handle--s {
-  bottom: -7px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-
-.pdf-region__handle--sw {
-  bottom: -7px;
-  left: -7px;
-  cursor: nesw-resize;
-}
-
-.pdf-region__handle--w {
-  top: calc(50% - 5px);
-  left: -7px;
-  cursor: ew-resize;
-}
-
-.pdf-region__handle--nw {
-  top: -7px;
-  left: -7px;
   cursor: nwse-resize;
 }
 
@@ -1473,41 +1443,6 @@ select:focus-visible {
   text-align: center;
 }
 
-@media (max-width: 720px) {
-  .region-editor__add-row,
-  .region-editor__selection {
-    grid-template-columns: 1fr auto;
-  }
-
-  .pdf-region > .pdf-region__handle {
-    width: 15px;
-    height: 15px;
-  }
-
-  .pdf-region__handle--n,
-  .pdf-region__handle--ne,
-  .pdf-region__handle--nw {
-    top: -9px;
-  }
-
-  .pdf-region__handle--s,
-  .pdf-region__handle--se,
-  .pdf-region__handle--sw {
-    bottom: -9px;
-  }
-
-  .pdf-region__handle--e,
-  .pdf-region__handle--ne,
-  .pdf-region__handle--se {
-    right: -9px;
-  }
-
-  .pdf-region__handle--w,
-  .pdf-region__handle--nw,
-  .pdf-region__handle--sw {
-    left: -9px;
-  }
-}
 
 /* Phase 4 — découpage local et gestion des lots */
 .side-panel-shell {
@@ -2909,4 +2844,47 @@ summary:focus-visible {
   .mapping-question-navigation__buttons {
     grid-template-columns: 1fr;
   }
+}
+
+/* Version 7.5 — extraction globale sans cartes de lots */
+.extraction-panel .mapping-status-icon {
+  margin-top: 0.25rem;
+}
+
+.extraction-facts {
+  margin-top: 0.25rem;
+}
+
+.extraction-actions {
+  display: flex;
+  margin-top: 0.25rem;
+}
+
+.extraction-actions .button {
+  width: 100%;
+}
+
+.extraction-errors {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 0.9rem;
+  padding: 0.75rem;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid #efbdc4;
+  border-radius: 0.75rem;
+  font-size: 0.74rem;
+}
+
+.extraction-errors strong {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.extraction-errors ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.15rem;
 }

@@ -237,12 +237,6 @@ export function MappingPanel({
           <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
         </div>
 
-        <p className="region-editor__help">
-          Une zone « Énoncé » regroupe tout le texte du QCM : consigne, propositions, réponse correcte et feedback.
-          Plusieurs zones « Énoncé » peuvent appartenir à la même question, y compris sur plusieurs pages.
-          Faites glisser une zone pour la déplacer et utilisez ses poignées pour la redimensionner.
-        </p>
-
         <div className="region-editor__add-row">
           <label>
             <span>Nouvelle zone</span>
@@ -346,7 +340,7 @@ export function MappingPanel({
             </button>
           ) : (
             <button className="button button--primary" onClick={onValidate} type="button">
-              <CheckIcon /> Valider les zones et continuer
+              <CheckIcon /> Valider les zones
             </button>
           )}
         </div>

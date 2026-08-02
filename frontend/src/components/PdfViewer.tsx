@@ -74,9 +74,7 @@ interface PdfViewerProps {
   readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
   readonly onDeleteSegment: (segmentId: string) => void;
   readonly onExtractAll: () => void;
-  readonly onExtractBatch: (batchId: string) => void;
   readonly onCancelExtraction: () => void;
-  readonly onClearExtraction: () => void;
   readonly onGenerateAllIllustrations: () => void;
   readonly onGenerateIllustration: (candidateId: string) => void;
   readonly onCancelIllustrationGeneration: () => void;
@@ -118,9 +116,7 @@ export function PdfViewer({
   onDeleteRegion,
   onDeleteSegment,
   onExtractAll,
-  onExtractBatch,
   onCancelExtraction,
-  onClearExtraction,
   onGenerateAllIllustrations,
   onGenerateIllustration,
   onCancelIllustrationGeneration,
@@ -175,6 +171,7 @@ export function PdfViewer({
     );
   }, [batching.plan, extraction.batches]);
   const automaticIllustrationFingerprintRef = useRef("");
+  const automaticExtractionPendingRef = useRef(false);
 
   useEffect(() => {
     if (extractedQuestions.length === 0) {
@@ -327,15 +324,42 @@ export function PdfViewer({
   const handleValidateMapping = useCallback(async (): Promise<void> => {
     setIsDrawing(false);
     setPreparationError(null);
+    automaticExtractionPendingRef.current = true;
     setActivePanel("preparing");
     try {
       await onValidateMapping();
       setActivePanel("extraction");
     } catch (error: unknown) {
+      automaticExtractionPendingRef.current = false;
       if (error instanceof DOMException && error.name === "AbortError") return;
       setPreparationError(error instanceof Error ? error.message : String(error));
     }
   }, [onValidateMapping]);
+
+  useEffect(() => {
+    if (
+      !automaticExtractionPendingRef.current ||
+      activePanel !== "extraction" ||
+      batching.plan === null ||
+      extraction.runStatus === "running"
+    ) {
+      return;
+    }
+
+    const artifactsReady = batching.plan.batches.every(
+      (batch) => batching.artifacts[batch.id] !== undefined
+    );
+    if (!artifactsReady) return;
+
+    automaticExtractionPendingRef.current = false;
+    onExtractAll();
+  }, [
+    activePanel,
+    batching.artifacts,
+    batching.plan,
+    extraction.runStatus,
+    onExtractAll
+  ]);
 
   const handleReviewIndexChange = useCallback((index: number): void => {
     const nextIndex = Math.min(Math.max(0, index), Math.max(0, reviewQuestions.length - 1));
@@ -489,9 +513,7 @@ export function PdfViewer({
                     documentMap={completedMap}
                     extraction={extraction}
                     onCancel={onCancelExtraction}
-                    onClear={onClearExtraction}
                     onExtractAll={onExtractAll}
-                    onExtractBatch={onExtractBatch}
                     onSelectSegment={onSelectSegment}
                     plan={batching.plan}
                   />

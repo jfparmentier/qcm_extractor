@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ZOOM_STEP } from "../domain/projectState.js?v=7.4.0";
+import { ZOOM_STEP } from "../domain/projectState.js?v=7.5.1";
 function isEditableTarget(target) {
     return (target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||

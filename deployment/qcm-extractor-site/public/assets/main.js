@@ -1,7 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.js?v=7.4.0";
+import App from "./App.js?v=7.5.1";
 const rootElement = document.getElementById("root");
 if (rootElement === null) {
     throw new Error("Élément racine #root introuvable.");

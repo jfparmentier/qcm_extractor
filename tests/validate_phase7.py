@@ -27,7 +27,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers de phase 7 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.12.0"
+assert package["version"] == "0.13.0"
 assert not (FRONTEND / "dist").exists()
 assert not (FRONTEND / "node_modules").exists()
 
@@ -67,6 +67,8 @@ for marker in (
     "extractionAllCompleted",
     "onValidateMapping",
     "window.setTimeout(onGenerateAllIllustrations, 0)",
+    "automaticExtractionPendingRef",
+    "onExtractAll();",
 ):
     assert marker in viewer, marker
 assert "side-panel-tabs" not in viewer
@@ -97,10 +99,20 @@ for marker in (
 ):
     assert marker in css, marker
 
+canvas_source = (FRONTEND / "src/components/PdfPageCanvas.tsx").read_text(encoding="utf-8")
+assert 'type ResizeHandle = "se"' in canvas_source
+assert 'const RESIZE_HANDLES: readonly ResizeHandle[] = ["se"]' in canvas_source
+assert '"ne"' not in canvas_source.split("const RESIZE_HANDLES", 1)[1].split(";", 1)[0]
+assert "top: auto;" in css
+assert "left: auto;" in css
+assert "right: -11px;" in css
+assert "bottom: -11px;" in css
+assert 'content: "↘";' in css
+
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
 assert build_info["phase"] == 7
-assert build_info["version"] == "7.4.0"
-assert build_info["application_version"] == "0.12.0"
+assert build_info["version"] == "7.5.1"
+assert build_info["application_version"] == "0.13.0"
 assert "question-by-question-review" in build_info["features"]
 assert "zip-export-with-images" in build_info["features"]
 assert "json-inside-zip" in build_info["features"]
@@ -120,13 +132,20 @@ for feature in (
     "simplified-review-interface",
 ):
     assert feature in build_info["features"], feature
+for feature in (
+    "single-bottom-right-resize-handle",
+    "automatic-extraction-after-mapping",
+    "aggregate-extraction-progress",
+    "no-individual-batch-extraction",
+):
+    assert feature in build_info["features"], feature
 
 assert "cache-busted-static-modules" in build_info["features"]
 assert "review-navigation-banner-removed" in build_info["features"]
 
 mapping_panel = (FRONTEND / "src/components/MappingPanel.tsx").read_text(encoding="utf-8")
 for marker in (
-    "Valider les zones et continuer",
+    "Valider les zones",
     "Supprimer ce QCM",
     "QCM {selectedIndex + 1} sur {segments.length}",
     "Précédente",
@@ -140,6 +159,7 @@ for removed in (
     "<dt>Document</dt>",
     "<dt>Type</dt>",
     "<dt>Langue</dt>",
+    "Une zone « Énoncé » regroupe tout le texte du QCM",
 ):
     assert removed not in mapping_panel, removed
 
@@ -149,7 +169,18 @@ assert "Lots simultanés" not in extraction_panel
 assert "Nouvelles tentatives" not in extraction_panel
 assert "Phase 5" not in extraction_panel
 assert "Extraire tous les lots" not in extraction_panel
-assert '"Extraire les QCM"' in extraction_panel
+assert "Extraire ce lot" not in extraction_panel
+assert "onExtractBatch" not in extraction_panel
+assert "extraction-card" not in extraction_panel
+for marker in (
+    "Extraire les QCM",
+    "Temps écoulé",
+    "Lots traités",
+    "Questions extraites",
+    "mapping-progress",
+    "formatElapsed",
+):
+    assert marker in extraction_panel, marker
 
 runtime = (ROOT / "deployment/qcm-extractor-site/private/config/runtime.php").read_text(encoding="utf-8")
 for marker in (
@@ -183,8 +214,8 @@ assert "not_available" not in title_schema["properties"]["origin"]["enum"]
 
 index = (PUBLIC / "index.html").read_text(encoding="utf-8")
 assert "Phase 7" in index
-assert "?v=7.4.0" in index
-assert 'name="application-version" content="7.4.0"' in index
+assert "?v=7.5.1" in index
+assert 'name="application-version" content="7.5.1"' in index
 
 for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
     subprocess.run(["node", "--check", str(js_file)], check=True, capture_output=True, text=True)
@@ -194,4 +225,12 @@ for js_file in PUBLIC.joinpath("assets").rglob("*.js"):
         assert target.is_file(), f"Import portable introuvable : {js_file.relative_to(ROOT)} -> {relative}"
 
 subprocess.run(["node", "tests/test_review.mjs"], cwd=ROOT, check=True)
-print("OK phase 7.4.0 : cache explicite et révision sans indicateur central")
+css = (PUBLIC / "assets" / "app.css").read_text(encoding="utf-8")
+assert ".pdf-region > .pdf-region__handle" in css
+assert "top: auto;" in css
+assert "left: auto;" in css
+assert "right: -11px;" in css
+assert "bottom: -11px;" in css
+assert 'content: "↘";' in css
+
+print("OK phase 7.5.1 : extraction automatique et progression globale")

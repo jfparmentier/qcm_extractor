@@ -1,5 +1,5 @@
-import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.4.0";
-import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.4.0";
+import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.5.1";
+import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.5.1";
 export const INITIAL_MAPPING_STATE = {
     status: "idle",
     data: null,
@@ -329,10 +329,7 @@ export function projectReducer(state, action) {
                 const withMetadata = updatedRegion === undefined
                     ? segment
                     : enrichSegmentMetadata({ ...segment, page_regions: updatedRegions }, updatedRegion);
-                return {
-                    ...withMetadata,
-                    contains_essential_image: updatedRegions.some((region) => region.role === "essential_image")
-                };
+                return refreshSegmentMetadata(withMetadata);
             });
             return {
                 ...state,
@@ -390,11 +387,7 @@ export function projectReducer(state, action) {
             }
             const data = updateSegment(state.mapping.data, action.segmentId, (segment) => {
                 const pageRegions = segment.page_regions.filter((region) => region.client_id !== action.regionId);
-                return {
-                    ...segment,
-                    page_regions: pageRegions,
-                    contains_essential_image: pageRegions.some((region) => region.role === "essential_image")
-                };
+                return refreshSegmentMetadata({ ...segment, page_regions: pageRegions });
             });
             return {
                 ...state,

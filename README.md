@@ -1,4 +1,4 @@
-# Extracteur de QCM PDF — phase 7.4.0
+# Extracteur de QCM PDF — phase 7.5.1
 
 Cette version applique un workflow séquentiel : cartographie et correction des zones, validation, préparation automatique des lots, extraction des QCM, extraction automatique des illustrations, puis révision question par question et export ZIP.
 
@@ -11,7 +11,7 @@ Aucun compte, aucune base de données et aucun stockage applicatif des PDF ne so
 ## Arborescence
 
 ```text
-phase7_qcm_extractor_7.4.0/
+phase7_qcm_extractor_7.5.1/
 ├── backend/                         proxy PHP, prompts, schémas et tests
 ├── frontend/                        sources React/TypeScript
 ├── deployment/qcm-extractor-site/  dossier prêt pour OVH ou MAMP
@@ -35,7 +35,9 @@ Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN version
 
 ## Phase 7 : révision des questions
 
-La cartographie est maintenant contrôlée QCM par QCM. Les boutons **Précédente** et **Suivante** permettent de parcourir les détections, et **Supprimer ce QCM** retire une détection erronée avant la préparation des lots. Sur le dernier QCM, **Valider les zones et continuer** lance automatiquement la planification des lots et la création locale des sous-PDF.
+La cartographie est maintenant contrôlée QCM par QCM. Les boutons **Précédente** et **Suivante** permettent de parcourir les détections, et **Supprimer ce QCM** retire une détection erronée avant la préparation des lots. Sur le dernier QCM, **Valider les zones** prépare les lots, crée localement les sous-PDF puis lance automatiquement l’extraction des QCM.
+
+Pendant l’extraction, le panneau droit affiche un état global, le temps écoulé, le nombre de lots traités et le nombre de questions extraites. Les lots ne sont plus présentés sous forme de cartes individuelles.
 
 La cartographie utilise uniquement deux catégories géométriques : **Énoncé** et **Illustration essentielle**. Une ou plusieurs zones **Énoncé** regroupent tout le texte du QCM, y compris les propositions, la réponse correcte et le feedback, même lorsque ces éléments sont répartis sur plusieurs pages.
 

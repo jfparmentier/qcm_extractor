@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useRef, useState } from "react";
-import { MAX_PDF_SIZE_BYTES } from "../pdf/loadPdf.js?v=7.4.0";
-import { FileIcon, ShieldIcon, UploadIcon } from "./Icons.js?v=7.4.0";
+import { MAX_PDF_SIZE_BYTES } from "../pdf/loadPdf.js?v=7.5.1";
+import { FileIcon, ShieldIcon, UploadIcon } from "./Icons.js?v=7.5.1";
 export function FileDropZone({ disabled = false, onFileSelected }) {
     const inputRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);

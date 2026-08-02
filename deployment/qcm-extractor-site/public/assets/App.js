@@ -1,20 +1,20 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.4.0";
-import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.4.0";
-import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.4.0";
-import { createBatchPlan } from "./domain/batchPlan.js?v=7.4.0";
-import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.4.0";
-import { createExtractionContext } from "./domain/extractionContext.js?v=7.4.0";
-import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.4.0";
-import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.4.0";
-import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.4.0";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.4.0";
-import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.4.0";
-import { ErrorPanel } from "./components/ErrorPanel.js?v=7.4.0";
-import { FileDropZone } from "./components/FileDropZone.js?v=7.4.0";
-import { LoadingPanel } from "./components/LoadingPanel.js?v=7.4.0";
-import { PdfViewer } from "./components/PdfViewer.js?v=7.4.0";
+import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.1";
+import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.1";
+import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.1";
+import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.1";
+import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.1";
+import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.1";
+import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.1";
+import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.1";
+import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.1";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.1";
+import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.1";
+import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.1";
+import { FileDropZone } from "./components/FileDropZone.js?v=7.5.1";
+import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.1";
+import { PdfViewer } from "./components/PdfViewer.js?v=7.5.1";
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
         return {
@@ -470,17 +470,6 @@ export default function App() {
             dispatch({ type: "EXTRACTION_RUN_FINISHED" });
         }
     }, [extractBatchWithRetries, prepareArtifact, state.batching.artifacts, state.batching.plan, state.extraction.batches, state.extraction.runStatus, state.extraction.settings.maxConcurrentBatches]);
-    const extractSingleBatch = useCallback(async (batchId) => {
-        if (state.extraction.runStatus === "running")
-            return;
-        const sequence = extractionRunSequenceRef.current + 1;
-        extractionRunSequenceRef.current = sequence;
-        dispatch({ type: "EXTRACTION_RUN_STARTED", startedAt: Date.now() });
-        await extractBatchWithRetries(batchId, sequence);
-        if (extractionRunSequenceRef.current === sequence) {
-            dispatch({ type: "EXTRACTION_RUN_FINISHED" });
-        }
-    }, [extractBatchWithRetries, state.extraction.runStatus]);
     const cancelExtraction = useCallback(() => {
         extractionRunSequenceRef.current += 1;
         const activeIds = [...extractionControllersRef.current.keys()];
@@ -488,12 +477,6 @@ export default function App() {
         extractionControllersRef.current.clear();
         activeIds.forEach((batchId) => dispatch({ type: "EXTRACTION_BATCH_CANCELLED", batchId }));
         dispatch({ type: "EXTRACTION_RUN_CANCELLED" });
-    }, []);
-    const clearExtraction = useCallback(() => {
-        extractionRunSequenceRef.current += 1;
-        extractionControllersRef.current.forEach((controller) => controller.abort());
-        extractionControllersRef.current.clear();
-        dispatch({ type: "EXTRACTION_CLEARED" });
     }, []);
     const runIllustrationGeneration = useCallback(async (candidates) => {
         const pdf = state.pdf;
@@ -619,5 +602,5 @@ export default function App() {
         onZoomOut: zoomOut,
         onResetZoom: resetZoom
     });
-    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onExtractBatch: (batchId) => void extractSingleBatch(batchId), onCancelExtraction: cancelExtraction, onClearExtraction: clearExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
+    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, pdf: state.pdf, zoom: state.zoom }))] }));
 }

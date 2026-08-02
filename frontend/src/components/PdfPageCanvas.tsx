@@ -18,7 +18,7 @@ export interface PdfOverlayRegion {
   readonly segmentSelected: boolean;
 }
 
-type ResizeHandle = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
+type ResizeHandle = "se";
 
 type PointerInteraction =
   | {
@@ -66,7 +66,7 @@ interface PdfPageCanvasProps {
 }
 
 const MIN_REGION_SIZE = 0.015;
-const RESIZE_HANDLES: readonly ResizeHandle[] = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
+const RESIZE_HANDLES: readonly ResizeHandle[] = ["se"];
 
 function normalizedPointerPosition(
   clientX: number,

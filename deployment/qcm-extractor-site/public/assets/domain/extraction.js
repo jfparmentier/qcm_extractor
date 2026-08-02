@@ -1,6 +1,6 @@
 import Ajv2020 from "ajv/dist/2020";
-import extractionSchema from "../schemas/extractionSchema.js?v=7.4.0";
-import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.4.0";
+import extractionSchema from "../schemas/extractionSchema.js?v=7.5.1";
+import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.5.1";
 export class ExtractionValidationError extends Error {
     issues;
     constructor(message, issues) {

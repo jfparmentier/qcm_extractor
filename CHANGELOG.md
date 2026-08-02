@@ -1,3 +1,20 @@
+# Version 7.5.1 — poignée de redimensionnement corrigée
+
+- La poignée de redimensionnement est maintenant explicitement ancrée dans le coin inférieur droit.
+- Les propriétés héritées `top` et `left` sont neutralisées pour éviter son affichage dans le coin supérieur gauche.
+- Le cercle est remplacé par une poignée carrée portant une flèche diagonale « ↘ », conforme aux conventions d’interface de redimensionnement.
+- Le cache-busting des ressources déployées est porté à la version 7.5.1.
+
+# Version 7.5.0 — validation et extraction enchaînées
+
+- le redimensionnement d’une zone utilise désormais une unique poignée circulaire placée à l’intérieur du coin inférieur droit ;
+- le texte d’aide détaillé de l’éditeur de zones a été supprimé ;
+- la validation des zones du dernier QCM prépare les lots puis lance automatiquement l’extraction des QCM ;
+- les cartes individuelles de lots et les boutons « Extraire ce lot » ont été supprimés ;
+- l’extraction présente un état global, le temps écoulé, le nombre de lots traités et le nombre de questions extraites ;
+- une animation similaire à celle de la cartographie est affichée pendant l’analyse ;
+- le bouton global « Extraire les QCM » reste disponible pour relancer une extraction incomplète.
+
 # Version 7.4.0 — cartographie textuelle unifiée
 
 - la cartographie ne propose plus que deux catégories de zones : `Énoncé` et `Illustration essentielle` ;

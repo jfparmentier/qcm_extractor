@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.4.0";
-import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.4.0";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.4.0";
+import { nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.5.1";
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.5.1";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.1";
 function isSingleAnswer(type) {
     return type === "single_choice" || type === "true_false";
 }

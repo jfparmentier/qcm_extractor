@@ -30,7 +30,7 @@ missing = sorted(path for path in required if not (ROOT / path).is_file())
 assert not missing, f"Fichiers phase 3 absents : {missing}"
 
 package = json.loads((FRONTEND / "package.json").read_text(encoding="utf-8"))
-assert package["version"] == "0.12.0"
+assert package["version"] == "0.13.0"
 assert package["dependencies"]["ajv"] == "8.17.1"
 assert not (FRONTEND / "dist").exists(), "La livraison ne doit pas ajouter frontend/dist."
 assert not (FRONTEND / "node_modules").exists(), "node_modules ne doit pas être livré."
@@ -159,8 +159,8 @@ role_enum = openai_mapping_schema["properties"]["question_segments"]["items"]["p
 assert role_enum == ["question", "essential_image"]
 
 build_info = json.loads((PUBLIC / "build-info.json").read_text(encoding="utf-8"))
-assert build_info["version"] == "7.4.0"
-assert build_info["application_version"] == "0.12.0"
+assert build_info["version"] == "7.5.1"
+assert build_info["application_version"] == "0.13.0"
 assert build_info["dependencies"]["ajv"] == "8.17.1"
 
 print("OK phase 3 : cartographie et éditeur géométrique préservés")

@@ -1,8 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useMemo } from "react";
-import { BATCH_SETTING_LIMITS, formatPageRanges } from "../domain/batchPlan.js?v=7.4.0";
-import { formatFileSize } from "../pdf/formatFileSize.js?v=7.4.0";
-import { CheckIcon, DownloadIcon, LayersIcon, ResetIcon, SparklesIcon, WarningIcon } from "./Icons.js?v=7.4.0";
+import { BATCH_SETTING_LIMITS, formatPageRanges } from "../domain/batchPlan.js?v=7.5.1";
+import { formatFileSize } from "../pdf/formatFileSize.js?v=7.5.1";
+import { CheckIcon, DownloadIcon, LayersIcon, ResetIcon, SparklesIcon, WarningIcon } from "./Icons.js?v=7.5.1";
 function numericValue(event) {
     return Number.parseInt(event.target.value, 10) || 0;
 }
