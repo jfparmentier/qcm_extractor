@@ -98,7 +98,7 @@ const generatedAssets = {
   }
 };
 const exported = await createReviewExport(pdf, documentMap, reviewed, plan, generatedAssets);
-assert.equal(exported.questions[0].statement, "Observer le circuit. ![Circuit](assets/q-001-01.png)");
+assert.equal(exported.questions[0].statement, "Observer le circuit.\n![Circuit](assets/q-001-01.png)");
 assert.equal(exported.questions[0].assets[0].path, "assets/q-001-01.png");
 assert.equal(exported.questions[0].validation_status, "validated");
 assert.match(exported.document.source_sha256, /^[a-f0-9]{64}$/);
@@ -113,6 +113,8 @@ assert.match(moodleXml, /<answernumbering>none<\/answernumbering>/);
 assert.match(moodleXml, /<answer fraction="100" format="html">[\s\S]*Réponse A/);
 assert.match(moodleXml, /<answer fraction="-100" format="html">[\s\S]*Réponse B/);
 assert.match(moodleXml, /<img src="@@PLUGINFILE@@\/q-001-01\.png" alt="Circuit" style="max-width: 450px; max-height: 300px; width: auto; height: auto;" \/>/);
+assert.match(moodleXml, /Observer le circuit\.<br \/>\n<img /);
+assert.doesNotMatch(moodleXml, /Observer le circuit\.<br \/>\n<br \/>\n<img /);
 assert.doesNotMatch(moodleXml, /<img[^>]+\/>\s*\)/);
 assert.match(moodleXml, /<file name="q-001-01\.png" path="\/" encoding="base64">iVBORw0KGgo=<\/file>/);
 assert.doesNotMatch(moodleXml, /!\[[^\]]*\]\([^)]*\)/);

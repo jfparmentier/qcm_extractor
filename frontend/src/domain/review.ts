@@ -222,9 +222,18 @@ function replaceAssetTokens(
   });
 
   if (append.length > 0) {
-    result = `${result.trim()}\n\n${append.join("\n\n")}`;
+    result = `${result.trim()}\n${append.join("\n")}`;
   }
-  return result;
+  return result
+    .replace(
+      /(?:[ \t]|\r?\n)+(?=!\[[^\]]*\]\(assets\/[^)]+\))/g,
+      "\n"
+    )
+    .replace(
+      /([^\n])(?=!\[[^\]]*\]\(assets\/[^)]+\))/g,
+      "$1\n"
+    )
+    .trim();
 }
 
 async function sha256Hex(bytes: ArrayBuffer): Promise<string | null> {
@@ -358,7 +367,18 @@ function moodleQuestionHtml(question: ReviewExportDocument["questions"][number])
   const missingImageMarkers = markers
     .filter((_entry, index) => !insertedAssets.has(index))
     .map((entry) => entry.marker);
-  statement = [statement.trim(), ...missingImageMarkers].filter(Boolean).join("\n\n");
+  statement = [statement.trim(), ...missingImageMarkers].filter(Boolean).join("\n");
+  markers.forEach(({ marker }) => {
+    statement = statement.replace(
+      new RegExp(`(?:[ \\t]|\\r?\\n)+(?=${marker})`, "g"),
+      "\n"
+    );
+    statement = statement.replace(
+      new RegExp(`([^\\n])(?=${marker})`, "g"),
+      "$1\n"
+    );
+  });
+  statement = statement.trim();
 
   let html = textAsHtml(statement);
   markers.forEach(({ asset, marker }) => {
