@@ -1311,9 +1311,17 @@ select:focus-visible {
 }
 
 .region-editor__add-row {
+  margin-top: 0.35rem;
+  padding-top: 0;
+}
+
+.region-editor__add-title {
+  display: block;
   margin-top: 0.65rem;
   padding-top: 0.65rem;
   border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.72rem;
 }
 
 .region-editor label {

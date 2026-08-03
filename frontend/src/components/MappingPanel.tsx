@@ -297,6 +297,7 @@ export function MappingPanel({
           ))}
         </div>
 
+        <strong className="region-editor__add-title">Ajouter une nouvelle zone</strong>
         <div className="region-editor__add-row">
           <label>
             <span>Type de la nouvelle zone</span>
