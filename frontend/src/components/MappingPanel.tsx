@@ -243,9 +243,6 @@ export function MappingPanel({
             ))}
           </select>
         </label>
-        <button className="mapping-add-question" onClick={onAddSegment} type="button">
-          <PlusIcon /> Ajouter une question sur la page {currentPage}
-        </button>
       </header>
 
       <div className="mapping-review-body">
@@ -331,6 +328,10 @@ export function MappingPanel({
           <TrashIcon /> Retirer cette question
         </button>
         </section>
+
+        <button className="mapping-add-question" onClick={onAddSegment} type="button">
+          <PlusIcon /> Ajouter une nouvelle question sur la page {currentPage}
+        </button>
       </div>
 
       <footer className="mapping-panel__footer mapping-question-navigation">

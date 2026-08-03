@@ -3002,26 +3002,34 @@ summary:focus-visible {
 }
 
 .mapping-add-question {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
+  min-height: 42px;
   align-items: center;
+  justify-content: center;
   gap: 0.3rem;
-  margin-top: 0.55rem;
-  padding: 0;
-  color: var(--primary);
-  background: transparent;
-  border: 0;
+  margin-top: 0.15rem;
+  padding: 0.65rem 0.8rem;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border: 1px solid #b9c6f5;
+  border-radius: 9px;
   cursor: pointer;
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 750;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
 
 .mapping-add-question:hover {
   color: var(--primary-dark);
+  border-color: var(--primary);
+  background: #dce4ff;
+  transform: translateY(-1px);
 }
 
 .mapping-add-question svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .mapping-review-body {
