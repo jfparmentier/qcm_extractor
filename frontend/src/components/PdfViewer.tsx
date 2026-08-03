@@ -320,6 +320,18 @@ export function PdfViewer({
   }, [currentPage, zoom, mapping.selectedSegmentId]);
 
   useEffect(() => {
+    if (mapping.mode !== "manual" || isDrawing) return;
+
+    const selectedSegment = mapping.data?.question_segments.find(
+      (segment) => segment.temporary_id === mapping.selectedSegmentId
+    );
+    const hasQuestionRegion = selectedSegment?.page_regions.some(
+      (region) => region.role === "question"
+    ) ?? false;
+    setDrawingRole(hasQuestionRegion ? "essential_image" : "question");
+  }, [isDrawing, mapping.data, mapping.mode, mapping.selectedSegmentId]);
+
+  useEffect(() => {
     if (mapping.status !== "completed") {
       setIsDrawing(false);
       setActivePanel("mapping");
@@ -547,6 +559,7 @@ export function PdfViewer({
                     drawingRole={drawingRole}
                     isDrawing={isDrawing}
                     mapping={mapping}
+                    pageCount={pdf.pageCount}
                     onAddSegment={handleAddSegment}
                     onAnalyze={onAnalyze}
                     onCancel={onCancelMapping}
@@ -556,6 +569,7 @@ export function PdfViewer({
                     onSelectRegion={onSelectRegion}
                     onSelectSegment={onSelectSegment}
                     onStartManual={onStartManualMapping}
+                    onPageChange={onPageChange}
                     onToggleDrawing={() => setIsDrawing((active) => !active)}
                     onValidate={() => void handleValidateMapping()}
                   />

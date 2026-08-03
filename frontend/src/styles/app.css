@@ -3178,6 +3178,10 @@ summary:focus-visible {
   width: 100%;
 }
 
+.mapping-extract-button {
+  width: 100%;
+}
+
 .mapping-reanalyze-button {
   display: inline-flex;
   align-items: center;

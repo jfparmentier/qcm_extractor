@@ -21,6 +21,7 @@ import {
 interface MappingPanelProps {
   readonly mapping: MappingState;
   readonly currentPage: number;
+  readonly pageCount: number;
   readonly drawingRole: PageRegionRole;
   readonly isDrawing: boolean;
   readonly onAddSegment: () => void;
@@ -32,6 +33,7 @@ interface MappingPanelProps {
   readonly onDeleteSegment: (segmentId: string) => void;
   readonly onSelectRegion: (segmentId: string, regionId: string) => void;
   readonly onStartManual: () => void;
+  readonly onPageChange: (page: number) => void;
   readonly onDrawingRoleChange: (role: PageRegionRole) => void;
   readonly onToggleDrawing: () => void;
 }
@@ -58,6 +60,7 @@ function getRunningStatusLabel(mapping: MappingState): string {
 export function MappingPanel({
   mapping,
   currentPage,
+  pageCount,
   drawingRole,
   isDrawing,
   onAddSegment,
@@ -69,6 +72,7 @@ export function MappingPanel({
   onDeleteSegment,
   onSelectRegion,
   onStartManual,
+  onPageChange,
   onDrawingRoleChange,
   onToggleDrawing
 }: MappingPanelProps): React.ReactElement {
@@ -246,18 +250,22 @@ export function MappingPanel({
       </header>
 
       <div className="mapping-review-body">
-        <div className="mapping-task-cue" role="note">
-          <SelectionIcon />
-          <div>
-            <strong>À vérifier maintenant</strong>
-            <span>Les cadres du PDF doivent contenir toute la question, sans contenu voisin.</span>
+        {mapping.mode !== "manual" && (
+          <div className="mapping-task-cue" role="note">
+            <SelectionIcon />
+            <div>
+              <strong>À vérifier maintenant</strong>
+              <span>Les cadres du PDF doivent contenir toute la question, sans contenu voisin.</span>
+            </div>
           </div>
-        </div>
+        )}
 
         <section className="region-editor" aria-label="Éditeur géométrique des zones">
         <div className="region-editor__heading">
           <div>
-            <span className="eyebrow">Zones visibles sur le PDF</span>
+            <span className="eyebrow">
+              {mapping.mode === "manual" ? "Zones" : "Zones visibles sur le PDF"}
+            </span>
             <strong>Page {currentPage}</strong>
           </div>
           <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
@@ -300,14 +308,21 @@ export function MappingPanel({
         <strong className="region-editor__add-title">Ajouter une nouvelle zone</strong>
         <div className="region-editor__add-row">
           <label>
-            <span>Type de la nouvelle zone</span>
+            <span className={mapping.mode === "manual" ? "visually-hidden" : undefined}>
+              Type de la nouvelle zone
+            </span>
             <select
+              aria-label="Type de la nouvelle zone"
               disabled={isDrawing}
               onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onDrawingRoleChange(event.target.value as PageRegionRole)}
               value={drawingRole}
             >
               {PAGE_REGION_ROLES.map((role) => (
-                <option key={role} value={role}>{getPageRegionRoleLabel(role)}</option>
+                <option key={role} value={role}>
+                  {mapping.mode === "manual" && role === "essential_image"
+                    ? "Illustrations"
+                    : getPageRegionRoleLabel(role)}
+                </option>
               ))}
             </select>
           </label>
@@ -337,42 +352,78 @@ export function MappingPanel({
 
       <footer className="mapping-panel__footer mapping-question-navigation">
         <span className="mapping-navigation-status" aria-live="polite">
-          {isLast
+          {mapping.mode === "manual"
             ? canValidate
-              ? "Dernière question : validez pour continuer"
+              ? `Page ${currentPage} sur ${pageCount}`
               : `${segmentsWithoutQuestionRegion} question${segmentsWithoutQuestionRegion > 1 ? "s n’ont" : " n’a"} pas encore de zone d’énoncé`
-            : `${segments.length - selectedIndex - 1} question${segments.length - selectedIndex - 1 > 1 ? "s" : ""} après celle-ci`}
+            : isLast
+              ? canValidate
+                ? "Dernière question : validez pour continuer"
+                : `${segmentsWithoutQuestionRegion} question${segmentsWithoutQuestionRegion > 1 ? "s n’ont" : " n’a"} pas encore de zone d’énoncé`
+              : `${segments.length - selectedIndex - 1} question${segments.length - selectedIndex - 1 > 1 ? "s" : ""} après celle-ci`}
         </span>
-        <div className="mapping-question-navigation__buttons">
-          <button
-            className="button button--secondary"
-            disabled={previousSegment === undefined}
-            onClick={() => previousSegment !== undefined && onSelectSegment(previousSegment.temporary_id)}
-            type="button"
-          >
-            <ChevronLeftIcon /> Précédente
-          </button>
-          {!isLast ? (
+        {mapping.mode === "manual" ? (
+          <>
+            <div className="mapping-question-navigation__buttons">
+              <button
+                className="button button--secondary"
+                disabled={currentPage <= 1}
+                onClick={() => onPageChange(currentPage - 1)}
+                type="button"
+              >
+                <ChevronLeftIcon /> Précédente
+              </button>
+              <button
+                className="button button--secondary"
+                disabled={currentPage >= pageCount}
+                onClick={() => onPageChange(currentPage + 1)}
+                type="button"
+              >
+                Suivante <ChevronRightIcon />
+              </button>
+            </div>
             <button
-              className="button button--primary"
-              disabled={nextSegment === undefined}
-              onClick={() => nextSegment !== undefined && onSelectSegment(nextSegment.temporary_id)}
-              type="button"
-            >
-              Suivante <ChevronRightIcon />
-            </button>
-          ) : (
-            <button
-              className="button button--primary"
+              className="button button--primary mapping-extract-button"
               disabled={!canValidate}
               onClick={onValidate}
               title={canValidate ? undefined : "Ajoutez une zone d’énoncé à chaque question"}
               type="button"
             >
-              <CheckIcon /> Valider
+              <CheckIcon /> Extraire les QCM
             </button>
-          )}
-        </div>
+          </>
+        ) : (
+          <div className="mapping-question-navigation__buttons">
+            <button
+              className="button button--secondary"
+              disabled={previousSegment === undefined}
+              onClick={() => previousSegment !== undefined && onSelectSegment(previousSegment.temporary_id)}
+              type="button"
+            >
+              <ChevronLeftIcon /> Précédente
+            </button>
+            {!isLast ? (
+              <button
+                className="button button--primary"
+                disabled={nextSegment === undefined}
+                onClick={() => nextSegment !== undefined && onSelectSegment(nextSegment.temporary_id)}
+                type="button"
+              >
+                Suivante <ChevronRightIcon />
+              </button>
+            ) : (
+              <button
+                className="button button--primary"
+                disabled={!canValidate}
+                onClick={onValidate}
+                title={canValidate ? undefined : "Ajoutez une zone d’énoncé à chaque question"}
+                type="button"
+              >
+                <CheckIcon /> Valider
+              </button>
+            )}
+          </div>
+        )}
       </footer>
     </aside>
   );
