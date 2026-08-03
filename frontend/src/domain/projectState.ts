@@ -19,6 +19,7 @@ import {
 
 export type ProjectStatus = "empty" | "loading" | "pdf_loaded" | "error";
 export type MappingStatus = "idle" | "running" | "completed" | "failed";
+export type MappingMode = "automatic" | "manual";
 export type ExtractionRunStatus = "idle" | "running" | "completed" | "cancelled";
 export type ExtractionBatchStatus =
   | "idle"
@@ -62,6 +63,7 @@ export interface MappingError {
 
 export interface MappingState {
   readonly status: MappingStatus;
+  readonly mode: MappingMode | null;
   readonly data: DocumentMap | null;
   readonly meta: ProxyResponseMeta | null;
   readonly error: MappingError | null;
@@ -123,6 +125,7 @@ export interface ProjectState {
 
 export const INITIAL_MAPPING_STATE: MappingState = {
   status: "idle",
+  mode: null,
   data: null,
   meta: null,
   error: null,
@@ -178,6 +181,8 @@ export type ProjectAction =
     }
   | { readonly type: "MAPPING_FAILED"; readonly error: MappingError }
   | { readonly type: "MAPPING_CANCELLED" }
+  | { readonly type: "MANUAL_MAPPING_STARTED"; readonly documentMap: DocumentMap }
+  | { readonly type: "ADD_SEGMENT"; readonly segment: QuestionSegment }
   | { readonly type: "SELECT_SEGMENT"; readonly segmentId: string }
   | { readonly type: "DELETE_SEGMENT"; readonly segmentId: string }
   | {
@@ -353,6 +358,7 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         ...state,
         mapping: {
           status: "running",
+          mode: "automatic",
           data: null,
           meta: null,
           error: null,
@@ -391,6 +397,7 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         currentPage: firstRegion?.page ?? firstPage,
         mapping: {
           status: "completed",
+          mode: "automatic",
           data: action.documentMap,
           meta: action.meta,
           error: null,
@@ -415,6 +422,7 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
         ...state,
         mapping: {
           status: "failed",
+          mode: "automatic",
           data: null,
           meta: null,
           error: action.error,
@@ -446,6 +454,58 @@ export function projectReducer(state: ProjectState, action: ProjectAction): Proj
           settings: state.extraction.settings
         }
       };
+
+    case "MANUAL_MAPPING_STARTED":
+      return {
+        ...state,
+        mapping: {
+          status: "completed",
+          mode: "manual",
+          data: action.documentMap,
+          meta: null,
+          error: null,
+          startedAt: null,
+          selectedSegmentId: null,
+          selectedRegionId: null,
+          progress: null
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
+      };
+
+    case "ADD_SEGMENT": {
+      if (state.mapping.data === null) {
+        return state;
+      }
+
+      return {
+        ...state,
+        currentPage: action.segment.question_pages[0] ?? state.currentPage,
+        mapping: {
+          ...state.mapping,
+          data: {
+            ...state.mapping.data,
+            question_segments: [...state.mapping.data.question_segments, action.segment]
+          },
+          selectedSegmentId: action.segment.temporary_id,
+          selectedRegionId: null
+        },
+        batching: {
+          ...INITIAL_BATCH_PREPARATION_STATE,
+          settings: state.batching.settings
+        },
+        extraction: {
+          ...INITIAL_EXTRACTION_STATE,
+          settings: state.extraction.settings
+        }
+      };
+    }
 
     case "SELECT_SEGMENT": {
       const segment = state.mapping.data?.question_segments.find(

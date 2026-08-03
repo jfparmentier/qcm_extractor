@@ -1,20 +1,21 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.5";
-import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.5";
-import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.5";
-import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.5";
-import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.5";
-import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.5";
-import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.5";
-import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.5";
-import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.5";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.5";
-import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.5";
-import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.5";
-import { FileDropZone } from "./components/FileDropZone.js?v=7.5.5";
-import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.5";
-import { PdfViewer } from "./components/PdfViewer.js?v=7.5.5";
+import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.6";
+import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.6";
+import { createManualDocumentMap, createUserQuestionSegment } from "./domain/manualMapping.js?v=7.5.6";
+import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.6";
+import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.6";
+import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.6";
+import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.6";
+import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.6";
+import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.6";
+import { generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.6";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.6";
+import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.6";
+import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.6";
+import { FileDropZone } from "./components/FileDropZone.js?v=7.5.6";
+import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.6";
+import { PdfViewer } from "./components/PdfViewer.js?v=7.5.6";
 
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
@@ -245,6 +246,29 @@ export default function App() {
         mappingAbortRef.current = null;
         dispatch({ type: "MAPPING_CANCELLED" });
     }, []);
+    const startManualMapping = useCallback(() => {
+        const pdf = state.pdf;
+        if (pdf === null || state.mapping.status === "running")
+            return;
+        const title = pdf.title?.trim() || pdf.fileName.replace(/\.pdf$/i, "");
+        dispatch({
+            type: "MANUAL_MAPPING_STARTED",
+            documentMap: createManualDocumentMap(title, pdf.pageCount)
+        });
+    }, [state.mapping.status, state.pdf]);
+    const addQuestion = useCallback(() => {
+        const documentMap = state.mapping.data;
+        if (documentMap === null)
+            return;
+        const highestQuestionNumber = documentMap.question_segments.reduce((highest, segment) => {
+            const numericValue = Number.parseInt(segment.question_number ?? "", 10);
+            return Number.isFinite(numericValue) ? Math.max(highest, numericValue) : highest;
+        }, 0);
+        dispatch({
+            type: "ADD_SEGMENT",
+            segment: createUserQuestionSegment(String(highestQuestionNumber + 1), state.currentPage)
+        });
+    }, [state.currentPage, state.mapping.data]);
     const setPage = useCallback((page) => {
         dispatch({ type: "SET_PAGE", page });
     }, []);
@@ -606,5 +630,5 @@ export default function App() {
         onZoomOut: zoomOut,
         onResetZoom: resetZoom
     });
-    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, onZoomChange: setZoom, pdf: state.pdf, zoom: state.zoom }))] }));
+    return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onStartManualMapping: startManualMapping, onAddSegment: addQuestion, onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, onZoomChange: setZoom, pdf: state.pdf, zoom: state.zoom }))] }));
 }

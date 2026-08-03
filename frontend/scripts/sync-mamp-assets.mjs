@@ -4,7 +4,7 @@ import ts from "typescript";
 
 const frontendRoot = path.resolve(import.meta.dirname, "..");
 const publicRoot = path.resolve(frontendRoot, "../deployment/qcm-extractor-site/public");
-const version = "7.5.5";
+const version = "7.5.6";
 const modules = [
   { source: "App.tsx", destination: "App.js" },
   { source: "components/FileDropZone.tsx", destination: "components/FileDropZone.js" },
@@ -14,6 +14,8 @@ const modules = [
   { source: "components/PdfViewer.tsx", destination: "components/PdfViewer.js" },
   { source: "components/QuestionReview.tsx", destination: "components/QuestionReview.js" },
   { source: "domain/documentMap.ts", destination: "domain/documentMap.js" },
+  { source: "domain/manualMapping.ts", destination: "domain/manualMapping.js" },
+  { source: "domain/projectState.ts", destination: "domain/projectState.js" },
   { source: "domain/review.ts", destination: "domain/review.js" },
   { source: "pdf/extractIllustrations.ts", destination: "pdf/extractIllustrations.js" }
 ];

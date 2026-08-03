@@ -35,7 +35,7 @@ Le frontend portable charge React, PDF.js, AJV et pdf-lib depuis des CDN version
 
 ## Phase 7 : révision des questions
 
-La cartographie est maintenant contrôlée QCM par QCM. Les boutons **Précédente** et **Suivante** permettent de parcourir les détections, et **Supprimer ce QCM** retire une détection erronée avant la préparation des lots. Sur le dernier QCM, **Valider les zones** prépare les lots, crée localement les sous-PDF puis lance automatiquement l’extraction des QCM.
+Après le chargement du PDF, l’utilisateur choisit une cartographie **automatique** par le LLM ou une cartographie **manuelle** entièrement locale. Le mode manuel permet de créer et supprimer des questions, puis de tracer et supprimer leurs zones directement sur le PDF. Dans les deux modes, les boutons **Précédente** et **Suivante** permettent de parcourir les questions. Sur la dernière question, **Valider** prépare les lots, crée localement les sous-PDF puis lance automatiquement l’extraction des QCM.
 
 Pendant l’extraction, le panneau droit affiche un état global, le temps écoulé, le nombre de lots traités et le nombre de questions extraites. Les lots ne sont plus présentés sous forme de cartes individuelles.
 

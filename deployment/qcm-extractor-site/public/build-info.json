@@ -3,10 +3,12 @@
   "generated_at": "2026-08-02T10:36:15Z",
   "application_version": "0.13.0",
   "phase": 7,
-  "version": "7.5.5",
+  "version": "7.5.6",
   "features": [
     "pdf-local",
     "mapping-background",
+    "manual-mapping",
+    "mapping-segment-creation",
     "geometry-editor",
     "local-batches",
     "background-extraction",

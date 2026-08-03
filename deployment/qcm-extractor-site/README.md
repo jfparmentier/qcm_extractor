@@ -1,4 +1,4 @@
-# Déploiement QCM Extractor 7.5.1
+# Déploiement QCM Extractor 7.5.6
 
 Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit une seule étape visible à la fois.
 
@@ -17,7 +17,7 @@ La cartographie et l’extraction détaillée sont asynchrones. La production de
 
 ## Workflow de validation
 
-La cartographie est présentée QCM par QCM. L’utilisateur peut corriger les zones, naviguer entre les QCM détectés et supprimer une détection indésirable. Après validation du dernier QCM, les lots et les sous-PDF sont préparés automatiquement, puis l’extraction détaillée est lancée depuis l’étape suivante.
+La cartographie peut être automatique, avec détection par le LLM, ou manuelle et entièrement locale. Dans les deux modes, l’utilisateur peut créer ou supprimer des questions, tracer ou supprimer leurs zones et naviguer entre les QCM. Après validation du dernier QCM, les lots et les sous-PDF sont préparés automatiquement, puis l’extraction détaillée est lancée depuis l’étape suivante.
 
 Chaque question extraite possède un titre. Lorsque le document n’en fournit pas, le LLM génère un titre descriptif court. Le feedback est également affiché dans l’éditeur et généré par le LLM lorsqu’il n’existe pas dans le PDF.
 

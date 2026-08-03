@@ -23,12 +23,15 @@ interface MappingPanelProps {
   readonly currentPage: number;
   readonly drawingRole: PageRegionRole;
   readonly isDrawing: boolean;
+  readonly onAddSegment: () => void;
   readonly onAnalyze: () => void;
   readonly onCancel: () => void;
+  readonly onDeleteRegion: (segmentId: string, regionId: string) => void;
   readonly onValidate: () => void;
   readonly onSelectSegment: (segmentId: string) => void;
   readonly onDeleteSegment: (segmentId: string) => void;
   readonly onSelectRegion: (segmentId: string, regionId: string) => void;
+  readonly onStartManual: () => void;
   readonly onDrawingRoleChange: (role: PageRegionRole) => void;
   readonly onToggleDrawing: () => void;
 }
@@ -57,12 +60,15 @@ export function MappingPanel({
   currentPage,
   drawingRole,
   isDrawing,
+  onAddSegment,
   onAnalyze,
   onCancel,
+  onDeleteRegion,
   onValidate,
   onSelectSegment,
   onDeleteSegment,
   onSelectRegion,
+  onStartManual,
   onDrawingRoleChange,
   onToggleDrawing
 }: MappingPanelProps): React.ReactElement {
@@ -123,23 +129,38 @@ export function MappingPanel({
         <button className="button button--primary" onClick={onAnalyze} type="button">
           <SparklesIcon /> Relancer la cartographie
         </button>
+        <button className="button button--secondary" onClick={onStartManual} type="button">
+          <SelectionIcon /> Passer en mode manuel
+        </button>
       </aside>
     );
   }
 
   if (mapping.status !== "completed" || mapping.data === null) {
     return (
-      <aside className="mapping-panel mapping-panel--status">
-        <div className="mapping-status-icon"><SparklesIcon /></div>
+      <aside className="mapping-panel mapping-panel--status mapping-mode-panel">
         <span className="eyebrow">Première passe</span>
-        <h2>Localiser les QCM</h2>
+        <h2>Comment cartographier le PDF&nbsp;?</h2>
         <p>
-          Lancez une analyse globale pour identifier les segments de questions et leurs
-          pages sources avant l’extraction détaillée.
+          Choisissez une détection automatique par le LLM ou créez vous-même les
+          questions et leurs zones sur le document.
         </p>
-        <button className="button button--primary" onClick={onAnalyze} type="button">
-          <SparklesIcon /> Cartographier le PDF
-        </button>
+        <div className="mapping-mode-options">
+          <button className="mapping-mode-card" onClick={onAnalyze} type="button">
+            <span className="mapping-mode-card__icon"><SparklesIcon /></span>
+            <span>
+              <strong>Cartographie automatique</strong>
+              <small>Le LLM détecte les questions et propose leurs zones.</small>
+            </span>
+          </button>
+          <button className="mapping-mode-card" onClick={onStartManual} type="button">
+            <span className="mapping-mode-card__icon"><SelectionIcon /></span>
+            <span>
+              <strong>Cartographie manuelle</strong>
+              <small>Créez chaque question et tracez précisément ses zones.</small>
+            </span>
+          </button>
+        </div>
       </aside>
     );
   }
@@ -153,14 +174,24 @@ export function MappingPanel({
 
   if (segments.length === 0 || selectedSegment === null) {
     return (
-      <aside className="mapping-panel mapping-panel--status">
-        <div className="mapping-status-icon"><WarningIcon /></div>
-        <span className="eyebrow">Cartographie terminée</span>
-        <h2>Aucun QCM conservé</h2>
-        <p>Relancez la cartographie pour détecter de nouvelles questions.</p>
-        <button className="button button--primary" onClick={onAnalyze} type="button">
-          <SparklesIcon /> Relancer l’analyse
+      <aside className="mapping-panel mapping-panel--status mapping-empty-state">
+        <div className="mapping-status-icon"><SelectionIcon /></div>
+        <span className="eyebrow">
+          {mapping.mode === "manual" ? "Cartographie manuelle" : "Cartographie terminée"}
+        </span>
+        <h2>Aucune question</h2>
+        <p>
+          Placez-vous sur la page souhaitée, puis créez une question. Vous pourrez
+          immédiatement tracer sa première zone.
+        </p>
+        <button className="button button--primary" onClick={onAddSegment} type="button">
+          <PlusIcon /> Créer une question ici
         </button>
+        {mapping.mode === "automatic" && (
+          <button className="button button--secondary" onClick={onAnalyze} type="button">
+            <SparklesIcon /> Relancer l’analyse
+          </button>
+        )}
       </aside>
     );
   }
@@ -168,12 +199,18 @@ export function MappingPanel({
   const previousSegment = segments[selectedIndex - 1];
   const nextSegment = segments[selectedIndex + 1];
   const progressPercentage = Math.round(((selectedIndex + 1) / segments.length) * 100);
+  const segmentsWithoutQuestionRegion = segments.filter(
+    (segment) => !segment.page_regions.some((region) => region.role === "question")
+  ).length;
+  const canValidate = segmentsWithoutQuestionRegion === 0;
   return (
     <aside className="mapping-panel" aria-label="Validation de la cartographie question par question">
       <header className="mapping-review-header">
         <div className="mapping-review-header__topline">
           <div>
-            <span className="eyebrow">Vérification des zones</span>
+            <span className="eyebrow">
+              {mapping.mode === "manual" ? "Cartographie manuelle" : "Vérification des zones"}
+            </span>
             <h2>Question {selectedIndex + 1} <span>sur {segments.length}</span></h2>
           </div>
           <span className="mapping-position-badge" aria-label={`${progressPercentage} % du parcours`}>
@@ -206,6 +243,9 @@ export function MappingPanel({
             ))}
           </select>
         </label>
+        <button className="mapping-add-question" onClick={onAddSegment} type="button">
+          <PlusIcon /> Ajouter une question sur la page {currentPage}
+        </button>
       </header>
 
       <div className="mapping-review-body">
@@ -237,17 +277,26 @@ export function MappingPanel({
             <span className="region-editor__empty">Aucune zone de cette question sur la page.</span>
           )}
           {regionsOnCurrentPage.map((region, index) => (
-            <button
-              key={region.client_id}
-              aria-pressed={region.client_id === mapping.selectedRegionId}
-              className={`region-chip${region.client_id === mapping.selectedRegionId ? " region-chip--selected" : ""}`}
-              onClick={() => onSelectRegion(selectedSegment.temporary_id, region.client_id)}
-              type="button"
-            >
-              <span>{index + 1}</span>
-              {getPageRegionRoleLabel(region.role)}
-              {region.origin === "user" && <small>modifiée</small>}
-            </button>
+            <div className="region-chip-group" key={region.client_id}>
+              <button
+                aria-pressed={region.client_id === mapping.selectedRegionId}
+                className={`region-chip${region.client_id === mapping.selectedRegionId ? " region-chip--selected" : ""}`}
+                onClick={() => onSelectRegion(selectedSegment.temporary_id, region.client_id)}
+                type="button"
+              >
+                <span>{index + 1}</span>
+                {getPageRegionRoleLabel(region.role)}
+                {region.origin === "user" && <small>manuelle</small>}
+              </button>
+              <button
+                aria-label={`Supprimer la zone ${index + 1}`}
+                className="region-chip-delete"
+                onClick={() => onDeleteRegion(selectedSegment.temporary_id, region.client_id)}
+                type="button"
+              >
+                <TrashIcon />
+              </button>
+            </div>
           ))}
         </div>
 
@@ -286,7 +335,11 @@ export function MappingPanel({
 
       <footer className="mapping-panel__footer mapping-question-navigation">
         <span className="mapping-navigation-status" aria-live="polite">
-          {isLast ? "Dernière question : validez pour continuer" : `${segments.length - selectedIndex - 1} question${segments.length - selectedIndex - 1 > 1 ? "s" : ""} après celle-ci`}
+          {isLast
+            ? canValidate
+              ? "Dernière question : validez pour continuer"
+              : `${segmentsWithoutQuestionRegion} question${segmentsWithoutQuestionRegion > 1 ? "s n’ont" : " n’a"} pas encore de zone d’énoncé`
+            : `${segments.length - selectedIndex - 1} question${segments.length - selectedIndex - 1 > 1 ? "s" : ""} après celle-ci`}
         </span>
         <div className="mapping-question-navigation__buttons">
           <button
@@ -307,7 +360,13 @@ export function MappingPanel({
               Suivante <ChevronRightIcon />
             </button>
           ) : (
-            <button className="button button--primary" onClick={onValidate} type="button">
+            <button
+              className="button button--primary"
+              disabled={!canValidate}
+              onClick={onValidate}
+              title={canValidate ? undefined : "Ajoutez une zone d’énoncé à chaque question"}
+              type="button"
+            >
               <CheckIcon /> Valider
             </button>
           )}

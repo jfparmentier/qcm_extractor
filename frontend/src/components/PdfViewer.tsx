@@ -46,6 +46,8 @@ interface PdfViewerProps {
   readonly illustrationPlan: IllustrationPlan;
   readonly illustrationGeneration: IllustrationGenerationState;
   readonly onAnalyze: () => void;
+  readonly onStartManualMapping: () => void;
+  readonly onAddSegment: () => void;
   readonly onCancelMapping: () => void;
   readonly onValidateMapping: () => Promise<void>;
   readonly onSelectSegment: (segmentId: string) => void;
@@ -102,6 +104,8 @@ export function PdfViewer({
   illustrationPlan,
   illustrationGeneration,
   onAnalyze,
+  onStartManualMapping,
+  onAddSegment,
   onCancelMapping,
   onValidateMapping,
   onSelectSegment,
@@ -134,8 +138,9 @@ export function PdfViewer({
   const [preparationError, setPreparationError] = useState<string | null>(null);
   const reviewFingerprintRef = useRef("");
   const pageWorkspaceRef = useRef<HTMLElement>(null);
+  const pendingQuestionDrawingRef = useRef(false);
   const handleRenderError = useCallback((message: string) => setRenderError(message), []);
-  const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
+  const showSidePanel = activePanel !== "review";
 
   useEffect(() => {
     const workspace = pageWorkspaceRef.current;
@@ -182,7 +187,10 @@ export function PdfViewer({
       : mergeExtractionResults(mapping.data, completedExtractions),
   [completedExtractions, mapping.data]);
 
-  const extractedQuestions = mergedExtraction?.questions ?? [];
+  const extractedQuestions = useMemo(
+    () => mergedExtraction?.questions ?? [],
+    [mergedExtraction]
+  );
   const extractedFingerprint = useMemo(
     () => reviewSourceFingerprint(extractedQuestions),
     [extractedQuestions]
@@ -303,6 +311,11 @@ export function PdfViewer({
 
   useEffect(() => {
     setRenderError(null);
+    if (pendingQuestionDrawingRef.current) {
+      pendingQuestionDrawingRef.current = false;
+      setIsDrawing(true);
+      return;
+    }
     setIsDrawing(false);
   }, [currentPage, zoom, mapping.selectedSegmentId]);
 
@@ -349,6 +362,12 @@ export function PdfViewer({
     onAddRegion(mapping.selectedSegmentId, currentPage, drawingRole, bbox);
     setIsDrawing(false);
   }, [currentPage, drawingRole, mapping.selectedSegmentId, onAddRegion]);
+
+  const handleAddSegment = useCallback((): void => {
+    setDrawingRole("question");
+    pendingQuestionDrawingRef.current = true;
+    onAddSegment();
+  }, [onAddSegment]);
 
   const handleValidateMapping = useCallback(async (): Promise<void> => {
     setIsDrawing(false);
@@ -461,7 +480,6 @@ export function PdfViewer({
         <>
           <PdfToolbar
             currentPage={currentPage}
-            onAnalyze={mapping.status === "idle" ? onAnalyze : undefined}
             onPageChange={onPageChange}
             onResetZoom={onResetZoom}
             onZoomIn={onZoomIn}
@@ -529,12 +547,15 @@ export function PdfViewer({
                     drawingRole={drawingRole}
                     isDrawing={isDrawing}
                     mapping={mapping}
+                    onAddSegment={handleAddSegment}
                     onAnalyze={onAnalyze}
                     onCancel={onCancelMapping}
+                    onDeleteRegion={onDeleteRegion}
                     onDeleteSegment={onDeleteSegment}
                     onDrawingRoleChange={setDrawingRole}
                     onSelectRegion={onSelectRegion}
                     onSelectSegment={onSelectSegment}
+                    onStartManual={onStartManualMapping}
                     onToggleDrawing={() => setIsDrawing((active) => !active)}
                     onValidate={() => void handleValidateMapping()}
                   />

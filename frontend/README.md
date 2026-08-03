@@ -1,6 +1,6 @@
 # Frontend — Phase 7.3.0
 
-Application React/TypeScript exécutée dans le navigateur. Elle charge le PDF localement, gère la cartographie et les zones, crée les sous-PDF avec `pdf-lib`, orchestre la seconde passe d’extraction et fusionne les réponses validées.
+Application React/TypeScript exécutée dans le navigateur. Elle charge le PDF localement, propose une cartographie automatique par LLM ou une cartographie manuelle avec création/suppression des questions et des zones, crée les sous-PDF avec `pdf-lib`, orchestre la seconde passe d’extraction et fusionne les réponses validées.
 
 ```bash
 npm install

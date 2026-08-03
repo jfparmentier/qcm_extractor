@@ -1,23 +1,23 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MAX_ZOOM } from "../domain/projectState.js?v=7.5.5";
-import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.5.5";
-import { mergeExtractionResults } from "../domain/extraction.js?v=7.5.5";
-import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.5.5";
-import { ExtractionPanel } from "./ExtractionPanel.js?v=7.5.5";
-import { IllustrationPanel } from "./IllustrationPanel.js?v=7.5.5";
-import { MappingPanel } from "./MappingPanel.js?v=7.5.5";
-import { PreparationPanel } from "./PreparationPanel.js?v=7.5.5";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.5";
-import { PdfToolbar } from "./PdfToolbar.js?v=7.5.5";
-import { QuestionReview } from "./QuestionReview.js?v=7.5.5";
+import { MAX_ZOOM } from "../domain/projectState.js?v=7.5.6";
+import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.5.6";
+import { mergeExtractionResults } from "../domain/extraction.js?v=7.5.6";
+import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.5.6";
+import { ExtractionPanel } from "./ExtractionPanel.js?v=7.5.6";
+import { IllustrationPanel } from "./IllustrationPanel.js?v=7.5.6";
+import { MappingPanel } from "./MappingPanel.js?v=7.5.6";
+import { PreparationPanel } from "./PreparationPanel.js?v=7.5.6";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.6";
+import { PdfToolbar } from "./PdfToolbar.js?v=7.5.6";
+import { QuestionReview } from "./QuestionReview.js?v=7.5.6";
 function isEditableElement(target) {
     return target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
         target instanceof HTMLSelectElement ||
         (target instanceof HTMLElement && target.isContentEditable);
 }
-export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extraction, illustrationPlan, illustrationGeneration, onAnalyze, onCancelMapping, onValidateMapping, onSelectSegment, onSelectRegion, onUpdateRegionBbox, onUpdateRegionRole, onAddRegion, onDeleteRegion, onDeleteSegment, onExtractAll, onCancelExtraction, onGenerateAllIllustrations, onGenerateIllustration, onCancelIllustrationGeneration, onClearIllustrations, onDownloadIllustration, onPageChange, onZoomIn, onZoomOut, onResetZoom, onZoomChange }) {
+export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extraction, illustrationPlan, illustrationGeneration, onAnalyze, onStartManualMapping, onAddSegment, onCancelMapping, onValidateMapping, onSelectSegment, onSelectRegion, onUpdateRegionBbox, onUpdateRegionRole, onAddRegion, onDeleteRegion, onDeleteSegment, onExtractAll, onCancelExtraction, onGenerateAllIllustrations, onGenerateIllustration, onCancelIllustrationGeneration, onClearIllustrations, onDownloadIllustration, onPageChange, onZoomIn, onZoomOut, onResetZoom, onZoomChange }) {
     const [renderError, setRenderError] = useState(null);
     const [drawingRole, setDrawingRole] = useState("question");
     const [isDrawing, setIsDrawing] = useState(false);
@@ -28,8 +28,9 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     const [preparationError, setPreparationError] = useState(null);
     const reviewFingerprintRef = useRef("");
     const pageWorkspaceRef = useRef(null);
+    const pendingQuestionDrawingRef = useRef(false);
     const handleRenderError = useCallback((message) => setRenderError(message), []);
-    const showSidePanel = mapping.status !== "idle" && activePanel !== "review";
+    const showSidePanel = activePanel !== "review";
     useEffect(() => {
         const workspace = pageWorkspaceRef.current;
         if (workspace === null || activePanel !== "mapping")
@@ -62,7 +63,7 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     const mergedExtraction = useMemo(() => mapping.data === null
         ? null
         : mergeExtractionResults(mapping.data, completedExtractions), [completedExtractions, mapping.data]);
-    const extractedQuestions = mergedExtraction?.questions ?? [];
+    const extractedQuestions = useMemo(() => mergedExtraction?.questions ?? [], [mergedExtraction]);
     const extractedFingerprint = useMemo(() => reviewSourceFingerprint(extractedQuestions), [extractedQuestions]);
     const illustrationsReady = useMemo(() => illustrationPlan.candidates.every((candidate) => illustrationGeneration.assets[candidate.id] !== undefined), [illustrationGeneration.assets, illustrationPlan.candidates]);
     const extractionAllCompleted = useMemo(() => {
@@ -166,6 +167,11 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     }, [mapping.data, mapping.selectedRegionId]);
     useEffect(() => {
         setRenderError(null);
+        if (pendingQuestionDrawingRef.current) {
+            pendingQuestionDrawingRef.current = false;
+            setIsDrawing(true);
+            return;
+        }
         setIsDrawing(false);
     }, [currentPage, zoom, mapping.selectedSegmentId]);
     useEffect(() => {
@@ -206,6 +212,11 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
         onAddRegion(mapping.selectedSegmentId, currentPage, drawingRole, bbox);
         setIsDrawing(false);
     }, [currentPage, drawingRole, mapping.selectedSegmentId, onAddRegion]);
+    const handleAddSegment = useCallback(() => {
+        setDrawingRole("question");
+        pendingQuestionDrawingRef.current = true;
+        onAddSegment();
+    }, [onAddSegment]);
     const handleValidateMapping = useCallback(async () => {
         setIsDrawing(false);
         setPreparationError(null);
@@ -274,5 +285,5 @@ export function PdfViewer({ pdf, currentPage, zoom, mapping, batching, extractio
     }, [illustrationGeneration.assets, illustrationPlan, mapping.data, pdf, reviewIndex, reviewQuestions]);
     const completedMap = mapping.status === "completed" ? mapping.data : null;
     const mappingCompleted = completedMap !== null;
-    return (_jsx("section", { className: `viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`, "aria-label": "Visualiseur PDF", children: activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (_jsx(QuestionReview, { currentIndex: reviewIndex, currentPage: currentPage, documentMap: completedMap, exporting: exporting, illustrationAssets: illustrationGeneration.assets, illustrationPlan: illustrationPlan, onCurrentIndexChange: handleReviewIndexChange, onCurrentPageChange: onPageChange, onExport: () => void handleReviewExport(), onQuestionChange: handleReviewQuestionChange, onZoomChange: onZoomChange, pdf: pdf, questions: reviewQuestions, zoom: zoom })) : (_jsxs(_Fragment, { children: [_jsx(PdfToolbar, { currentPage: currentPage, onAnalyze: mapping.status === "idle" ? onAnalyze : undefined, onPageChange: onPageChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pageCount: pdf.pageCount, zoom: zoom }), _jsxs("div", { className: `viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`, children: [_jsxs("main", { ref: pageWorkspaceRef, className: "page-workspace", children: [renderError !== null && (_jsxs("div", { className: "inline-error", role: "alert", children: ["Une erreur est survenue pendant le rendu de la page : ", renderError] })), _jsx("div", { className: "page-stage", children: _jsx(PdfPageCanvas, { document: pdf.document, drawRole: isDrawing && activePanel === "mapping" ? drawingRole : null, onOverlaySelect: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion, onRegionAdd: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd, onRegionChange: activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined, onRegionDelete: activePanel === "mapping" ? onDeleteRegion : undefined, onRegionRoleChange: activePanel === "mapping" ? onUpdateRegionRole : undefined, onRenderError: handleRenderError, overlays: overlays, pageNumber: currentPage, scale: zoom }) })] }), showSidePanel && (_jsx("div", { className: "side-panel-shell", children: activePanel === "preparing" ? (_jsx(PreparationPanel, { batching: batching, error: preparationError, onRetry: () => void handleValidateMapping() })) : activePanel === "extraction" && mappingCompleted ? (_jsx(ExtractionPanel, { documentMap: completedMap, extraction: extraction, onCancel: onCancelExtraction, onExtractAll: onExtractAll, onSelectSegment: onSelectSegment, plan: batching.plan })) : activePanel === "illustrations" && mappingCompleted ? (_jsx(IllustrationPanel, { generation: illustrationGeneration, onCancel: onCancelIllustrationGeneration, onClear: onClearIllustrations, onDownload: onDownloadIllustration, onGenerateAll: onGenerateAllIllustrations, onGenerateOne: onGenerateIllustration, onPageChange: onPageChange, onSelectSegment: onSelectSegment, plan: illustrationPlan })) : (_jsx(MappingPanel, { currentPage: currentPage, drawingRole: drawingRole, isDrawing: isDrawing, mapping: mapping, onAnalyze: onAnalyze, onCancel: onCancelMapping, onDeleteSegment: onDeleteSegment, onDrawingRoleChange: setDrawingRole, onSelectRegion: onSelectRegion, onSelectSegment: onSelectSegment, onToggleDrawing: () => setIsDrawing((active) => !active), onValidate: () => void handleValidateMapping() })) }))] })] })) }));
+    return (_jsx("section", { className: `viewer-shell${showSidePanel ? " viewer-shell--with-mapping" : ""}`, "aria-label": "Visualiseur PDF", children: activePanel === "review" && mappingCompleted && reviewQuestions.length > 0 ? (_jsx(QuestionReview, { currentIndex: reviewIndex, currentPage: currentPage, documentMap: completedMap, exporting: exporting, illustrationAssets: illustrationGeneration.assets, illustrationPlan: illustrationPlan, onCurrentIndexChange: handleReviewIndexChange, onCurrentPageChange: onPageChange, onExport: () => void handleReviewExport(), onQuestionChange: handleReviewQuestionChange, onZoomChange: onZoomChange, pdf: pdf, questions: reviewQuestions, zoom: zoom })) : (_jsxs(_Fragment, { children: [_jsx(PdfToolbar, { currentPage: currentPage, onPageChange: onPageChange, onResetZoom: onResetZoom, onZoomIn: onZoomIn, onZoomOut: onZoomOut, pageCount: pdf.pageCount, zoom: zoom }), _jsxs("div", { className: `viewer-layout${showSidePanel ? " viewer-layout--with-mapping" : ""}`, children: [_jsxs("main", { ref: pageWorkspaceRef, className: "page-workspace", children: [renderError !== null && (_jsxs("div", { className: "inline-error", role: "alert", children: ["Une erreur est survenue pendant le rendu de la page : ", renderError] })), _jsx("div", { className: "page-stage", children: _jsx(PdfPageCanvas, { document: pdf.document, drawRole: isDrawing && activePanel === "mapping" ? drawingRole : null, onOverlaySelect: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : onSelectRegion, onRegionAdd: extraction.runStatus === "running" || illustrationGeneration.status === "running" ? undefined : handleRegionAdd, onRegionChange: activePanel === "mapping" && extraction.runStatus !== "running" && illustrationGeneration.status !== "running" ? onUpdateRegionBbox : undefined, onRegionDelete: activePanel === "mapping" ? onDeleteRegion : undefined, onRegionRoleChange: activePanel === "mapping" ? onUpdateRegionRole : undefined, onRenderError: handleRenderError, overlays: overlays, pageNumber: currentPage, scale: zoom }) })] }), showSidePanel && (_jsx("div", { className: "side-panel-shell", children: activePanel === "preparing" ? (_jsx(PreparationPanel, { batching: batching, error: preparationError, onRetry: () => void handleValidateMapping() })) : activePanel === "extraction" && mappingCompleted ? (_jsx(ExtractionPanel, { documentMap: completedMap, extraction: extraction, onCancel: onCancelExtraction, onExtractAll: onExtractAll, onSelectSegment: onSelectSegment, plan: batching.plan })) : activePanel === "illustrations" && mappingCompleted ? (_jsx(IllustrationPanel, { generation: illustrationGeneration, onCancel: onCancelIllustrationGeneration, onClear: onClearIllustrations, onDownload: onDownloadIllustration, onGenerateAll: onGenerateAllIllustrations, onGenerateOne: onGenerateIllustration, onPageChange: onPageChange, onSelectSegment: onSelectSegment, plan: illustrationPlan })) : (_jsx(MappingPanel, { currentPage: currentPage, drawingRole: drawingRole, isDrawing: isDrawing, mapping: mapping, onAddSegment: handleAddSegment, onAnalyze: onAnalyze, onCancel: onCancelMapping, onDeleteRegion: onDeleteRegion, onDeleteSegment: onDeleteSegment, onDrawingRoleChange: setDrawingRole, onSelectRegion: onSelectRegion, onSelectSegment: onSelectSegment, onStartManual: onStartManualMapping, onToggleDrawing: () => setIsDrawing((active) => !active), onValidate: () => void handleValidateMapping() })) }))] })] })) }));
 }

@@ -1,7 +1,8 @@
-import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.5.1";
-import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.5.1";
+import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.5.6";
+import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.5.6";
 export const INITIAL_MAPPING_STATE = {
     status: "idle",
+    mode: null,
     data: null,
     meta: null,
     error: null,
@@ -128,6 +129,7 @@ export function projectReducer(state, action) {
                 ...state,
                 mapping: {
                     status: "running",
+                    mode: "automatic",
                     data: null,
                     meta: null,
                     error: null,
@@ -164,6 +166,7 @@ export function projectReducer(state, action) {
                 currentPage: firstRegion?.page ?? firstPage,
                 mapping: {
                     status: "completed",
+                    mode: "automatic",
                     data: action.documentMap,
                     meta: action.meta,
                     error: null,
@@ -187,6 +190,7 @@ export function projectReducer(state, action) {
                 ...state,
                 mapping: {
                     status: "failed",
+                    mode: "automatic",
                     data: null,
                     meta: null,
                     error: action.error,
@@ -217,6 +221,55 @@ export function projectReducer(state, action) {
                     settings: state.extraction.settings
                 }
             };
+        case "MANUAL_MAPPING_STARTED":
+            return {
+                ...state,
+                mapping: {
+                    status: "completed",
+                    mode: "manual",
+                    data: action.documentMap,
+                    meta: null,
+                    error: null,
+                    startedAt: null,
+                    selectedSegmentId: null,
+                    selectedRegionId: null,
+                    progress: null
+                },
+                batching: {
+                    ...INITIAL_BATCH_PREPARATION_STATE,
+                    settings: state.batching.settings
+                },
+                extraction: {
+                    ...INITIAL_EXTRACTION_STATE,
+                    settings: state.extraction.settings
+                }
+            };
+        case "ADD_SEGMENT": {
+            if (state.mapping.data === null) {
+                return state;
+            }
+            return {
+                ...state,
+                currentPage: action.segment.question_pages[0] ?? state.currentPage,
+                mapping: {
+                    ...state.mapping,
+                    data: {
+                        ...state.mapping.data,
+                        question_segments: [...state.mapping.data.question_segments, action.segment]
+                    },
+                    selectedSegmentId: action.segment.temporary_id,
+                    selectedRegionId: null
+                },
+                batching: {
+                    ...INITIAL_BATCH_PREPARATION_STATE,
+                    settings: state.batching.settings
+                },
+                extraction: {
+                    ...INITIAL_EXTRACTION_STATE,
+                    settings: state.extraction.settings
+                }
+            };
+        }
         case "SELECT_SEGMENT": {
             const segment = state.mapping.data?.question_segments.find((candidate) => candidate.temporary_id === action.segmentId);
             if (segment === undefined) {

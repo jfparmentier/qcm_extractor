@@ -759,6 +759,68 @@ summary:focus-visible {
   overflow: auto;
 }
 
+.mapping-mode-panel {
+  justify-content: flex-start;
+  padding-top: clamp(1.5rem, 7vh, 4rem);
+}
+
+.mapping-mode-options {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mapping-mode-card {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.mapping-mode-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.mapping-mode-card__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 9px;
+}
+
+.mapping-mode-card > span:last-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mapping-mode-card strong {
+  font-size: 0.78rem;
+}
+
+.mapping-mode-card small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.mapping-empty-state .button + .button,
+.mapping-panel--status .button + .button {
+  margin-top: 0.6rem;
+}
+
 .mapping-status-icon {
   display: grid;
   width: 48px;
@@ -1322,6 +1384,38 @@ select:focus-visible {
   border-radius: 7px;
   cursor: pointer;
   font-size: 0.64rem;
+}
+
+.region-chip-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.region-chip-group .region-chip {
+  border-radius: 7px 0 0 7px;
+}
+
+.region-chip-delete {
+  display: grid;
+  width: 27px;
+  padding: 0;
+  place-items: center;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+  cursor: pointer;
+}
+
+.region-chip-delete:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.region-chip-delete svg {
+  width: 13px;
+  height: 13px;
 }
 
 .region-chip:hover,
@@ -2905,6 +2999,29 @@ summary:focus-visible {
 .mapping-question-picker select {
   width: 100%;
   font-size: 0.72rem;
+}
+
+.mapping-add-question {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.55rem;
+  padding: 0;
+  color: var(--primary);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.mapping-add-question:hover {
+  color: var(--primary-dark);
+}
+
+.mapping-add-question svg {
+  width: 14px;
+  height: 14px;
 }
 
 .mapping-review-body {

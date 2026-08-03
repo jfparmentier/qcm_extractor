@@ -14,6 +14,10 @@ import {
   type PageRegionRole
 } from "./domain/documentMap";
 import {
+  createManualDocumentMap,
+  createUserQuestionSegment
+} from "./domain/manualMapping";
+import {
   analyzeDocumentMap,
   extractQuestions,
   loadWorkflowConfig,
@@ -322,6 +326,31 @@ export default function App(): React.ReactElement {
     mappingAbortRef.current = null;
     dispatch({ type: "MAPPING_CANCELLED" });
   }, []);
+
+  const startManualMapping = useCallback((): void => {
+    const pdf = state.pdf;
+    if (pdf === null || state.mapping.status === "running") return;
+
+    const title = pdf.title?.trim() || pdf.fileName.replace(/\.pdf$/i, "");
+    dispatch({
+      type: "MANUAL_MAPPING_STARTED",
+      documentMap: createManualDocumentMap(title, pdf.pageCount)
+    });
+  }, [state.mapping.status, state.pdf]);
+
+  const addQuestion = useCallback((): void => {
+    const documentMap = state.mapping.data;
+    if (documentMap === null) return;
+
+    const highestQuestionNumber = documentMap.question_segments.reduce((highest, segment) => {
+      const numericValue = Number.parseInt(segment.question_number ?? "", 10);
+      return Number.isFinite(numericValue) ? Math.max(highest, numericValue) : highest;
+    }, 0);
+    dispatch({
+      type: "ADD_SEGMENT",
+      segment: createUserQuestionSegment(String(highestQuestionNumber + 1), state.currentPage)
+    });
+  }, [state.currentPage, state.mapping.data]);
 
   const setPage = useCallback((page: number): void => {
     dispatch({ type: "SET_PAGE", page });
@@ -780,6 +809,8 @@ export default function App(): React.ReactElement {
           illustrationPlan={illustrationPlan}
           mapping={state.mapping}
           onAnalyze={() => void analyzeMapping()}
+          onStartManualMapping={startManualMapping}
+          onAddSegment={addQuestion}
           onCancelMapping={cancelMapping}
           onValidateMapping={prepareValidatedMapping}
           onClose={closeDocument}
