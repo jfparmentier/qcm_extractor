@@ -171,9 +171,6 @@ export function MappingPanel({
 
   const { question_segments: segments } = mapping.data;
   const selectedSegment = selectedIndex >= 0 ? segments[selectedIndex] ?? null : null;
-  const regionsOnCurrentPage = selectedSegment?.page_regions.filter(
-    (region) => region.page === currentPage
-  ) ?? [];
   const isLast = selectedIndex >= 0 && selectedIndex === segments.length - 1;
 
   if (segments.length === 0 || selectedSegment === null) {
@@ -203,6 +200,15 @@ export function MappingPanel({
   const previousSegment = segments[selectedIndex - 1];
   const nextSegment = segments[selectedIndex + 1];
   const progressPercentage = Math.round(((selectedIndex + 1) / segments.length) * 100);
+  const displayedRegions = mapping.mode === "manual"
+    ? selectedSegment.page_regions
+    : selectedSegment.page_regions.filter((region) => region.page === currentPage);
+  const regionGroups = [...new Set(displayedRegions.map((region) => region.page))]
+    .sort((left, right) => left - right)
+    .map((page) => ({
+      page,
+      regions: displayedRegions.filter((region) => region.page === page)
+    }));
   const segmentsWithoutQuestionRegion = segments.filter(
     (segment) => !segment.page_regions.some((region) => region.role === "question")
   ).length;
@@ -217,9 +223,11 @@ export function MappingPanel({
             </span>
             <h2>Question {selectedIndex + 1} <span>sur {segments.length}</span></h2>
           </div>
-          <span className="mapping-position-badge" aria-label={`${progressPercentage} % du parcours`}>
-            {progressPercentage} %
-          </span>
+          {mapping.mode !== "manual" && (
+            <span className="mapping-position-badge" aria-label={`${progressPercentage} % du parcours`}>
+              {progressPercentage} %
+            </span>
+          )}
         </div>
 
         <div
@@ -266,9 +274,9 @@ export function MappingPanel({
             <span className="eyebrow">
               {mapping.mode === "manual" ? "Zones" : "Zones visibles sur le PDF"}
             </span>
-            <strong>Page {currentPage}</strong>
+            {mapping.mode !== "manual" && <strong>Page {currentPage}</strong>}
           </div>
-          <span>{regionsOnCurrentPage.length} zone{regionsOnCurrentPage.length > 1 ? "s" : ""}</span>
+          <span>{displayedRegions.length} zone{displayedRegions.length > 1 ? "s" : ""}</span>
         </div>
 
         {isDrawing && (
@@ -277,31 +285,48 @@ export function MappingPanel({
           </div>
         )}
 
-        <div className="region-editor__list" aria-label="Zones de la question sur la page courante">
-          {regionsOnCurrentPage.length === 0 && (
-            <span className="region-editor__empty">Aucune zone de cette question sur la page.</span>
+        <div className="region-editor__groups" aria-label="Zones de la question regroupées par page">
+          {regionGroups.length === 0 && (
+            <span className="region-editor__empty">
+              {mapping.mode === "manual"
+                ? "Aucune zone pour cette question."
+                : "Aucune zone de cette question sur la page."}
+            </span>
           )}
-          {regionsOnCurrentPage.map((region, index) => (
-            <div className="region-chip-group" key={region.client_id}>
-              <button
-                aria-pressed={region.client_id === mapping.selectedRegionId}
-                className={`region-chip${region.client_id === mapping.selectedRegionId ? " region-chip--selected" : ""}`}
-                onClick={() => onSelectRegion(selectedSegment.temporary_id, region.client_id)}
-                type="button"
-              >
-                <span>{index + 1}</span>
-                {getPageRegionRoleLabel(region.role)}
-                {region.origin === "user" && <small>manuelle</small>}
-              </button>
-              <button
-                aria-label={`Supprimer la zone ${index + 1}`}
-                className="region-chip-delete"
-                onClick={() => onDeleteRegion(selectedSegment.temporary_id, region.client_id)}
-                type="button"
-              >
-                <TrashIcon />
-              </button>
-            </div>
+          {regionGroups.map(({ page, regions }) => (
+            <section className="region-editor__page-group" key={page} aria-label={`Page ${page}`}>
+              <div className="region-editor__page-heading">
+                <strong>Page {page}</strong>
+                <span>{regions.length} zone{regions.length > 1 ? "s" : ""}</span>
+              </div>
+              <div className="region-editor__list">
+                {regions.map((region, index) => (
+                  <div className="region-chip-group" key={region.client_id}>
+                    <button
+                      aria-pressed={region.client_id === mapping.selectedRegionId}
+                      className={`region-chip${region.client_id === mapping.selectedRegionId ? " region-chip--selected" : ""}`}
+                      onClick={() => {
+                        if (page !== currentPage) onPageChange(page);
+                        onSelectRegion(selectedSegment.temporary_id, region.client_id);
+                      }}
+                      type="button"
+                    >
+                      <span>{index + 1}</span>
+                      {getPageRegionRoleLabel(region.role)}
+                      {region.origin === "user" && <small>manuelle</small>}
+                    </button>
+                    <button
+                      aria-label={`Supprimer la zone ${index + 1} de la page ${page}`}
+                      className="region-chip-delete"
+                      onClick={() => onDeleteRegion(selectedSegment.temporary_id, region.client_id)}
+                      type="button"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
 
@@ -345,8 +370,8 @@ export function MappingPanel({
         </button>
         </section>
 
-        <button className="mapping-add-question" onClick={onAddSegment} type="button">
-          <PlusIcon /> Ajouter une nouvelle question sur la page {currentPage}
+        <button className="button button--primary mapping-add-question" onClick={onAddSegment} type="button">
+          <PlusIcon /> Nouvelle question
         </button>
       </div>
 
@@ -367,23 +392,25 @@ export function MappingPanel({
             <div className="mapping-question-navigation__buttons">
               <button
                 className="button button--secondary"
+                aria-label="Page précédente"
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}
                 type="button"
               >
-                <ChevronLeftIcon /> Précédente
+                &lt;
               </button>
               <button
                 className="button button--secondary"
+                aria-label="Page suivante"
                 disabled={currentPage >= pageCount}
                 onClick={() => onPageChange(currentPage + 1)}
                 type="button"
               >
-                Suivante <ChevronRightIcon />
+                &gt;
               </button>
             </div>
             <button
-              className="button button--primary mapping-extract-button"
+              className="button button--success mapping-extract-button"
               disabled={!canValidate}
               onClick={onValidate}
               title={canValidate ? undefined : "Ajoutez une zone d’énoncé à chaque question"}

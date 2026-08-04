@@ -173,6 +173,9 @@ export function getSegmentDisplayName(segment, index) {
     if (segment.question_number !== null && segment.question_number.trim().length > 0) {
         return `Question ${segment.question_number.trim()}`;
     }
+    if (segment.temporary_id.startsWith("segment-manual-")) {
+        return `Question ${index + 1}`;
+    }
     return `Question détectée ${index + 1}`;
 }
 export function getQuestionTypeLabel(type) {

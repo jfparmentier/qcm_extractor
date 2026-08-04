@@ -8,10 +8,10 @@ if (documentMap.document.page_count !== 12 || documentMap.question_segments.leng
   throw new Error("La carte manuelle vide n’est pas correctement initialisée.");
 }
 
-const segment = createUserQuestionSegment("1", 4);
+const segment = createUserQuestionSegment(4);
 if (
   !segment.temporary_id.startsWith("segment-manual-") ||
-  segment.question_number !== "1" ||
+  segment.question_number !== null ||
   segment.question_pages[0] !== 4 ||
   segment.page_regions.length !== 0
 ) {

@@ -25,12 +25,13 @@ export function createManualDocumentMap(
 }
 
 export function createUserQuestionSegment(
-  questionNumber: string,
   page: number
 ): QuestionSegment {
   return {
     temporary_id: createUserSegmentId(),
-    question_number: questionNumber,
+    // Le rang dans l'interface n'est pas nécessairement le numéro imprimé dans le PDF.
+    // Garder cette valeur inconnue évite d'orienter l'extraction vers une autre question.
+    question_number: null,
     question_pages: [page],
     answer_pages: [],
     feedback_pages: [],

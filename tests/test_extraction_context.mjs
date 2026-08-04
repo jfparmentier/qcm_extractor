@@ -31,4 +31,55 @@ assert.equal(context.batch_id, "batch-001");
 assert.deepEqual(context.local_to_original_page_map, [4, 5]);
 assert.deepEqual(context.segments[0].local_pages, [1]);
 assert.deepEqual(context.segments[0].regions[0].bbox, [0.12346, 0.2, 0.7, 0.3]);
+
+const reverseVisualOrderBatch = {
+  id: "batch-002",
+  segmentIds: ["segment-manual-first", "segment-manual-second"],
+  originalPages: [1],
+  pageMap: [{ localPage: 1, originalPage: 1, contextOnly: false }],
+  segmentReferences: [
+    { segmentId: "segment-manual-first", sourcePages: [1], localPages: [1] },
+    { segmentId: "segment-manual-second", sourcePages: [1], localPages: [1] }
+  ]
+};
+const reverseVisualOrderMap = {
+  question_segments: [
+    {
+      temporary_id: "segment-manual-first",
+      question_number: "1",
+      question_type_hint: "unknown",
+      contains_essential_image: false,
+      page_regions: [{
+        page: 1,
+        role: "question",
+        bbox: { x: 0.1, y: 0.51, width: 0.8, height: 0.34 }
+      }]
+    },
+    {
+      temporary_id: "segment-manual-second",
+      question_number: "2",
+      question_type_hint: "unknown",
+      contains_essential_image: false,
+      page_regions: [{
+        page: 1,
+        role: "question",
+        bbox: { x: 0.1, y: 0.38, width: 0.8, height: 0.1 }
+      }]
+    }
+  ]
+};
+const reverseVisualOrderContext = createExtractionContext(
+  reverseVisualOrderBatch,
+  reverseVisualOrderMap
+);
+assert.deepEqual(
+  reverseVisualOrderContext.segments.map((segment) => segment.id),
+  ["segment-manual-first", "segment-manual-second"]
+);
+assert.deepEqual(
+  reverseVisualOrderContext.segments.map((segment) => segment.question_number),
+  [null, null]
+);
+assert.equal(reverseVisualOrderContext.segments[0].regions[0].bbox[1], 0.51);
+assert.equal(reverseVisualOrderContext.segments[1].regions[0].bbox[1], 0.38);
 console.log("OK contexte compact de seconde passe");

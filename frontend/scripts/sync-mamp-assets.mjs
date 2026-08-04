@@ -14,6 +14,7 @@ const modules = [
   { source: "components/PdfViewer.tsx", destination: "components/PdfViewer.js" },
   { source: "components/QuestionReview.tsx", destination: "components/QuestionReview.js" },
   { source: "domain/documentMap.ts", destination: "domain/documentMap.js" },
+  { source: "domain/extractionContext.ts", destination: "domain/extractionContext.js" },
   { source: "domain/manualMapping.ts", destination: "domain/manualMapping.js" },
   { source: "domain/projectState.ts", destination: "domain/projectState.js" },
   { source: "domain/review.ts", destination: "domain/review.js" },

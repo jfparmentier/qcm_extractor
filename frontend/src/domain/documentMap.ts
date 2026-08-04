@@ -325,6 +325,10 @@ export function getSegmentDisplayName(segment: QuestionSegment, index: number): 
     return `Question ${segment.question_number.trim()}`;
   }
 
+  if (segment.temporary_id.startsWith("segment-manual-")) {
+    return `Question ${index + 1}`;
+  }
+
   return `Question détectée ${index + 1}`;
 }
 

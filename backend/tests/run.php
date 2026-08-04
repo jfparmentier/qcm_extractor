@@ -254,6 +254,13 @@ expect($backgroundState->id === 'resp_test_background_12345678', 'Identifiant as
 
 $extractionPayload = $factory->build(Operation::Extraction, new PdfRequest('lot.pdf', $pdf, $normalizedContext));
 expect($extractionPayload['model'] === 'gpt-test-extraction', 'Modèle d’extraction incorrect.');
+$extractionPrompt = $extractionPayload['input'][0]['content'][0]['text'];
+expect(
+    is_string($extractionPrompt)
+        && str_contains($extractionPrompt, 'les régions de rôle question sont la frontière autoritaire')
+        && str_contains($extractionPrompt, 'peut être différent de l’ordre visuel'),
+    'La priorité des zones et l’ordre indépendant des segments doivent être imposés à l’extraction.',
+);
 $userInstruction = $extractionPayload['input'][1]['content'][1]['text'];
 expect(is_string($userInstruction) && str_contains($userInstruction, '<qcm_context>'), 'Contexte structuré absent.');
 expect(!array_key_exists('temperature', $extractionPayload), 'Paramètre de température non nécessaire.');

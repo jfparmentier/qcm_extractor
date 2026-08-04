@@ -342,13 +342,9 @@ export default function App(): React.ReactElement {
     const documentMap = state.mapping.data;
     if (documentMap === null) return;
 
-    const highestQuestionNumber = documentMap.question_segments.reduce((highest, segment) => {
-      const numericValue = Number.parseInt(segment.question_number ?? "", 10);
-      return Number.isFinite(numericValue) ? Math.max(highest, numericValue) : highest;
-    }, 0);
     dispatch({
       type: "ADD_SEGMENT",
-      segment: createUserQuestionSegment(String(highestQuestionNumber + 1), state.currentPage)
+      segment: createUserQuestionSegment(state.currentPage)
     });
   }, [state.currentPage, state.mapping.data]);
 

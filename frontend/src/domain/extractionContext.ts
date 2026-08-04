@@ -48,7 +48,9 @@ export function createExtractionContext(
 
       return [{
         id: segment.temporary_id,
-        question_number: segment.question_number,
+        question_number: segment.temporary_id.startsWith("segment-manual-")
+          ? null
+          : segment.question_number,
         question_type_hint: segment.question_type_hint,
         source_pages: batch.segmentReferences.find(
           (reference) => reference.segmentId === segment.temporary_id
