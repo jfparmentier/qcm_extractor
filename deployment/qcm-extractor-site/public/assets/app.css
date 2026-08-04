@@ -2594,14 +2594,37 @@ summary:focus-visible {
 }
 
 .question-source-stage {
-  display: flex;
+  display: grid;
   flex: 1 1 auto;
   min-height: 480px;
-  align-items: flex-start;
-  justify-content: center;
+  align-content: start;
+  justify-items: center;
+  gap: 0.75rem;
   padding: 1rem;
   overflow: auto;
   background: #dce2eb;
+}
+
+.question-source-slice {
+  display: grid;
+  width: max-content;
+  max-width: 100%;
+  gap: 0.35rem;
+}
+
+.question-source-slice__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.15rem;
+  color: var(--ink);
+  font-size: 0.7rem;
+}
+
+.question-source-slice__header span {
+  color: var(--muted);
+  font-weight: 650;
 }
 
 .question-source-stage .pdf-page-container {

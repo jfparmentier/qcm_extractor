@@ -3,6 +3,7 @@ import type { DocumentMap, NormalizedBoundingBox, PageRegion } from "../domain/d
 import type { GeneratedIllustrationAsset, IllustrationPlan } from "../domain/illustration";
 import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP, type LoadedPdf } from "../domain/projectState";
 import {
+  getStatementRegionsForSegment,
   nextChoiceId,
   reviewQuestionIssues,
   type EditableChoice,
@@ -97,21 +98,30 @@ export function QuestionReview({
   const total = questions.length;
   const validationIssues = question === undefined ? [] : reviewQuestionIssues(question);
   const isLast = currentIndex === total - 1;
+  const currentSegmentId = question?.segmentId ?? null;
+  const questionSourcePages = question?.sourcePages;
 
   const segmentInfo = useMemo(() => {
-    if (question === undefined) return null;
+    if (currentSegmentId === null) return null;
     const segment = documentMap.question_segments.find(
-      (candidate) => candidate.temporary_id === question.segmentId
+      (candidate) => candidate.temporary_id === currentSegmentId
     );
     return segment ?? null;
-  }, [documentMap.question_segments, question]);
+  }, [currentSegmentId, documentMap.question_segments]);
 
   const sourcePages = useMemo(() => {
-    if (question === undefined) return [];
-    const pages = new Set(question.sourcePages);
+    if (questionSourcePages === undefined) return [];
+    const pages = new Set(questionSourcePages);
     segmentInfo?.page_regions.forEach((region) => pages.add(region.page));
     return [...pages].sort((left, right) => left - right);
-  }, [question, segmentInfo]);
+  }, [questionSourcePages, segmentInfo]);
+
+  const statementRegions = useMemo(
+    () => currentSegmentId === null
+      ? []
+      : getStatementRegionsForSegment(documentMap, currentSegmentId),
+    [currentSegmentId, documentMap]
+  );
 
   useEffect(() => {
     if (question === undefined || sourcePages.length === 0) return;
@@ -119,12 +129,26 @@ export function QuestionReview({
     setRenderError(null);
   }, [currentPage, onCurrentPageChange, question, sourcePages]);
 
-  const focusBbox = useMemo(
-    () => focusForRegions(
-      segmentInfo?.page_regions.filter((region) => region.page === currentPage) ?? []
-    ),
-    [currentPage, segmentInfo]
-  );
+  const sourceSlices = useMemo(() => {
+    if (statementRegions.length > 0) {
+      return statementRegions.map((region, index) => ({
+        key: region.client_id,
+        page: region.page,
+        focusBbox: focusForRegions([region]),
+        label: `Zone ${index + 1}`
+      }));
+    }
+
+    const fallbackPages = sourcePages.length > 0 ? sourcePages : [currentPage];
+    return fallbackPages.map((page) => ({
+      key: `page-${page}`,
+      page,
+      focusBbox: focusForRegions(
+        segmentInfo?.page_regions.filter((region) => region.page === page) ?? []
+      ),
+      label: null
+    }));
+  }, [currentPage, segmentInfo, sourcePages, statementRegions]);
 
   useEffect(() => {
     const stage = sourceStageRef.current;
@@ -132,14 +156,17 @@ export function QuestionReview({
 
     let disposed = false;
     const fitPdfToStage = async (): Promise<void> => {
-      const page = await pdf.document.getPage(currentPage);
+      const visibleWidths = await Promise.all(sourceSlices.map(async (slice) => {
+        const page = await pdf.document.getPage(slice.page);
+        return page.getViewport({ scale: 1 }).width * (slice.focusBbox?.width ?? 1);
+      }));
       if (disposed) return;
 
       const styles = window.getComputedStyle(stage);
       const horizontalPadding = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
       const availableWidth = Math.max(1, stage.clientWidth - horizontalPadding);
-      const visiblePageWidth = page.getViewport({ scale: 1 }).width * (focusBbox?.width ?? 1);
-      const maximumZoom = Math.min(MAX_ZOOM, availableWidth / visiblePageWidth);
+      const widestVisiblePage = Math.max(1, ...visibleWidths);
+      const maximumZoom = Math.min(MAX_ZOOM, availableWidth / widestVisiblePage);
       setMaximumSourceZoom(maximumZoom);
       if (maximumZoom >= MIN_ZOOM && zoom > maximumZoom) onZoomChange(maximumZoom);
     };
@@ -154,7 +181,7 @@ export function QuestionReview({
       disposed = true;
       resizeObserver.disconnect();
     };
-  }, [currentPage, focusBbox?.width, onZoomChange, pdf.document, zoom]);
+  }, [onZoomChange, pdf.document, sourceSlices, zoom]);
 
   const effectiveZoom = Math.min(zoom, maximumSourceZoom);
 
@@ -171,6 +198,15 @@ export function QuestionReview({
   const changeQuestion = useCallback((patch: Partial<ReviewQuestion>): void => {
     if (question !== undefined) onQuestionChange(setUserEdited(question, patch));
   }, [onQuestionChange, question]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      editorColumnRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      sourceStageRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      reviewRootRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [currentIndex, question?.id]);
 
   const changeChoice = useCallback((choiceId: string, content: string): void => {
     if (question === undefined) return;
@@ -225,11 +261,6 @@ export function QuestionReview({
 
   const moveToQuestion = useCallback((index: number): void => {
     onCurrentIndexChange(index);
-    window.requestAnimationFrame(() => {
-      editorColumnRef.current?.scrollTo({ top: 0, behavior: "auto" });
-      sourceStageRef.current?.scrollTo({ top: 0, behavior: "auto" });
-      reviewRootRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
-    });
   }, [onCurrentIndexChange]);
 
   if (question === undefined) {
@@ -243,7 +274,11 @@ export function QuestionReview({
           <header className="question-column-header">
             <div className="question-source-heading">
               <span className="eyebrow">Source</span>
-              <span>Page {currentPage}</span>
+              <span>
+                {statementRegions.length > 0
+                  ? `${statementRegions.length} zone${statementRegions.length > 1 ? "s" : ""} d’énoncé`
+                  : `${sourceSlices.length} page${sourceSlices.length > 1 ? "s" : ""}`}
+              </span>
             </div>
             <div className="review-zoom-controls">
               <button aria-label="Réduire" className="icon-button" onClick={() => onZoomChange(effectiveZoom - ZOOM_STEP)} type="button"><MinusIcon /></button>
@@ -254,14 +289,22 @@ export function QuestionReview({
 
           {renderError !== null && <div className="inline-error" role="alert">{renderError}</div>}
           <div ref={sourceStageRef} className="question-source-stage">
-            <PdfPageCanvas
-              className="question-source-canvas"
-              document={pdf.document}
-              focusBbox={focusBbox}
-              onRenderError={setRenderError}
-              pageNumber={currentPage}
-              scale={effectiveZoom}
-            />
+            {sourceSlices.map((slice) => (
+              <article className="question-source-slice" key={slice.key}>
+                <header className="question-source-slice__header">
+                  <strong>{slice.label ?? `Page ${slice.page}`}</strong>
+                  {slice.label !== null && <span>Page {slice.page}</span>}
+                </header>
+                <PdfPageCanvas
+                  className="question-source-canvas"
+                  document={pdf.document}
+                  focusBbox={slice.focusBbox}
+                  onRenderError={setRenderError}
+                  pageNumber={slice.page}
+                  scale={effectiveZoom}
+                />
+              </article>
+            ))}
           </div>
         </section>
 

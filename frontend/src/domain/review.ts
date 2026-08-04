@@ -1,5 +1,5 @@
 import { createZipBlob, type ZipEntryInput } from "../export/createZip";
-import type { DocumentMap } from "./documentMap";
+import type { DocumentMap, PageRegion } from "./documentMap";
 import type {
   ContentOrigin,
   CorrectAnswerOrigin,
@@ -71,6 +71,24 @@ export interface ReviewExportDocument {
     readonly source_pages: readonly number[];
     readonly validation_status: "validated";
   }[];
+}
+
+export function getStatementRegionsForSegment(
+  documentMap: DocumentMap,
+  segmentId: string
+): readonly PageRegion[] {
+  const segment = documentMap.question_segments.find(
+    (candidate) => candidate.temporary_id === segmentId
+  );
+  if (segment === undefined) return [];
+
+  return segment.page_regions
+    .filter((region) => region.role === "question")
+    .sort((left, right) =>
+      left.page - right.page ||
+      left.bbox.y - right.bbox.y ||
+      left.bbox.x - right.bbox.x
+    );
 }
 
 function exportChoiceId(id: string): string {

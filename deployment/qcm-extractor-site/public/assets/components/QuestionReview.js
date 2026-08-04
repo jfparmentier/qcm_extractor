@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "../domain/projectState.js?v=7.5.6";
-import { nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.5.6";
+import { getStatementRegionsForSegment, nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.5.6";
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.5.6";
 import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.6";
 function isSingleAnswer(type) {
@@ -46,19 +46,24 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
     const total = questions.length;
     const validationIssues = question === undefined ? [] : reviewQuestionIssues(question);
     const isLast = currentIndex === total - 1;
+    const currentSegmentId = question?.segmentId ?? null;
+    const questionSourcePages = question?.sourcePages;
     const segmentInfo = useMemo(() => {
-        if (question === undefined)
+        if (currentSegmentId === null)
             return null;
-        const segment = documentMap.question_segments.find((candidate) => candidate.temporary_id === question.segmentId);
+        const segment = documentMap.question_segments.find((candidate) => candidate.temporary_id === currentSegmentId);
         return segment ?? null;
-    }, [documentMap.question_segments, question]);
+    }, [currentSegmentId, documentMap.question_segments]);
     const sourcePages = useMemo(() => {
-        if (question === undefined)
+        if (questionSourcePages === undefined)
             return [];
-        const pages = new Set(question.sourcePages);
+        const pages = new Set(questionSourcePages);
         segmentInfo?.page_regions.forEach((region) => pages.add(region.page));
         return [...pages].sort((left, right) => left - right);
-    }, [question, segmentInfo]);
+    }, [questionSourcePages, segmentInfo]);
+    const statementRegions = useMemo(() => currentSegmentId === null
+        ? []
+        : getStatementRegionsForSegment(documentMap, currentSegmentId), [currentSegmentId, documentMap]);
     useEffect(() => {
         if (question === undefined || sourcePages.length === 0)
             return;
@@ -66,21 +71,40 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
             onCurrentPageChange(sourcePages[0] ?? 1);
         setRenderError(null);
     }, [currentPage, onCurrentPageChange, question, sourcePages]);
-    const focusBbox = useMemo(() => focusForRegions(segmentInfo?.page_regions.filter((region) => region.page === currentPage) ?? []), [currentPage, segmentInfo]);
+    const sourceSlices = useMemo(() => {
+        if (statementRegions.length > 0) {
+            return statementRegions.map((region, index) => ({
+                key: region.client_id,
+                page: region.page,
+                focusBbox: focusForRegions([region]),
+                label: `Zone ${index + 1}`
+            }));
+        }
+        const fallbackPages = sourcePages.length > 0 ? sourcePages : [currentPage];
+        return fallbackPages.map((page) => ({
+            key: `page-${page}`,
+            page,
+            focusBbox: focusForRegions(segmentInfo?.page_regions.filter((region) => region.page === page) ?? []),
+            label: null
+        }));
+    }, [currentPage, segmentInfo, sourcePages, statementRegions]);
     useEffect(() => {
         const stage = sourceStageRef.current;
         if (stage === null)
             return;
         let disposed = false;
         const fitPdfToStage = async () => {
-            const page = await pdf.document.getPage(currentPage);
+            const visibleWidths = await Promise.all(sourceSlices.map(async (slice) => {
+                const page = await pdf.document.getPage(slice.page);
+                return page.getViewport({ scale: 1 }).width * (slice.focusBbox?.width ?? 1);
+            }));
             if (disposed)
                 return;
             const styles = window.getComputedStyle(stage);
             const horizontalPadding = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
             const availableWidth = Math.max(1, stage.clientWidth - horizontalPadding);
-            const visiblePageWidth = page.getViewport({ scale: 1 }).width * (focusBbox?.width ?? 1);
-            const maximumZoom = Math.min(MAX_ZOOM, availableWidth / visiblePageWidth);
+            const widestVisiblePage = Math.max(1, ...visibleWidths);
+            const maximumZoom = Math.min(MAX_ZOOM, availableWidth / widestVisiblePage);
             setMaximumSourceZoom(maximumZoom);
             if (maximumZoom >= MIN_ZOOM && zoom > maximumZoom)
                 onZoomChange(maximumZoom);
@@ -95,7 +119,7 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
             disposed = true;
             resizeObserver.disconnect();
         };
-    }, [currentPage, focusBbox?.width, onZoomChange, pdf.document, zoom]);
+    }, [onZoomChange, pdf.document, sourceSlices, zoom]);
     const effectiveZoom = Math.min(zoom, maximumSourceZoom);
     const questionAssets = useMemo(() => {
         if (question === undefined)
@@ -109,6 +133,14 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
         if (question !== undefined)
             onQuestionChange(setUserEdited(question, patch));
     }, [onQuestionChange, question]);
+    useEffect(() => {
+        const frame = window.requestAnimationFrame(() => {
+            editorColumnRef.current?.scrollTo({ top: 0, behavior: "auto" });
+            sourceStageRef.current?.scrollTo({ top: 0, behavior: "auto" });
+            reviewRootRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+        });
+        return () => window.cancelAnimationFrame(frame);
+    }, [currentIndex, question?.id]);
     const changeChoice = useCallback((choiceId, content) => {
         if (question === undefined)
             return;
@@ -164,16 +196,13 @@ export function QuestionReview({ pdf, documentMap, questions, currentIndex, curr
     }, [changeQuestion, question]);
     const moveToQuestion = useCallback((index) => {
         onCurrentIndexChange(index);
-        window.requestAnimationFrame(() => {
-            editorColumnRef.current?.scrollTo({ top: 0, behavior: "auto" });
-            sourceStageRef.current?.scrollTo({ top: 0, behavior: "auto" });
-            reviewRootRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
-        });
     }, [onCurrentIndexChange]);
     if (question === undefined) {
         return _jsx("div", { className: "review-empty-state", children: _jsx("strong", { children: "Aucune question extraite" }) });
     }
-    return (_jsxs("section", { ref: reviewRootRef, className: "question-review", "aria-label": "R\u00E9vision des questions", children: [_jsxs("div", { className: "question-review__columns", children: [_jsxs("section", { className: "question-source-column", "aria-label": "Document PDF source", children: [_jsxs("header", { className: "question-column-header", children: [_jsxs("div", { className: "question-source-heading", children: [_jsx("span", { className: "eyebrow", children: "Source" }), _jsxs("span", { children: ["Page ", currentPage] })] }), _jsxs("div", { className: "review-zoom-controls", children: [_jsx("button", { "aria-label": "R\u00E9duire", className: "icon-button", onClick: () => onZoomChange(effectiveZoom - ZOOM_STEP), type: "button", children: _jsx(MinusIcon, {}) }), _jsxs("button", { className: "review-zoom-value", onClick: () => onZoomChange(Math.min(1, maximumSourceZoom)), type: "button", children: [Math.round(effectiveZoom * 100), " %"] }), _jsx("button", { "aria-label": "Agrandir", className: "icon-button", onClick: () => onZoomChange(Math.min(maximumSourceZoom, effectiveZoom + ZOOM_STEP)), type: "button", children: _jsx(PlusIcon, {}) })] })] }), renderError !== null && _jsx("div", { className: "inline-error", role: "alert", children: renderError }), _jsx("div", { ref: sourceStageRef, className: "question-source-stage", children: _jsx(PdfPageCanvas, { className: "question-source-canvas", document: pdf.document, focusBbox: focusBbox, onRenderError: setRenderError, pageNumber: currentPage, scale: effectiveZoom }) })] }), _jsxs("section", { ref: editorColumnRef, className: "question-editor-column", "aria-label": "Contenu \u00E9ditable de la question", children: [_jsx("header", { className: "question-column-header", children: _jsxs("div", { children: [_jsx("span", { className: "eyebrow", children: "Contenu extrait" }), _jsxs("h3", { children: ["Question ", currentIndex + 1] })] }) }), _jsxs("div", { className: "question-form", children: [_jsxs("label", { className: "question-field question-field--compact", children: [_jsx("span", { children: "Type de question" }), _jsxs("select", { onChange: (event) => {
+    return (_jsxs("section", { ref: reviewRootRef, className: "question-review", "aria-label": "R\u00E9vision des questions", children: [_jsxs("div", { className: "question-review__columns", children: [_jsxs("section", { className: "question-source-column", "aria-label": "Document PDF source", children: [_jsxs("header", { className: "question-column-header", children: [_jsxs("div", { className: "question-source-heading", children: [_jsx("span", { className: "eyebrow", children: "Source" }), _jsx("span", { children: statementRegions.length > 0
+                                                    ? `${statementRegions.length} zone${statementRegions.length > 1 ? "s" : ""} d’énoncé`
+                                                    : `${sourceSlices.length} page${sourceSlices.length > 1 ? "s" : ""}` })] }), _jsxs("div", { className: "review-zoom-controls", children: [_jsx("button", { "aria-label": "R\u00E9duire", className: "icon-button", onClick: () => onZoomChange(effectiveZoom - ZOOM_STEP), type: "button", children: _jsx(MinusIcon, {}) }), _jsxs("button", { className: "review-zoom-value", onClick: () => onZoomChange(Math.min(1, maximumSourceZoom)), type: "button", children: [Math.round(effectiveZoom * 100), " %"] }), _jsx("button", { "aria-label": "Agrandir", className: "icon-button", onClick: () => onZoomChange(Math.min(maximumSourceZoom, effectiveZoom + ZOOM_STEP)), type: "button", children: _jsx(PlusIcon, {}) })] })] }), renderError !== null && _jsx("div", { className: "inline-error", role: "alert", children: renderError }), _jsx("div", { ref: sourceStageRef, className: "question-source-stage", children: sourceSlices.map((slice) => (_jsxs("article", { className: "question-source-slice", children: [_jsxs("header", { className: "question-source-slice__header", children: [_jsx("strong", { children: slice.label ?? `Page ${slice.page}` }), slice.label !== null && _jsxs("span", { children: ["Page ", slice.page] })] }), _jsx(PdfPageCanvas, { className: "question-source-canvas", document: pdf.document, focusBbox: slice.focusBbox, onRenderError: setRenderError, pageNumber: slice.page, scale: effectiveZoom })] }, slice.key))) })] }), _jsxs("section", { ref: editorColumnRef, className: "question-editor-column", "aria-label": "Contenu \u00E9ditable de la question", children: [_jsx("header", { className: "question-column-header", children: _jsxs("div", { children: [_jsx("span", { className: "eyebrow", children: "Contenu extrait" }), _jsxs("h3", { children: ["Question ", currentIndex + 1] })] }) }), _jsxs("div", { className: "question-form", children: [_jsxs("label", { className: "question-field question-field--compact", children: [_jsx("span", { children: "Type de question" }), _jsxs("select", { onChange: (event) => {
                                                     const type = event.target.value;
                                                     const correctChoiceIds = isSingleAnswer(type)
                                                         ? question.correctChoiceIds.slice(0, 1)

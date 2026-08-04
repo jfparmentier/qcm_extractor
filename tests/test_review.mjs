@@ -9,6 +9,7 @@ import {
   createReviewExport,
   createReviewQuestions,
   exportFileName,
+  getStatementRegionsForSegment,
   reviewQuestionIssues
 } from "../deployment/qcm-extractor-site/public/assets/domain/review.js";
 
@@ -55,6 +56,22 @@ const generatedFeedback = createReviewQuestions([{
 }]);
 assert.equal(generatedFeedback[0].feedbackOrigin, "generated_by_model");
 assert.match(generatedFeedback[0].feedback, /réponse A/);
+
+const statementRegions = getStatementRegionsForSegment({
+  question_segments: [{
+    temporary_id: "segment-multipage",
+    page_regions: [
+      { client_id: "image", page: 1, role: "essential_image", bbox: { x: 0.2, y: 0.1, width: 0.3, height: 0.2 } },
+      { client_id: "page-2", page: 2, role: "question", bbox: { x: 0.1, y: 0.05, width: 0.8, height: 0.3 } },
+      { client_id: "page-1-bottom", page: 1, role: "question", bbox: { x: 0.1, y: 0.82, width: 0.8, height: 0.12 } },
+      { client_id: "page-1-top", page: 1, role: "question", bbox: { x: 0.1, y: 0.72, width: 0.8, height: 0.08 } }
+    ]
+  }]
+}, "segment-multipage");
+assert.deepEqual(
+  statementRegions.map((region) => region.client_id),
+  ["page-1-top", "page-1-bottom", "page-2"]
+);
 
 const reviewed = [{ ...questions[0], validated: true }];
 const pdf = {
