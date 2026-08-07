@@ -1,4 +1,4 @@
-# Déploiement QCM Extractor 7.5.8
+# Déploiement QCM Extractor 7.6.1
 
 Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit une seule étape visible à la fois.
 
@@ -9,9 +9,16 @@ Les paramètres de planification des lots et d’extraction sont définis dans `
 Ce dossier peut être copié tel quel sur le serveur. La racine web doit pointer vers `public`, tandis que `private` contient le proxy, les prompts, les schémas et la configuration secrète.
 
 1. Renseigner `private/config/runtime.php`.
-2. Placer le dossier sous `htdocs` pour MAMP, ou sur l’espace FTP OVH.
-3. Servir `public/` par Apache.
-4. Vérifier `public/api/diagnostic.php`.
+2. Enrichir si nécessaire `private/config/allowed-email-domains.php`.
+3. Placer le dossier sous `htdocs` pour MAMP, ou sur l’espace FTP OVH.
+4. Servir `public/` par Apache.
+5. Vérifier `public/api/diagnostic.php`.
+
+## Connexion par email
+
+L’accès à l’application requiert une adresse appartenant à un domaine autorisé. La validation est effectuée par `public/api/auth.php`, puis conservée dans une session PHP avec cookie `HttpOnly`.
+
+La liste à modifier sur le serveur est `private/config/allowed-email-domains.php`. Ajoutez une entrée par domaine ; le préfixe `@` est facultatif. Les domaines actuellement autorisés sont `@ipsa.fr` et `@irit.fr`.
 
 La cartographie et l’extraction détaillée sont asynchrones. La production des illustrations est entièrement locale : le navigateur rend les pages PDF en haute résolution puis découpe les zones d’image validées en PNG. Les PDF et PNG ne sont pas enregistrés par le serveur ; seuls de petits compteurs de limitation de débit et un journal technique non sensible peuvent être écrits sous `private/runtime`.
 

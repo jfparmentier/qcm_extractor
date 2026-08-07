@@ -19,7 +19,9 @@ import {
 } from "./domain/manualMapping";
 import {
   analyzeDocumentMap,
+  authenticateEmail,
   extractQuestions,
+  loadEmailAccess,
   loadWorkflowConfig,
   ProxyApiError,
   type WorkflowConfig
@@ -51,6 +53,7 @@ import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf";
 import { ErrorPanel } from "./components/ErrorPanel";
 import { FileDropZone } from "./components/FileDropZone";
 import { LoadingPanel } from "./components/LoadingPanel";
+import { LoginPage } from "./components/LoginPage";
 import { PdfViewer } from "./components/PdfViewer";
 import "./styles/app.css";
 
@@ -138,7 +141,7 @@ function illustrationErrorMessage(error: unknown): string {
   return "La génération locale de l’illustration a échoué.";
 }
 
-export default function App(): React.ReactElement {
+function QcmWorkspace(): React.ReactElement {
   const [state, dispatch] = useReducer(projectReducer, INITIAL_PROJECT_STATE);
   const activeDocumentRef = useRef(state.pdf?.document ?? null);
   const loadSequenceRef = useRef(0);
@@ -868,4 +871,56 @@ export default function App(): React.ReactElement {
       )}
     </div>
   );
+}
+
+type AccessState = "checking" | "anonymous" | "authenticated";
+
+export default function App(): React.ReactElement {
+  const [accessState, setAccessState] = useState<AccessState>("checking");
+  const [authenticating, setAuthenticating] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadEmailAccess(controller.signal)
+      .then((access) => {
+        setAccessState(access.authenticated ? "authenticated" : "anonymous");
+        setAccessError(null);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setAccessState("anonymous");
+        setAccessError(error instanceof Error ? error.message : "Le serveur de connexion est inaccessible.");
+      });
+    return () => controller.abort();
+  }, []);
+
+  const handleAuthenticate = useCallback(async (email: string): Promise<void> => {
+    setAuthenticating(true);
+    setAccessError(null);
+    try {
+      const access = await authenticateEmail(email.trim());
+      if (!access.authenticated) {
+        throw new Error("Cette adresse email n’est pas autorisée.");
+      }
+      setAccessState("authenticated");
+    } catch (error: unknown) {
+      setAccessError(error instanceof Error ? error.message : "La vérification de l’adresse email a échoué.");
+    } finally {
+      setAuthenticating(false);
+    }
+  }, []);
+
+  if (accessState !== "authenticated") {
+    return (
+      <LoginPage
+        checking={accessState === "checking"}
+        error={accessError}
+        onSubmit={(email) => void handleAuthenticate(email)}
+        submitting={authenticating}
+      />
+    );
+  }
+
+  return <QcmWorkspace />;
 }

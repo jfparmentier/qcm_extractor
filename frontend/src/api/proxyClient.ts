@@ -30,6 +30,12 @@ interface WorkflowConfigResponse {
   readonly data: WorkflowConfig;
 }
 
+export interface EmailAccessStatus {
+  readonly ok: true;
+  readonly authenticated: boolean;
+  readonly email: string | null;
+}
+
 export interface ProxySuccess<TData> {
   readonly ok: true;
   readonly request_id: string;
@@ -133,6 +139,22 @@ export async function loadWorkflowConfig(signal?: AbortSignal): Promise<Workflow
   return response.data;
 }
 
+export async function loadEmailAccess(signal?: AbortSignal): Promise<EmailAccessStatus> {
+  return fetchProxy<EmailAccessStatus>("auth.php", { method: "GET" }, signal);
+}
+
+export async function authenticateEmail(email: string, signal?: AbortSignal): Promise<EmailAccessStatus> {
+  return fetchProxy<EmailAccessStatus>(
+    "auth.php",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    },
+    signal
+  );
+}
+
 function encodeBase64Url(value: unknown): string {
   const json = JSON.stringify(value);
   const bytes = new TextEncoder().encode(json);
@@ -202,7 +224,7 @@ async function fetchProxy<TPayload>(
     response = await fetch(`${API_BASE_URL}/${endpoint}`, {
       ...init,
       cache: "no-store",
-      credentials: "omit",
+      credentials: "include",
       redirect: "error",
       referrerPolicy: "no-referrer",
       signal

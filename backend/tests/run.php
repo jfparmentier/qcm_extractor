@@ -9,6 +9,7 @@ use QcmProxy\Base64Url;
 use QcmProxy\BackgroundJobToken;
 use QcmProxy\ClientAddress;
 use QcmProxy\Config;
+use QcmProxy\EmailAccess;
 use QcmProxy\Filename;
 use QcmProxy\OpenAiPayloadFactory;
 use QcmProxy\OpenAiResponseParser;
@@ -61,6 +62,20 @@ putenv('QCM_TRUSTED_PROXY_ADDRESSES=192.0.2.1');
 
 $backendRoot = dirname(__DIR__);
 $config = Config::fromEnvironment($backendRoot);
+$allowedEmailDomains = EmailAccess::allowedDomains($backendRoot);
+expect($allowedEmailDomains === ['ipsa.fr', 'irit.fr'], 'Liste des domaines email incorrecte.');
+expect(
+    EmailAccess::normalizeAuthorizedEmail('Utilisateur@IPSA.FR', $allowedEmailDomains) === 'Utilisateur@ipsa.fr',
+    'Une adresse IPSA valide doit être autorisée.',
+);
+expect(
+    EmailAccess::normalizeAuthorizedEmail('utilisateur@sub.ipsa.fr', $allowedEmailDomains) === null,
+    'Un sous-domaine non listé ne doit pas être autorisé.',
+);
+expect(
+    EmailAccess::normalizeAuthorizedEmail('utilisateur@example.org', $allowedEmailDomains) === null,
+    'Un domaine absent de la liste ne doit pas être autorisé.',
+);
 expect($config->mappingModel === 'gpt-test-mapping', 'Modèle de cartographie incorrect.');
 expect($config->extractionModel === 'gpt-test-extraction', 'Modèle d’extraction incorrect.');
 expect($config->mappingReasoningEffort === 'low', 'Effort de cartographie incorrect.');

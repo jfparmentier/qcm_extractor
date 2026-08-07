@@ -4,10 +4,12 @@ import ts from "typescript";
 
 const frontendRoot = path.resolve(import.meta.dirname, "..");
 const publicRoot = path.resolve(frontendRoot, "../deployment/qcm-extractor-site/public");
-const version = "7.5.8";
+const version = "7.6.1";
 const modules = [
   { source: "App.tsx", destination: "App.js" },
+  { source: "api/proxyClient.ts", destination: "api/proxyClient.js" },
   { source: "components/FileDropZone.tsx", destination: "components/FileDropZone.js" },
+  { source: "components/LoginPage.tsx", destination: "components/LoginPage.js" },
   { source: "components/MappingPanel.tsx", destination: "components/MappingPanel.js" },
   { source: "components/PdfPageCanvas.tsx", destination: "components/PdfPageCanvas.js" },
   { source: "components/PdfToolbar.tsx", destination: "components/PdfToolbar.js" },
@@ -55,7 +57,7 @@ const filesToVersion = [
 
 for (const filePath of filesToVersion) {
   const current = fs.readFileSync(filePath, "utf8");
-  fs.writeFileSync(filePath, current.replace(/7\.5\.\d+/g, version));
+  fs.writeFileSync(filePath, current.replace(/7\.\d+\.\d+/g, version));
 }
 
 console.log(`Ressources MAMP synchronisées — version ${version}.`);

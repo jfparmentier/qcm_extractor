@@ -1,3 +1,16 @@
+# Version 7.6.1 — connexion simplifiée
+
+- L’en-tête de connexion aligne désormais « Accès réservé » à droite de l’icône.
+- Le titre « Connexion » et la note de validation serveur ont été retirés.
+- Le texte d’introduction invite directement l’utilisateur à entrer son adresse email.
+
+# Version 7.6.0 — accès par domaine email
+
+- Une page de connexion précède désormais l’accès à l’extracteur.
+- L’adresse email est validée côté serveur et ouvre une session PHP protégée par un cookie `HttpOnly`.
+- Les opérations de cartographie et d’extraction exigent une session authentifiée.
+- Les domaines autorisés sont centralisés dans `config/allowed-email-domains.php`.
+
 # Version 7.5.8 — progression et remplacement des illustrations
 
 - La colonne de droite de la révision affiche désormais « Question X sur Y » et une barre de progression liée à la question courante.

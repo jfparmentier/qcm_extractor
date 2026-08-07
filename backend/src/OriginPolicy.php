@@ -101,8 +101,9 @@ final class OriginPolicy
     private function writeCorsHeaders(string $origin): void
     {
         header('Access-Control-Allow-Origin: ' . $origin);
-        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, X-QCM-Filename, X-QCM-Context, X-QCM-Job');
+        header('Access-Control-Allow-Credentials: true');
         header('Access-Control-Max-Age: 600');
     }
 }

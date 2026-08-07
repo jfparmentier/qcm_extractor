@@ -60,6 +60,105 @@ summary:focus-visible {
   min-height: 100vh;
 }
 
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  padding: 1.25rem;
+  place-items: center;
+  background:
+    radial-gradient(circle at 20% 15%, rgb(49 86 211 / 13%), transparent 34rem),
+    var(--workspace);
+}
+
+.login-card {
+  width: min(440px, 100%);
+  padding: clamp(1.6rem, 5vw, 2.4rem);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.login-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.login-card__icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 14px;
+}
+
+.login-card__icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.login-card__heading .eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.login-card > p {
+  margin: 0.75rem 0 1.4rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.login-form label {
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.login-form input:focus {
+  border-color: var(--primary);
+}
+
+.login-form .button {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.login-form .button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.login-error {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #efbdc4;
+  border-radius: 8px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;

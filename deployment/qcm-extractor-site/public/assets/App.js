@@ -1,21 +1,22 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.5.8";
-import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.5.8";
-import { createManualDocumentMap, createUserQuestionSegment } from "./domain/manualMapping.js?v=7.5.8";
-import { analyzeDocumentMap, extractQuestions, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.5.8";
-import { createBatchPlan } from "./domain/batchPlan.js?v=7.5.8";
-import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.5.8";
-import { createExtractionContext } from "./domain/extractionContext.js?v=7.5.8";
-import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.5.8";
-import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.5.8";
-import { createIllustrationAssetFromUpload, generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.5.8";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.5.8";
-import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.5.8";
-import { ErrorPanel } from "./components/ErrorPanel.js?v=7.5.8";
-import { FileDropZone } from "./components/FileDropZone.js?v=7.5.8";
-import { LoadingPanel } from "./components/LoadingPanel.js?v=7.5.8";
-import { PdfViewer } from "./components/PdfViewer.js?v=7.5.8";
+import { INITIAL_PROJECT_STATE, ZOOM_STEP, projectReducer } from "./domain/projectState.js?v=7.6.1";
+import { DocumentMapValidationError, createUserRegionId, validateAndNormalizeDocumentMap } from "./domain/documentMap.js?v=7.6.1";
+import { createManualDocumentMap, createUserQuestionSegment } from "./domain/manualMapping.js?v=7.6.1";
+import { analyzeDocumentMap, authenticateEmail, extractQuestions, loadEmailAccess, loadWorkflowConfig, ProxyApiError } from "./api/proxyClient.js?v=7.6.1";
+import { createBatchPlan } from "./domain/batchPlan.js?v=7.6.1";
+import { createSubPdf, SubPdfGenerationError } from "./pdf/createSubPdf.js?v=7.6.1";
+import { createExtractionContext } from "./domain/extractionContext.js?v=7.6.1";
+import { ExtractionValidationError, mergeExtractionResults, validateAndNormalizeExtractionResult } from "./domain/extraction.js?v=7.6.1";
+import { createIllustrationPlan, INITIAL_ILLUSTRATION_GENERATION_STATE, revokeIllustrationAssets } from "./domain/illustration.js?v=7.6.1";
+import { createIllustrationAssetFromUpload, generateIllustrationAssets, IllustrationGenerationError } from "./pdf/extractIllustrations.js?v=7.6.1";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation.js?v=7.6.1";
+import { isProjectError, loadPdfFromFile } from "./pdf/loadPdf.js?v=7.6.1";
+import { ErrorPanel } from "./components/ErrorPanel.js?v=7.6.1";
+import { FileDropZone } from "./components/FileDropZone.js?v=7.6.1";
+import { LoadingPanel } from "./components/LoadingPanel.js?v=7.6.1";
+import { LoginPage } from "./components/LoginPage.js?v=7.6.1";
+import { PdfViewer } from "./components/PdfViewer.js?v=7.6.1";
 
 function toMappingError(error) {
     if (error instanceof ProxyApiError) {
@@ -93,7 +94,7 @@ function illustrationErrorMessage(error) {
         return error.message;
     return "La génération locale de l’illustration a échoué.";
 }
-export default function App() {
+function QcmWorkspace() {
     const [state, dispatch] = useReducer(projectReducer, INITIAL_PROJECT_STATE);
     const activeDocumentRef = useRef(state.pdf?.document ?? null);
     const loadSequenceRef = useRef(0);
@@ -657,4 +658,45 @@ export default function App() {
         onResetZoom: resetZoom
     });
     return (_jsxs("div", { className: "app-shell", children: [state.status === "empty" && _jsx(FileDropZone, { onFileSelected: handleFileSelected }), state.status === "loading" && _jsx(LoadingPanel, {}), state.status === "error" && state.error !== null && (_jsx(ErrorPanel, { error: state.error, onRetry: closeDocument })), state.status === "pdf_loaded" && state.pdf !== null && (_jsx(PdfViewer, { batching: state.batching, currentPage: state.currentPage, extraction: state.extraction, illustrationGeneration: illustrationGeneration, illustrationPlan: illustrationPlan, mapping: state.mapping, onAnalyze: () => void analyzeMapping(), onStartManualMapping: startManualMapping, onAddSegment: addQuestion, onCancelMapping: cancelMapping, onValidateMapping: prepareValidatedMapping, onClose: closeDocument, onExtractAll: () => void extractAllBatches(), onCancelExtraction: cancelExtraction, onGenerateAllIllustrations: generateAllIllustrations, onGenerateIllustration: generateOneIllustration, onCancelIllustrationGeneration: cancelIllustrationGeneration, onClearIllustrations: resetIllustrations, onDownloadIllustration: downloadIllustration, onReplaceIllustration: replaceIllustration, onAddRegion: addRegion, onDeleteRegion: deleteRegion, onDeleteSegment: deleteSegment, onPageChange: setPage, onResetZoom: resetZoom, onSelectRegion: selectRegion, onSelectSegment: selectSegment, onUpdateRegionBbox: updateRegionBbox, onUpdateRegionRole: updateRegionRole, onZoomIn: zoomIn, onZoomOut: zoomOut, onZoomChange: setZoom, pdf: state.pdf, zoom: state.zoom }))] }));
+}
+export default function App() {
+    const [accessState, setAccessState] = useState("checking");
+    const [authenticating, setAuthenticating] = useState(false);
+    const [accessError, setAccessError] = useState(null);
+    useEffect(() => {
+        const controller = new AbortController();
+        void loadEmailAccess(controller.signal)
+            .then((access) => {
+            setAccessState(access.authenticated ? "authenticated" : "anonymous");
+            setAccessError(null);
+        })
+            .catch((error) => {
+            if (error instanceof DOMException && error.name === "AbortError")
+                return;
+            setAccessState("anonymous");
+            setAccessError(error instanceof Error ? error.message : "Le serveur de connexion est inaccessible.");
+        });
+        return () => controller.abort();
+    }, []);
+    const handleAuthenticate = useCallback(async (email) => {
+        setAuthenticating(true);
+        setAccessError(null);
+        try {
+            const access = await authenticateEmail(email.trim());
+            if (!access.authenticated) {
+                throw new Error("Cette adresse email n’est pas autorisée.");
+            }
+            setAccessState("authenticated");
+        }
+        catch (error) {
+            setAccessError(error instanceof Error ? error.message : "La vérification de l’adresse email a échoué.");
+        }
+        finally {
+            setAuthenticating(false);
+        }
+    }, []);
+    if (accessState !== "authenticated") {
+        return (_jsx(LoginPage, { checking: accessState === "checking", error: accessError, onSubmit: (email) => void handleAuthenticate(email), submitting: authenticating }));
+    }
+    return _jsx(QcmWorkspace, {});
 }

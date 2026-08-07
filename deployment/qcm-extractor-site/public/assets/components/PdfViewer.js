@@ -1,16 +1,16 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MAX_ZOOM } from "../domain/projectState.js?v=7.5.8";
-import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.5.8";
-import { mergeExtractionResults } from "../domain/extraction.js?v=7.5.8";
-import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.5.8";
-import { ExtractionPanel } from "./ExtractionPanel.js?v=7.5.8";
-import { IllustrationPanel } from "./IllustrationPanel.js?v=7.5.8";
-import { MappingPanel } from "./MappingPanel.js?v=7.5.8";
-import { PreparationPanel } from "./PreparationPanel.js?v=7.5.8";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.8";
-import { PdfToolbar } from "./PdfToolbar.js?v=7.5.8";
-import { QuestionReview } from "./QuestionReview.js?v=7.5.8";
+import { MAX_ZOOM } from "../domain/projectState.js?v=7.6.1";
+import { getSegmentDisplayName } from "../domain/documentMap.js?v=7.6.1";
+import { mergeExtractionResults } from "../domain/extraction.js?v=7.6.1";
+import { createReviewArchive, createReviewExport, createReviewQuestions, downloadBlob, exportFileName, reviewSourceFingerprint } from "../domain/review.js?v=7.6.1";
+import { ExtractionPanel } from "./ExtractionPanel.js?v=7.6.1";
+import { IllustrationPanel } from "./IllustrationPanel.js?v=7.6.1";
+import { MappingPanel } from "./MappingPanel.js?v=7.6.1";
+import { PreparationPanel } from "./PreparationPanel.js?v=7.6.1";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.6.1";
+import { PdfToolbar } from "./PdfToolbar.js?v=7.6.1";
+import { QuestionReview } from "./QuestionReview.js?v=7.6.1";
 function isEditableElement(target) {
     return target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||

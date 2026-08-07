@@ -25,6 +25,16 @@ export async function loadWorkflowConfig(signal) {
     const response = await fetchProxy("workflow-config.php", { method: "GET" }, signal);
     return response.data;
 }
+export async function loadEmailAccess(signal) {
+    return fetchProxy("auth.php", { method: "GET" }, signal);
+}
+export async function authenticateEmail(email, signal) {
+    return fetchProxy("auth.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+    }, signal);
+}
 function encodeBase64Url(value) {
     const json = JSON.stringify(value);
     const bytes = new TextEncoder().encode(json);
@@ -71,7 +81,7 @@ async function fetchProxy(endpoint, init, signal) {
         response = await fetch(`${API_BASE_URL}/${endpoint}`, {
             ...init,
             cache: "no-store",
-            credentials: "omit",
+            credentials: "include",
             redirect: "error",
             referrerPolicy: "no-referrer",
             signal

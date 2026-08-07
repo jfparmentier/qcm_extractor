@@ -1,4 +1,4 @@
-import { createZipBlob } from "../export/createZip.js?v=7.5.8";
+import { createZipBlob } from "../export/createZip.js?v=7.6.1";
 export function getStatementRegionsForSegment(documentMap, segmentId) {
     const segment = documentMap.question_segments.find((candidate) => candidate.temporary_id === segmentId);
     if (segment === undefined)

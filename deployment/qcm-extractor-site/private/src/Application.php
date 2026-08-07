@@ -20,6 +20,7 @@ final class Application
             $config = self::loadConfig($backendRoot, $requestId, $operation);
             self::configureExecutionLimit($config->phpMaxExecutionSeconds, $config->requestTimeoutSeconds);
             self::enforceOriginAndMethod($config, ['POST'], $bufferLevel);
+            EmailAccess::requireAuthenticated($backendRoot);
 
             $clientAddress = ClientAddress::resolve($config);
             (new RateLimiter($config))->consume($clientAddress, $operation);
@@ -68,6 +69,7 @@ final class Application
             $networkTimeout = max($config->backgroundStartTimeoutSeconds, $config->backgroundPollTimeoutSeconds);
             self::configureExecutionLimit($config->phpMaxExecutionSeconds, $networkTimeout);
             self::enforceOriginAndMethod($config, ['POST'], $bufferLevel);
+            EmailAccess::requireAuthenticated($backendRoot);
 
             match ($action) {
                 'start' => self::startBackgroundOperation($operation, $config, $requestId, $bufferLevel),

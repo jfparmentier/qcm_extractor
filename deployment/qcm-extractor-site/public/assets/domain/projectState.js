@@ -1,5 +1,5 @@
-import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.5.8";
-import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.5.8";
+import { clampNormalizedBoundingBox } from "./documentMap.js?v=7.6.1";
+import { DEFAULT_BATCH_SETTINGS, normalizeBatchSettings } from "./batchPlan.js?v=7.6.1";
 export const INITIAL_MAPPING_STATE = {
     status: "idle",
     mode: null,

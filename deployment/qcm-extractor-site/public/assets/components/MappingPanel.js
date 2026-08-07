@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useState } from "react";
-import { PAGE_REGION_ROLES, getPageRegionRoleLabel, getSegmentDisplayName } from "../domain/documentMap.js?v=7.5.8";
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SelectionIcon, SparklesIcon, StopIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.5.8";
+import { PAGE_REGION_ROLES, getPageRegionRoleLabel, getSegmentDisplayName } from "../domain/documentMap.js?v=7.6.1";
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SelectionIcon, SparklesIcon, StopIcon, TrashIcon, WarningIcon } from "./Icons.js?v=7.6.1";
 function formatElapsed(startedAt, now) {
     if (startedAt === null)
         return "";

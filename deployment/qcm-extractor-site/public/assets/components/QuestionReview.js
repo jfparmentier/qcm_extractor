@@ -1,9 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "../domain/projectState.js?v=7.5.8";
-import { getStatementRegionsForSegment, nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.5.8";
-import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, UploadIcon, WarningIcon } from "./Icons.js?v=7.5.8";
-import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.5.8";
+import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "../domain/projectState.js?v=7.6.1";
+import { getStatementRegionsForSegment, nextChoiceId, reviewQuestionIssues } from "../domain/review.js?v=7.6.1";
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ImageIcon, MinusIcon, PlusIcon, TrashIcon, UploadIcon, WarningIcon } from "./Icons.js?v=7.6.1";
+import { PdfPageCanvas } from "./PdfPageCanvas.js?v=7.6.1";
 function isSingleAnswer(type) {
     return type === "single_choice" || type === "true_false";
 }
