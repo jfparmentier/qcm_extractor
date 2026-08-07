@@ -77,6 +77,7 @@ interface PdfViewerProps {
   readonly onCancelIllustrationGeneration: () => void;
   readonly onClearIllustrations: () => void;
   readonly onDownloadIllustration: (candidateId: string) => void;
+  readonly onReplaceIllustration: (candidateId: string, file: File) => Promise<void>;
   readonly onPageChange: (page: number) => void;
   readonly onZoomIn: () => void;
   readonly onZoomOut: () => void;
@@ -122,6 +123,7 @@ export function PdfViewer({
   onCancelIllustrationGeneration,
   onClearIllustrations,
   onDownloadIllustration,
+  onReplaceIllustration,
   onPageChange,
   onZoomIn,
   onZoomOut,
@@ -482,7 +484,9 @@ export function PdfViewer({
           onCurrentIndexChange={handleReviewIndexChange}
           onCurrentPageChange={onPageChange}
           onExport={() => void handleReviewExport()}
+          onDownloadIllustration={onDownloadIllustration}
           onQuestionChange={handleReviewQuestionChange}
+          onReplaceIllustration={onReplaceIllustration}
           onZoomChange={onZoomChange}
           pdf={pdf}
           questions={reviewQuestions}

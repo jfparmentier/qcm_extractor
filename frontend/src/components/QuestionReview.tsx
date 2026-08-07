@@ -17,6 +17,7 @@ import {
   MinusIcon,
   PlusIcon,
   TrashIcon,
+  UploadIcon,
   WarningIcon
 } from "./Icons";
 import { PdfPageCanvas } from "./PdfPageCanvas";
@@ -36,6 +37,8 @@ interface QuestionReviewProps {
   readonly onQuestionChange: (question: ReviewQuestion) => void;
   readonly onZoomChange: (zoom: number) => void;
   readonly onExport: () => void;
+  readonly onDownloadIllustration: (candidateId: string) => void;
+  readonly onReplaceIllustration: (candidateId: string, file: File) => Promise<void>;
 }
 
 function isSingleAnswer(type: ReviewQuestion["type"]): boolean {
@@ -87,15 +90,19 @@ export function QuestionReview({
   onCurrentPageChange,
   onQuestionChange,
   onZoomChange,
-  onExport
+  onExport,
+  onDownloadIllustration,
+  onReplaceIllustration
 }: QuestionReviewProps): React.ReactElement {
   const [renderError, setRenderError] = useState<string | null>(null);
   const [maximumSourceZoom, setMaximumSourceZoom] = useState(MAX_ZOOM);
+  const [replacingAssetId, setReplacingAssetId] = useState<string | null>(null);
   const reviewRootRef = useRef<HTMLElement>(null);
   const sourceStageRef = useRef<HTMLDivElement>(null);
   const editorColumnRef = useRef<HTMLElement>(null);
   const question = questions[currentIndex];
   const total = questions.length;
+  const reviewProgress = total === 0 ? 0 : Math.round(((currentIndex + 1) / total) * 100);
   const validationIssues = question === undefined ? [] : reviewQuestionIssues(question);
   const isLast = currentIndex === total - 1;
   const currentSegmentId = question?.segmentId ?? null;
@@ -263,6 +270,17 @@ export function QuestionReview({
     onCurrentIndexChange(index);
   }, [onCurrentIndexChange]);
 
+  const replaceAsset = useCallback(async (candidateId: string, file: File): Promise<void> => {
+    setReplacingAssetId(candidateId);
+    try {
+      await onReplaceIllustration(candidateId, file);
+    } catch (error: unknown) {
+      window.alert(`Le remplacement de l’image a échoué : ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setReplacingAssetId(null);
+    }
+  }, [onReplaceIllustration]);
+
   if (question === undefined) {
     return <div className="review-empty-state"><strong>Aucune question extraite</strong></div>;
   }
@@ -309,10 +327,25 @@ export function QuestionReview({
         </section>
 
         <section ref={editorColumnRef} className="question-editor-column" aria-label="Contenu éditable de la question">
-          <header className="question-column-header">
-            <div>
-              <span className="eyebrow">Contenu extrait</span>
-              <h3>Question {currentIndex + 1}</h3>
+          <header className="question-column-header question-review-editor-header">
+            <div className="question-review-editor-header__topline">
+              <div>
+                <span className="eyebrow">Contenu extrait</span>
+                <h3>Question {currentIndex + 1} <span>sur {total}</span></h3>
+              </div>
+              <span className="mapping-position-badge" aria-label={`${reviewProgress} % du parcours`}>
+                {reviewProgress} %
+              </span>
+            </div>
+            <div
+              aria-label={`Progression de la révision : question ${currentIndex + 1} sur ${total}`}
+              aria-valuemax={total}
+              aria-valuemin={1}
+              aria-valuenow={currentIndex + 1}
+              className="question-review-column-progress"
+              role="progressbar"
+            >
+              <span style={{ width: `${reviewProgress}%` }} />
             </div>
           </header>
 
@@ -371,9 +404,45 @@ export function QuestionReview({
                       ) : (
                         <div className="review-asset-placeholder"><ImageIcon /><span>Illustration indisponible</span></div>
                       )}
-                      <div>
-                        <strong>{candidate.altText}</strong>
-                        <span>Page {candidate.sourcePage} · {candidate.role === "essential" ? "essentielle" : "décorative"}</span>
+                      <div className="review-asset-caption">
+                        <div className="review-asset-details">
+                          <strong>{candidate.altText}</strong>
+                          <span>Page {candidate.sourcePage} · {candidate.role === "essential" ? "essentielle" : "décorative"}</span>
+                        </div>
+                        <div className="review-asset-actions">
+                          <button
+                            aria-label={`Télécharger l’illustration ${candidate.altText}`}
+                            className="icon-button"
+                            disabled={asset === undefined || replacingAssetId !== null}
+                            onClick={() => onDownloadIllustration(candidate.id)}
+                            title="Télécharger l’image"
+                            type="button"
+                          >
+                            <DownloadIcon />
+                          </button>
+                          <input
+                            accept="image/*"
+                            aria-hidden="true"
+                            id={`replace-asset-${candidate.id}`}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.target.value = "";
+                              if (file !== undefined) void replaceAsset(candidate.id, file);
+                            }}
+                            tabIndex={-1}
+                            type="file"
+                          />
+                          <button
+                            aria-label={`Remplacer l’illustration ${candidate.altText}`}
+                            className="icon-button"
+                            disabled={replacingAssetId !== null}
+                            onClick={() => document.getElementById(`replace-asset-${candidate.id}`)?.click()}
+                            title="Importer une image de remplacement"
+                            type="button"
+                          >
+                            <UploadIcon />
+                          </button>
+                        </div>
                       </div>
                     </article>
                   ))}

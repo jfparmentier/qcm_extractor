@@ -96,6 +96,44 @@ function canvasToPng(canvas, candidateId) {
         }, "image/png");
     });
 }
+export async function createIllustrationAssetFromUpload(candidate, file) {
+    if (!file.type.startsWith("image/")) {
+        throw new IllustrationGenerationError("Le fichier sélectionné n’est pas une image reconnue.", candidate.id);
+    }
+    let bitmap;
+    try {
+        bitmap = await createImageBitmap(file);
+    }
+    catch {
+        throw new IllustrationGenerationError("Le navigateur n’a pas pu lire l’image sélectionnée.", candidate.id);
+    }
+    const canvas = window.document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    try {
+        const context = canvasContext(canvas, true);
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        context.drawImage(bitmap, 0, 0);
+        const blob = await canvasToPng(canvas, candidate.id);
+        return {
+            ...candidate,
+            blob,
+            previewUrl: URL.createObjectURL(blob),
+            width: bitmap.width,
+            height: bitmap.height,
+            byteLength: blob.size,
+            mimeType: "image/png",
+            generatedAt: Date.now(),
+            generationWarnings: ["Illustration remplacée par une image importée."]
+        };
+    }
+    finally {
+        bitmap.close();
+        canvas.width = 1;
+        canvas.height = 1;
+    }
+}
 async function cropCandidate(candidate, sourceCanvas, signal) {
     assertNotAborted(signal);
     const bounds = cropBounds(candidate, sourceCanvas);

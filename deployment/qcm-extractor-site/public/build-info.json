@@ -1,9 +1,9 @@
 {
   "artifact": "qcm-extractor-portable",
-  "generated_at": "2026-08-02T10:36:15Z",
+  "generated_at": "2026-08-07T16:01:25Z",
   "application_version": "0.13.0",
   "phase": 7,
-  "version": "7.5.6",
+  "version": "7.5.8",
   "features": [
     "pdf-local",
     "mapping-background",
@@ -46,6 +46,8 @@
     "simplified-review-interface",
     "cache-busted-static-modules",
     "review-navigation-banner-removed",
+    "review-question-progress-bar",
+    "review-image-download-and-replacement",
     "mapping-two-region-categories",
     "unified-question-text-regions",
     "multi-page-question-regions",

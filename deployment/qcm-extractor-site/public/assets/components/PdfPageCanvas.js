@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PAGE_REGION_ROLES, clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.5.6";
-import { TrashIcon } from "./Icons.js?v=7.5.6";
+import { PAGE_REGION_ROLES, clampNormalizedBoundingBox, getPageRegionRoleLabel } from "../domain/documentMap.js?v=7.5.8";
+import { TrashIcon } from "./Icons.js?v=7.5.8";
 const MIN_REGION_SIZE = 0.015;
 const RESIZE_HANDLES = ["se"];
 function normalizedPointerPosition(clientX, clientY, layer) {

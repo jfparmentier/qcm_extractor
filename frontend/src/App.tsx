@@ -42,6 +42,7 @@ import {
   type IllustrationPlan
 } from "./domain/illustration";
 import {
+  createIllustrationAssetFromUpload,
   generateIllustrationAssets,
   IllustrationGenerationError
 } from "./pdf/extractIllustrations";
@@ -756,6 +757,37 @@ export default function App(): React.ReactElement {
     link.click();
   }, []);
 
+  const replaceIllustration = useCallback(async (candidateId: string, file: File): Promise<void> => {
+    const candidate = illustrationPlan.candidates.find((entry) => entry.id === candidateId);
+    if (candidate === undefined) {
+      throw new Error("L’illustration à remplacer n’existe plus.");
+    }
+
+    const fingerprint = illustrationPlan.fingerprint;
+    const asset = await createIllustrationAssetFromUpload(candidate, file);
+    if (illustrationFingerprintRef.current !== fingerprint) {
+      URL.revokeObjectURL(asset.previewUrl);
+      return;
+    }
+    const previous = illustrationAssetsRef.current[candidateId];
+    const nextAssets = {
+      ...illustrationAssetsRef.current,
+      [candidateId]: asset
+    };
+    illustrationAssetsRef.current = nextAssets;
+    setIllustrationGeneration((current) => {
+      const nextErrors = { ...current.errors };
+      delete nextErrors[candidateId];
+      return {
+        ...current,
+        status: "completed",
+        assets: nextAssets,
+        errors: nextErrors
+      };
+    });
+    if (previous !== undefined) URL.revokeObjectURL(previous.previewUrl);
+  }, [illustrationPlan.candidates, illustrationPlan.fingerprint]);
+
   const zoomIn = useCallback((): void => {
     dispatch({ type: "SET_ZOOM", zoom: state.zoom + ZOOM_STEP });
   }, [state.zoom]);
@@ -817,6 +849,7 @@ export default function App(): React.ReactElement {
           onCancelIllustrationGeneration={cancelIllustrationGeneration}
           onClearIllustrations={resetIllustrations}
           onDownloadIllustration={downloadIllustration}
+          onReplaceIllustration={replaceIllustration}
           onAddRegion={addRegion}
           onDeleteRegion={deleteRegion}
           onDeleteSegment={deleteSegment}

@@ -1,3 +1,9 @@
+# Version 7.5.8 — progression et remplacement des illustrations
+
+- La colonne de droite de la révision affiche désormais « Question X sur Y » et une barre de progression liée à la question courante.
+- Chaque illustration possède un bouton iconique de téléchargement et un bouton iconique de remplacement.
+- Les images importées sont converties localement en PNG et remplacent immédiatement l’aperçu et le fichier inclus dans l’export.
+
 # Version 7.5.1 — poignée de redimensionnement corrigée
 
 - La poignée de redimensionnement est maintenant explicitement ancrée dans le coin inférieur droit.

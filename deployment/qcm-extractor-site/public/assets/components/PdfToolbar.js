@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, ResetIcon, SparklesIcon } from "./Icons.js?v=7.5.6";
+import { ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, ResetIcon, SparklesIcon } from "./Icons.js?v=7.5.8";
 export function PdfToolbar({ currentPage, pageCount, zoom, onPageChange, onZoomIn, onZoomOut, onResetZoom, onAnalyze }) {
     const [pageInput, setPageInput] = useState(String(currentPage));
     useEffect(() => {

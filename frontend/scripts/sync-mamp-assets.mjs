@@ -4,7 +4,7 @@ import ts from "typescript";
 
 const frontendRoot = path.resolve(import.meta.dirname, "..");
 const publicRoot = path.resolve(frontendRoot, "../deployment/qcm-extractor-site/public");
-const version = "7.5.6";
+const version = "7.5.8";
 const modules = [
   { source: "App.tsx", destination: "App.js" },
   { source: "components/FileDropZone.tsx", destination: "components/FileDropZone.js" },

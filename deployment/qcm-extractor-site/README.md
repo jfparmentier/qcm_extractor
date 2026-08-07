@@ -1,4 +1,4 @@
-# Déploiement QCM Extractor 7.5.6
+# Déploiement QCM Extractor 7.5.8
 
 Le dossier `qcm-extractor-site` est directement utilisable avec MAMP ou OVH. Le traitement suit une seule étape visible à la fois.
 
